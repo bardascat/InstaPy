@@ -134,8 +134,8 @@ def performFollowUnfollow(self, numberOfPostsToInteract, followAmount, link, tag
 
     if calculatedProbability < probabilityPercentage:
         calculatedFollowUnfollowProbability = randint(1, 100)
-        #if calculatedFollowUnfollowProbability <= 50:
-        if calculatedFollowUnfollowProbability <0:
+        if calculatedFollowUnfollowProbability <= 50:
+        #if calculatedFollowUnfollowProbability <0:
             self.logger.info("performFollowUnfollow: calculatedFollowUnfollowProbability: %s, going to follow...",
                              calculatedFollowUnfollowProbability)
 
