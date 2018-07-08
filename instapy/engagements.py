@@ -15,7 +15,7 @@ from .util import web_adress_navigator
 
 def perform_engagement(self, operation, likeAmount, followAmount):
     self.logger.info("perform_engagement: STARTED operation. Going to perform %s likes, %s follow/unfollow," % (
-    likeAmount, followAmount))
+        likeAmount, followAmount))
 
     iteration = 0
     likePerformed = 0
@@ -25,7 +25,8 @@ def perform_engagement(self, operation, likeAmount, followAmount):
     followAmountForEachTag = splitTotalAmount(self, followAmount, len(operation['list']))
 
     # run while we have hashtags and the amount of likes and follow is not exceeded
-    while shouldContinueLooping(self, operation, likePerformed, followPerformed, likeAmount, followAmount,iteration) is True:
+    while shouldContinueLooping(self, operation, likePerformed, followPerformed, likeAmount, followAmount,
+                                iteration) is True:
 
         likeAmountForeachRandomized = randint(likeAmountForEachTag,
                                               bot_util.randomizeValue(likeAmountForEachTag, 10, "up"))
@@ -34,13 +35,16 @@ def perform_engagement(self, operation, likeAmount, followAmount):
 
         engagementValue = getItemToProcess(operation, operation['configName'])
 
-        self.logger.info("perform_engagement: Going to perform %s amount of likes and %s of follow/unfollow for hashtag %s" % (likeAmountForeachRandomized, followAmountForeachRandomized, engagementValue))
+        self.logger.info(
+            "perform_engagement: Going to perform %s amount of likes and %s of follow/unfollow for hashtag %s" % (
+            likeAmountForeachRandomized, followAmountForeachRandomized, engagementValue))
 
         numberOfPostsToExtract = likeAmountForeachRandomized if likeAmountForeachRandomized >= followAmountForeachRandomized else followAmountForeachRandomized
 
-        links = get_links(self=self, numberOfPostsToExtract=numberOfPostsToExtract, engagementBy=operation['configName'],engagementByValue=engagementValue)
+        links = get_links(self=self, numberOfPostsToExtract=numberOfPostsToExtract,
+                          engagementBy=operation['configName'], engagementByValue=engagementValue)
 
-        if len(links)==0:
+        if len(links) == 0:
             self.logger.info('perform_engagement: Too few images, skipping this tag:  %s', engagementValue)
             continue
 
@@ -58,7 +62,8 @@ def perform_engagement(self, operation, likeAmount, followAmount):
     return likePerformed
 
 
-def shouldContinueLooping(self, operation, likePerformed, followPerformed, likeAmountExpected, followAmountExpected,iteration):
+def shouldContinueLooping(self, operation, likePerformed, followPerformed, likeAmountExpected, followAmountExpected,
+                          iteration):
     securityBreak = 10
 
     if iteration > securityBreak:
@@ -109,11 +114,11 @@ def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerf
                         insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                         None, None, linkValidationDetails['user_name'],
                                         None, None, None,
-                                        link, 'like_'+operation['configName'], engagementValue, self.id_log)
-
+                                        link, 'like_' + operation['configName'], engagementValue, self.id_log)
 
                 if followAmountToPerform > 0:
-                    status = performFollowUnfollow(self, numberOfPostsToExtract, followAmountToPerform, link, engagementValue, linkValidationDetails['user_name'], operation)
+                    status = performFollowUnfollow(self, numberOfPostsToExtract, followAmountToPerform, link,
+                                                   engagementValue, linkValidationDetails['user_name'], operation)
                     result['followPerformed'] += 1
 
         except NoSuchElementException as err:
@@ -132,10 +137,11 @@ def performFollowUnfollow(self, numberOfPostsToInteract, followAmount, link, tag
         "performFollowUnfollow: Number of posts to interact: %s, followAmount: %s, probability: %s. Calculated probability: %s" % (
             numberOfPostsToInteract, followAmount, probabilityPercentage, calculatedProbability))
 
-    if calculatedProbability < probabilityPercentage:
+    # if calculatedProbability < probabilityPercentage:
+    if calculatedProbability > 0:
         calculatedFollowUnfollowProbability = randint(1, 100)
-        if calculatedFollowUnfollowProbability <= 50:
-        #if calculatedFollowUnfollowProbability <0:
+        # if calculatedFollowUnfollowProbability <= 50:
+        if calculatedFollowUnfollowProbability < 0:
             self.logger.info("performFollowUnfollow: calculatedFollowUnfollowProbability: %s, going to follow...",
                              calculatedFollowUnfollowProbability)
 
@@ -154,12 +160,11 @@ def performFollowUnfollow(self, numberOfPostsToInteract, followAmount, link, tag
                                        self.logger,
                                        self.logfolder)
 
-
                 if followed:
                     insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                     None, None, user_name,
                                     None, None, None,
-                                    link, 'follow_'+operation['configName'], tag, self.id_log)
+                                    link, 'follow_' + operation['configName'], tag, self.id_log)
 
             else:
                 self.logger.info(
@@ -181,16 +186,18 @@ def performFollowUnfollow(self, numberOfPostsToInteract, followAmount, link, tag
 
                 selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null order by timestamp asc limit %s"
 
-                recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],self.campaign['id_user'], 1)
+                recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
+                                            self.campaign['id_user'], 1)
 
                 if recordToUnfollow:
                     status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger)
                     lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                     None, None, recordToUnfollow['username'],
-                                                    None, None, None, None, 'unfollow_'+operation['configName'], None,
+                                                    None, None, None, None, 'unfollow_' + operation['configName'], None,
                                                     self.id_log)
 
-                    insert("update bot_action set bot_operation_reverted=%s where id=%s", lastBotAction, recordToUnfollow['id'])
+                    insert("update bot_action set bot_operation_reverted=%s where id=%s", lastBotAction,recordToUnfollow['id'])
+                    self.logger.info("performFollowUnfollow: Update bot_operation_reverted..")
                 else:
                     self.logger.info("performFollowUnfollow: No user found in database to unfollow...")
     return True

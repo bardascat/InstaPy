@@ -994,7 +994,7 @@ def load_follow_restriction(logfolder):
 def custom_unfollow(browser, username, logger):
 
     sleepSeconds = randint(30,55)
-    logger.info("custom_unfollow: Going to sleep %s seconds before starting...", sleepSeconds)
+    logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)
     time.sleep(sleepSeconds)
 
     user_link = 'https://www.instagram.com/{}/'.format(username)
@@ -1027,7 +1027,14 @@ def custom_unfollow(browser, username, logger):
     if following:
         # click the button
         click_element(browser, follow_button)  # follow_button.click()
-        sleep(4)
+        sleep(randint(3,4))
+
+        try:
+            browser.find_element_by_xpath("//button[contains(text(), 'Unfollow')]").click()
+            sleep(randint(2, 4))
+        except Exception:
+            logger.info("custom_unfollow: Could not unfollow, reason: second unfollow button not found.")
+            return False
 
         # double check not following
         follow_button = browser.find_element_by_xpath(
