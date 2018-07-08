@@ -1044,6 +1044,6 @@ def custom_unfollow(browser, username, logger):
             logger.info("custom_unfollow: Unfollowed user: %s", username)
             return True
         else:
-            logger.error("Unfollow error, user: %s might be blocked or deleted" %  username)
+            logger.error("Unfollow error, COULD NOT PRESS THE LAST UNFOLLOW BUTTON -> user: %s might be blocked or deleted" %  username)
 
     return False
