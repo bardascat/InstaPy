@@ -580,7 +580,7 @@ def follow_given_user(browser,
     user_link = "https://www.instagram.com/{}/".format(acc_to_follow)
 
     #Check URL of the webpage, if it already is user's profile page, then do not navigate to it again
-    web_adress_navigator(browser, user_link)
+    web_adress_navigator(browser, user_link, logger)
 
     logger.info('--> {} instagram account is opened...'.format(acc_to_follow))
 
@@ -1000,7 +1000,7 @@ def custom_unfollow(browser, username, logger):
     user_link = 'https://www.instagram.com/{}/'.format(username)
 
     # Check URL of the webpage, if it already is the one to be navigated, then do not navigate to it again
-    web_adress_navigator(browser, user_link)
+    web_adress_navigator(browser, user_link, logger)
 
     following = False
     try:
@@ -1033,7 +1033,7 @@ def custom_unfollow(browser, username, logger):
             browser.find_element_by_xpath("//button[contains(text(), 'Unfollow')]").click()
             sleep(randint(2, 4))
         except Exception:
-            logger.info("custom_unfollow: Could not unfollow, reason: second unfollow button not found.")
+            logger.info("custom_unfollow: Could not unfollow, reason: second unfollow button not found. Find out what this error means.")
             return False
 
         # double check not following

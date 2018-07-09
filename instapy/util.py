@@ -15,6 +15,7 @@ from selenium.common.exceptions import WebDriverException
 from .settings import Settings
 from .time_util import sleep
 from .time_util import sleep_actual
+import traceback
 
 
 def validate_username(browser,
@@ -489,61 +490,63 @@ def get_number_of_posts(browser):
 
 
 def get_relationship_counts(browser, username, logger):
-    """ Gets the followers & following counts of a given user """
-
-    user_link = "https://www.instagram.com/{}/".format(username)
-
-    #Check URL of the webpage, if it already is user's profile page, then do not navigate to it again
-    web_adress_navigator(browser, user_link)
-
     try:
-        followers_count = format_number(browser.find_element_by_xpath("//a[contains"
-                                "(@href,'followers')]/span").text)
-    except NoSuchElementException:
+        """ Gets the followers & following counts of a given user """
+
+        user_link = "https://www.instagram.com/{}/".format(username)
+
+        #Check URL of the webpage, if it already is user's profile page, then do not navigate to it again
+        web_adress_navigator(browser, user_link, logger)
         try:
-            followers_count = browser.execute_script(
-                "return window._sharedData.entry_data."
-                "ProfilePage[0].graphql.user.edge_followed_by.count")
-        except WebDriverException:
+            followers_count = format_number(browser.find_element_by_xpath("//a[contains"
+                                    "(@href,'followers')]/span").text)
+        except NoSuchElementException:
             try:
-                browser.execute_script("location.reload()")
                 followers_count = browser.execute_script(
                     "return window._sharedData.entry_data."
                     "ProfilePage[0].graphql.user.edge_followed_by.count")
             except WebDriverException:
                 try:
-                    followers_count = format_number((browser.find_elements_by_xpath(
-                        "//span[contains(@class,'g47SY')]")[1].text))
-                except NoSuchElementException:
-                    logger.error("Error occured during getting the followers count of '{}'\n".format(username))
-                    followers_count = None
+                    browser.execute_script("location.reload()")
+                    followers_count = browser.execute_script(
+                        "return window._sharedData.entry_data."
+                        "ProfilePage[0].graphql.user.edge_followed_by.count")
+                except WebDriverException:
+                    try:
+                        followers_count = format_number((browser.find_elements_by_xpath(
+                            "//span[contains(@class,'g47SY')]")[1].text))
+                    except NoSuchElementException:
+                        logger.error("Error occured during getting the followers count of '{}'\n".format(username))
+                        followers_count = None
 
-    try:
-        following_count = format_number(browser.find_element_by_xpath("//a[contains"
-                                "(@href,'following')]/span").text)
-    except NoSuchElementException:
         try:
-            following_count = browser.execute_script(
-                "return window._sharedData.entry_data."
-                "ProfilePage[0].graphql.user.edge_follow.count")
-        except WebDriverException:
+            following_count = format_number(browser.find_element_by_xpath("//a[contains"
+                                    "(@href,'following')]/span").text)
+        except NoSuchElementException:
             try:
-                browser.execute_script("location.reload()")
                 following_count = browser.execute_script(
                     "return window._sharedData.entry_data."
                     "ProfilePage[0].graphql.user.edge_follow.count")
             except WebDriverException:
                 try:
-                    following_count = format_number(browser.find_elements_by_xpath(
-                        "//span[contains(@class,'g47SY')]")[2].text)
-                except NoSuchElementException:
-                    logger.error("\nError occured during getting the following count of '{}'\n".format(username))
-                    following_count = None
-    
-    return followers_count, following_count
+                    browser.execute_script("location.reload()")
+                    following_count = browser.execute_script(
+                        "return window._sharedData.entry_data."
+                        "ProfilePage[0].graphql.user.edge_follow.count")
+                except WebDriverException:
+                    try:
+                        following_count = format_number(browser.find_elements_by_xpath(
+                            "//span[contains(@class,'g47SY')]")[2].text)
+                    except NoSuchElementException:
+                        logger.error("\nError occured during getting the following count of '{}'\n".format(username))
+                        following_count = None
+
+        return followers_count, following_count
+    except:
+        return 0,0
 
 
-def web_adress_navigator(browser, link):
+def web_adress_navigator(browser, link, logger):
     """Checks and compares current URL of web page and the URL to be navigated and if it is different, it does navigate"""
 
     try:
@@ -553,6 +556,9 @@ def web_adress_navigator(browser, link):
             current_url = browser.execute_script("return window.location.href")
         except WebDriverException:
             current_url = None
+    except:
+        exceptionDetail = traceback.format_exc()
+        logger.critical("web_adress_navigator: EXCEPTION on http connection: %s", exceptionDetail)
     
     if current_url is None or current_url != link:
         browser.get(link)

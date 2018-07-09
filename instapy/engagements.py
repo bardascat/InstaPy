@@ -11,6 +11,7 @@ from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 from .util import validate_username
 from .util import web_adress_navigator
+import traceback
 
 
 def perform_engagement(self, operation, likeAmount, followAmount):
@@ -97,7 +98,11 @@ def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerf
             if linkValidationDetails is not False:
 
                 # navigate to url ! (previously it was on user profile page)
-                web_adress_navigator(self.browser, link)
+                try:
+                    web_adress_navigator(self.browser, link, self.logger)
+                except:
+                    exceptionDetail = traceback.format_exc()
+                    self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
 
                 # TODO: create a method for the like code
                 if likeAmountToPerform > 0:
@@ -263,7 +268,7 @@ def get_links(self, numberOfPostsToExtract, engagementBy, engagementByValue):
                                            logger=self.logger)
 
         except NoSuchElementException:
-            self.logger.warning('Too few images, skipping this location: %s' % (engagementByValue))
+            self.logger.warning('get_links: Too few images, skipping this location: %s' % (engagementByValue))
             return []
 
     return links
@@ -279,6 +284,8 @@ def getItemToProcess(operation, engagement_by):
 
     if engagement_by == "engagement_by_hashtag":
         itemValue = itemObject['hashtag']
+
+    #itemValue="atp"
 
     del operation['list'][itemIndex]
     return itemValue
