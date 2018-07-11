@@ -14,9 +14,11 @@ from .util import web_adress_navigator
 import traceback
 
 
+#TODO 1: stop the actions after they reached the local and the global limit
+#TODO 2: split the number of actions between action types (eg. location/hashtag)
+#TODO 3: make a class and set a private property for the number of actions
 def perform_engagement(self, operation, likeAmount, followAmount):
-    self.logger.info("perform_engagement: STARTED operation. Going to perform %s likes, %s follow/unfollow," % (
-        likeAmount, followAmount))
+    self.logger.info("perform_engagement: *********************** STARTED operation: %s, Going to perform %s likes, %s follow/unfollow. ******************************" % (operation['configName'], likeAmount, followAmount))
 
     iteration = 0
     likePerformed = 0
@@ -29,12 +31,15 @@ def perform_engagement(self, operation, likeAmount, followAmount):
     while shouldContinueLooping(self, operation, likePerformed, followPerformed, likeAmount, followAmount,
                                 iteration) is True:
 
+
         likeAmountForeachRandomized = randint(likeAmountForEachTag,
                                               bot_util.randomizeValue(likeAmountForEachTag, 10, "up"))
         followAmountForeachRandomized = randint(followAmountForEachTag,
                                                 bot_util.randomizeValue(followAmountForEachTag, 10, "up"))
 
         engagementValue = getItemToProcess(operation, operation['configName'])
+
+        self.logger.info("perform_engagement: ************** TAG %s, ITERATION NUMBER %s*****************" % (engagementValue, iteration + 1))
 
         self.logger.info(
             "perform_engagement: Going to perform %s amount of likes and %s of follow/unfollow for hashtag %s" % (
@@ -60,6 +65,7 @@ def perform_engagement(self, operation, likeAmount, followAmount):
 
         iteration = iteration + 1
 
+        self.logger.info("perform_engagement: **************** END operation: %s **********************", operation['configName'])
     return likePerformed
 
 
@@ -86,10 +92,10 @@ def shouldContinueLooping(self, operation, likePerformed, followPerformed, likeA
 def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerform, numberOfPostsToExtract, operation):
     result = {"likePerformed": 0, "followPerformed": 0}
 
-    self.logger.info("engagement_by_tags: Received %s link, going to iterate through them", len(links))
+    self.logger.info("engage: Received %s link, going to iterate through them", len(links))
 
     for i, link in enumerate(links):
-        self.logger.info('engagement_by_tags: TAG {}, [{}/{}]'.format(engagementValue, i + 1, len(links)))
+        self.logger.info('engage: TAG {}, [{}/{}]'.format(engagementValue, i + 1, len(links)))
 
         try:
             # todo: check if this function is needed
@@ -105,6 +111,7 @@ def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerf
                     self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
 
                 # TODO: create a method for the like code
+                #TODO : skip the action if local limit was reached
                 if likeAmountToPerform > 0:
                     liked = like_image(self.browser,
                                        linkValidationDetails['user_name'],
@@ -113,8 +120,7 @@ def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerf
                                        self.logfolder)
                     if liked:
                         result['likePerformed'] += 1
-                        self.logger.info(
-                            "like_by_tags: Link %s was liked. User %s" % (link, linkValidationDetails['user_name']))
+                        self.logger.info("engage: Link %s was liked. User %s" % (link, linkValidationDetails['user_name']))
 
                         insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                         None, None, linkValidationDetails['user_name'],
@@ -127,12 +133,12 @@ def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerf
                     result['followPerformed'] += 1
 
         except NoSuchElementException as err:
-            self.logger.error('Invalid Page: {}'.format(err))
+            self.logger.error('engage: Invalid Page: {}'.format(err))
             continue
 
     return result
 
-
+#TODO: skip the action if the local limit was reached
 def performFollowUnfollow(self, numberOfPostsToInteract, followAmount, link, tag, user_name, operation):
     probabilityPercentage = followAmount * 100 // numberOfPostsToInteract
 
@@ -148,8 +154,6 @@ def performFollowUnfollow(self, numberOfPostsToInteract, followAmount, link, tag
             self.logger.info("performFollowUnfollow: calculatedFollowUnfollowProbability: %s, going to follow...",
                              calculatedFollowUnfollowProbability)
 
-            # follow
-            # todo: operation follow_users_by_hashtag is deprecated
             if operation['follow_user'] == 1:
                 # try to folllow
                 self.logger.info("performFollowUnfollow: Trying to follow user %s", user_name)
@@ -247,7 +251,7 @@ def splitTotalAmount(self, amount, noOfHashtags, divideAmountTo=4):
     if noOfHashtags < divideAmountTo:
         divideAmountTo = noOfHashtags
 
-    self.logger.info("splitTotalAmount: Going to divide amount to %s:", divideAmountTo)
+    self.logger.info("splitTotalAmount: Going to divide amount to %s hashtags.", divideAmountTo)
     return amount // divideAmountTo
 
 

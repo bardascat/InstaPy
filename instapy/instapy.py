@@ -29,7 +29,7 @@ from .like_util import get_tags
 from .like_util import get_links_for_location
 from .like_util import like_image
 from .like_util import get_links_for_username
-from .login_util import login_user
+from .login_util import login_user, custom_login_user
 from .print_log_writer import log_follower_num
 from .settings import Settings
 from .print_log_writer import log_following_num
@@ -353,14 +353,14 @@ class InstaPy:
     def check_internet_connection(self):
 
         self.logger.info("check_internet_connection: Checking internet connection...")
-        self.browser.get("https://google.com")
+        #self.browser.get("https://google.com")
 
-        try:
-            element = self.browser.find_element_by_xpath("//*[contains(text(), 'Google')]")
-        except NoSuchElementException as err:
-            self.logger.critical(
-                "check_internet_connection: Cannot access google page, this means most likely issues with internet connection !")
-            return False
+        #try:
+        #    element = self.browser.find_element_by_xpath("//*[contains(text(), 'Google')]")
+        #except NoSuchElementException as err:
+        #    self.logger.critical(
+        #        "check_internet_connection: Cannot access google page, this means most likely issues with internet connection !")
+        #    return False
 
         if self.proxy_address:
             self.logger.info("check_internet_connection: Checking proxy address")
@@ -404,15 +404,17 @@ class InstaPy:
 
         self.logger.info("login: Going to login user %s into instagram ", self.username)
         """Used to login the user either with the username and password"""
-        if not login_user(self.browser,
+        if not custom_login_user(self.browser,
                           self.username,
                           self.password,
                           self.logfolder,
                           self.switch_language,
                           self.bypass_suspicious_attempt,
                           self.logger):
-            message = "Wrong login data!"
+            message = "Could not login... but we don't know why !"
             highlight_print(self.username, message, "login", "critical", self.logger)
+            self.logger.error("login: WRONG LOGIN DATA")
+            exit("WRONG LOGIN DATA")
 
             self.aborting = True
         else:
@@ -3111,15 +3113,13 @@ class InstaPy:
     def executeAngieActions(self, operations, likeAmount, followAmount):
         self.logger.info("executeAngieLoop: Starting angie... Going to execute %s likes, %s follow/unfollow" % (
             likeAmount, followAmount))
-
-        #todo: the operation variable is passed by referrence
         for operation in operations:
             self.logger.info("executeAngieActions: Going to perform operation: %s", operation['configName'])
             if 'list' not in operation or len(operation['list'])==0:
-                self.logger.info("executeAngieActions: No items to process for operation %s", operation['configName'])
+                #self.logger.info("executeAngieActions: No items to process for operation %s", operation['configName'])
                 continue
 
-            opCopy = operation.copy();
+            opCopy = operation.copy()
             engagements.perform_engagement(self, opCopy, likeAmount=likeAmount, followAmount = followAmount)
 
 

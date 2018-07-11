@@ -112,7 +112,7 @@ def login_user(browser,
 
     # include time.sleep(1) to prevent getting stuck on google.com
     time.sleep(1)
-    
+
     browser.get('https://www.instagram.com')
     # Cookie has been loaded, user should be logged in. Ensurue this is true
     login_elem = browser.find_elements_by_xpath(
@@ -144,7 +144,7 @@ def login_user(browser,
     # Enter username and password and logs the user in
     # Sometimes the element name isn't 'Username' and 'Password'
     # (valid for placeholder too)
-    sleep(1) 
+    sleep(1)
     input_username = browser.find_elements_by_xpath(
         "//input[@name='username']")
 
@@ -178,3 +178,135 @@ def login_user(browser,
         return True
     else:
         return False
+
+
+def custom_login_user(browser,
+               username,
+               password,
+               logfolder,
+               switch_language=True,
+               bypass_suspicious_attempt=False, logger=None):
+    """Logins the user with the given username and password"""
+    assert username, 'Username not provided'
+    assert password, 'Password not provided'
+
+    #browser.get('https://www.instagram.com')
+    # update server calls
+    #update_activity()
+    cookie_loaded = False
+    logger.info("custom_login_user: Trying to login...")
+    # try to load cookie from username
+    try:
+        #logger.info("login_user: Accesing google to get the cookie...")
+        #browser.get('https://www.google.com')
+        for cookie in pickle.load(open('{0}{1}_cookie.pkl'
+                                       .format(logfolder,username), 'rb')):
+            browser.add_cookie(cookie)
+            cookie_loaded = True
+    except (WebDriverException, OSError, IOError):
+        logger.info("custom_login_user: Cookie file not found.")
+
+    #logger.info("SLeeping 1 second to prevent getting stuck on google.com")
+    # include time.sleep(1) to prevent getting stuck on google.com
+    #time.sleep(1)
+
+    if cookie_loaded==True:
+        logger.info("custom_login_user: Cookie was loaded, going to check if user is logged in...")
+        if is_user_logged_in(browser, logger)==True:
+            logger.info("custom_login_user: The user was successfully logged in...")
+            return True
+        else:
+            logger.info("custom_login_user: The user was not automatically logged in. Maybe error with the cookie ?. Going to manually login...")
+            return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder)
+
+    return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder)
+
+
+def execute_login(username, password, browser,switch_language,bypass_suspicious_attempt, logger, logfolder):
+    # Changes instagram language to english, to ensure no errors ensue from
+    # having the site on a different language
+    # Might cause problems if the OS language is english
+
+    logger.info("execute_login: Started login process... going to open instagram login page")
+
+    browser.get("https://www.instagram.com/accounts/login/")
+    #not sure if this is needed in our use cases
+    #if switch_language:
+    #    browser.find_element_by_xpath(
+    #      "//select[@class='hztqj']/option[text()='English']").click()
+
+
+    logger.info("execute_login: Going to fill in username and password.")
+    # Enter username and password and logs the user in
+    # Sometimes the element name isn't 'Username' and 'Password'
+    # (valid for placeholder too)
+    sleep(1)
+    input_username = browser.find_elements_by_xpath(
+        "//input[@name='username']")
+
+    ActionChains(browser).move_to_element(input_username[0]). \
+        click().send_keys(username).perform()
+    sleep(1)
+    input_password = browser.find_elements_by_xpath(
+        "//input[@name='password']")
+    if not isinstance(password, str):
+        password = str(password)
+    ActionChains(browser).move_to_element(input_password[0]). \
+        click().send_keys(password).perform()
+
+    logger.info("execute_login: Done... going to click log in button")
+
+    login_button = browser.find_element_by_xpath(
+        "//form/span/button[text()='Log in']")
+    ActionChains(browser).move_to_element(login_button).click().perform()
+
+
+    if bypass_suspicious_attempt is True:
+        logger.info("execute_login: Bypass_suspicious_attempt is true...")
+        bypass_suspicious_login(browser)
+
+    logger.info("execute_login: Sleeping 1 second")
+    sleep(1)
+
+    logger.info("execute_login: Checking if logged in was successfully by searching the //nav element...")
+
+    # Check if user is logged-in (If there's two 'nav' elements)
+    nav = browser.find_elements_by_xpath('//nav')
+    #TODO: maybe this is stupid
+    if len(nav) == 2:
+        # create cookie for username
+        logger.info("execute_login: Login was successfully, going to create the cookie")
+        pickle.dump(browser.get_cookies(),open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+        return True
+    else:
+        logger.info("execute_login: Login failed, trying to determine what went wrong!")
+        find_login_issues(browser, logger)
+        return False
+
+def is_user_logged_in(browser, logger):
+    logger.info("is_user_logged_in: Checking if user is logged in")
+    logger.info("is_user_logged_in: Accessing https://instagram.com to search for login element")
+    browser.get('https://www.instagram.com')
+    sleep(1)
+    login_elem = browser.find_elements_by_xpath("//*[contains(text(), 'Log in')]")
+
+    logger.info("is_user_logged_in: Done accesing instagram and searching for login_elem. ")
+
+    # TODO: This is stupid as fuck, and it also takes some time. Maybe we should search for something that exists when you are logged in.
+    if len(login_elem) == 0:
+        logger.info("is_user_logged_in: Login element was NOT found, going to assume user is logged in")
+        return True
+    else:
+        logger.info("is_user_logged_in: Login element was FOUND, this means the user is not logged in.")
+
+def find_login_issues(browser, logger):
+    logger.info("find_login_issues: Starting to detect login issues...")
+
+    instagramWantsToConfirmPhoneNumber = browser.find_elements_by_xpath("//h2[contains(text(), 'Phone')]")
+
+    if len(instagramWantsToConfirmPhoneNumber) > 0:
+        logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input. Going go exit...")
+        exit("LOGIN ERROR: INSTAGRAM WANTS TO VERIFY PHONE NUMBER")
+
+
+    logger.info("find_login_issues: No issues were detected... :(")
