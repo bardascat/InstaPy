@@ -320,10 +320,10 @@ def check_invalid_credentials(browser, logger, campaign):
 
 
 
-def check_phone_verification(browser, logger, cmp):
+def check_phone_verification(browser, logger, campaign):
     instagramWantsToConfirmPhoneNumber = browser.find_elements_by_xpath("//h2[contains(text(), 'Phone')]")
 
     if len(instagramWantsToConfirmPhoneNumber) > 0:
-        logger.info(
-            "find_login_issues: Instagram wants to verify the phone number, ask user for input. Going go exit...")
+        logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input. Going to send an email to the user.")
+        browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
         exit("LOGIN ERROR: INSTAGRAM WANTS TO VERIFY PHONE NUMBER")
