@@ -185,7 +185,7 @@ def custom_login_user(browser,
                password,
                logfolder,
                switch_language=True,
-               bypass_suspicious_attempt=False, logger=None):
+               bypass_suspicious_attempt=False, logger=None, cmp=None):
     """Logins the user with the given username and password"""
     assert username, 'Username not provided'
     assert password, 'Password not provided'
@@ -215,17 +215,17 @@ def custom_login_user(browser,
         logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
         browser.get("https://www.instagram.com/")
         sleep(1)
-        if is_user_logged_in(username, browser, logger)==True:
+        if is_user_logged_in(username, browser, logger, cmp)==True:
             logger.info("custom_login_user: The user was successfully logged in...")
             return True
         else:
             logger.info("custom_login_user: The user was not automatically logged in. Maybe error with the cookie ?. Going to manually login...")
-            return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder)
+            return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp)
 
-    return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder)
+    return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp)
 
 
-def execute_login(username, password, browser,switch_language,bypass_suspicious_attempt, logger, logfolder):
+def execute_login(username, password, browser,switch_language,bypass_suspicious_attempt, logger, logfolder, cmp):
     # Changes instagram language to english, to ensure no errors ensue from
     # having the site on a different language
     # Might cause problems if the OS language is english
@@ -243,7 +243,7 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     # Enter username and password and logs the user in
     # Sometimes the element name isn't 'Username' and 'Password'
     # (valid for placeholder too)
-    sleep(1)
+    sleep(2)
     input_username = browser.find_elements_by_xpath(
         "//input[@name='username']")
 
@@ -264,6 +264,7 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     ActionChains(browser).move_to_element(login_button).click().perform()
 
 
+
     if bypass_suspicious_attempt is True:
         logger.info("execute_login: Bypass_suspicious_attempt is true...")
         bypass_suspicious_login(browser)
@@ -271,7 +272,7 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     logger.info("execute_login: Sleeping 1 second")
     sleep(1)
 
-    if is_user_logged_in(username, browser, logger)==True:
+    if is_user_logged_in(username, browser, logger, cmp)==True:
         # create cookie for username
         logger.info("execute_login: Login was successfully. Going to create the cookie")
         pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
@@ -281,30 +282,48 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
 
 
 
-def is_user_logged_in(username, browser, logger):
+def is_user_logged_in(username, browser, logger, cmp):
 
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
-    edit_profile_button = browser.find_elements_by_xpath("//a[contains(text(),'Profile')]")
+    edit_profile_button = browser.find_elements_by_xpath("//a[text()='Profile']")
 
     logger.info("is_user_logged_in: Done searching for  Profile button !")
 
     if len(edit_profile_button) == 0:
         logger.info("is_user_logged_in: Profile button was NOT found, going to assume user is not logged in. Going to check for login issues...")
-        find_login_issues(browser, logger)
+        find_login_issues(browser, logger, cmp)
         return False
     else:
         logger.info("is_user_logged_in: Profile button was found... user succesffully LOGGED IN")
         return True
 
-def find_login_issues(browser, logger):
+def find_login_issues(browser, logger, cmp):
     logger.info("find_login_issues: Starting to detect login issues...")
 
+    #CHECK INVALID CREDENTIALS
+    check_invalid_credentials(browser, logger, cmp)
+
+    #CHECK FOR PHONE VALIDATION
+    check_phone_verification(browser, logger, cmp)
+
+    logger.info("find_login_issues: I couldn't detect why you can't login... :(")
+
+def check_invalid_credentials(browser, logger, campaign):
+    # CHECK FOR INVALID CREDENTIALS
+    invalidCredentials = browser.find_elements_by_xpath("//p[contains(text(), 'password was incorrect')]")
+    if len(invalidCredentials) > 0:
+        logger.info("find_login_issues: Invalid credentials Going to send an email to the user.")
+        browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id='+str(campaign['id_user']))
+        exit("LOGIN ERROR: INVALID CREDENTIALS")
+    return True
+
+
+
+def check_phone_verification(browser, logger, cmp):
     instagramWantsToConfirmPhoneNumber = browser.find_elements_by_xpath("//h2[contains(text(), 'Phone')]")
 
     if len(instagramWantsToConfirmPhoneNumber) > 0:
-        logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input. Going go exit...")
+        logger.info(
+            "find_login_issues: Instagram wants to verify the phone number, ask user for input. Going go exit...")
         exit("LOGIN ERROR: INSTAGRAM WANTS TO VERIFY PHONE NUMBER")
-
-
-    logger.info("find_login_issues: No issues were detected... :( Maybe invalid username/password ?")

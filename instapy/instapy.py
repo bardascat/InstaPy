@@ -410,19 +410,19 @@ class InstaPy:
                           self.logfolder,
                           self.switch_language,
                           self.bypass_suspicious_attempt,
-                          self.logger):
+                          self.logger, self.campaign):
             message = "Could not login... but we don't know why !"
             highlight_print(self.username, message, "login", "critical", self.logger)
-            self.logger.error("login: WRONG LOGIN DATA")
-            exit("WRONG LOGIN DATA")
+            self.logger.error("login: COULD NOT LOGIN")
+            exit("COULD NOT LOGIN")
 
             self.aborting = True
         else:
             message = "Logged in successfully!"
             highlight_print(self.username, message, "login", "info", self.logger)
 
-        self.followed_by = log_follower_num(self.browser, self.username, self.logfolder)
-        self.following_num = log_following_num(self.browser, self.username, self.logfolder)
+        #self.followed_by = log_follower_num(self.browser, self.username, self.logfolder)
+        #self.following_num = log_following_num(self.browser, self.username, self.logfolder)
 
         return self
 
