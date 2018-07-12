@@ -204,15 +204,18 @@ def custom_login_user(browser,
             browser.add_cookie(cookie)
             cookie_loaded = True
     except (WebDriverException, OSError, IOError):
-        logger.info("custom_login_user: Cookie file not found.")
+        logger.info("custom_login_user: Cookie file not found. Going to manually login...")
 
     #logger.info("SLeeping 1 second to prevent getting stuck on google.com")
     # include time.sleep(1) to prevent getting stuck on google.com
     #time.sleep(1)
 
     if cookie_loaded==True:
-        logger.info("custom_login_user: Cookie was loaded, going to check if user is logged in...")
-        if is_user_logged_in(browser, logger)==True:
+        logger.info("custom_login_user: Cookie was loaded, going to check if user is automatically logged in...")
+        logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
+        browser.get("https://www.instagram.com/")
+        sleep(1)
+        if is_user_logged_in(username, browser, logger)==True:
             logger.info("custom_login_user: The user was successfully logged in...")
             return True
         else:
@@ -268,36 +271,31 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     logger.info("execute_login: Sleeping 1 second")
     sleep(1)
 
-    logger.info("execute_login: Checking if logged in was successfully by searching the //nav element...")
-
-    # Check if user is logged-in (If there's two 'nav' elements)
-    nav = browser.find_elements_by_xpath('//nav')
-    #TODO: maybe this is stupid
-    if len(nav) == 2:
+    if is_user_logged_in(username, browser, logger)==True:
         # create cookie for username
-        logger.info("execute_login: Login was successfully, going to create the cookie")
-        pickle.dump(browser.get_cookies(),open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+        logger.info("execute_login: Login was successfully. Going to create the cookie")
+        pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
         return True
-    else:
-        logger.info("execute_login: Login failed, trying to determine what went wrong!")
+
+    return False
+
+
+
+def is_user_logged_in(username, browser, logger):
+
+    logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
+
+    edit_profile_button = browser.find_elements_by_xpath("//a[contains(text(),'Profile')]")
+
+    logger.info("is_user_logged_in: Done searching for  Profile button !")
+
+    if len(edit_profile_button) == 0:
+        logger.info("is_user_logged_in: Profile button was NOT found, going to assume user is not logged in. Going to check for login issues...")
         find_login_issues(browser, logger)
         return False
-
-def is_user_logged_in(browser, logger):
-    logger.info("is_user_logged_in: Checking if user is logged in")
-    logger.info("is_user_logged_in: Accessing https://instagram.com to search for login element")
-    browser.get('https://www.instagram.com')
-    sleep(1)
-    login_elem = browser.find_elements_by_xpath("//*[contains(text(), 'Log in')]")
-
-    logger.info("is_user_logged_in: Done accesing instagram and searching for login_elem. ")
-
-    # TODO: This is stupid as fuck, and it also takes some time. Maybe we should search for something that exists when you are logged in.
-    if len(login_elem) == 0:
-        logger.info("is_user_logged_in: Login element was NOT found, going to assume user is logged in")
-        return True
     else:
-        logger.info("is_user_logged_in: Login element was FOUND, this means the user is not logged in.")
+        logger.info("is_user_logged_in: Profile button was found... user succesffully LOGGED IN")
+        return True
 
 def find_login_issues(browser, logger):
     logger.info("find_login_issues: Starting to detect login issues...")
@@ -309,4 +307,4 @@ def find_login_issues(browser, logger):
         exit("LOGIN ERROR: INSTAGRAM WANTS TO VERIFY PHONE NUMBER")
 
 
-    logger.info("find_login_issues: No issues were detected... :(")
+    logger.info("find_login_issues: No issues were detected... :( Maybe invalid username/password ?")
