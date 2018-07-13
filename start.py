@@ -68,7 +68,7 @@ try:
 
         session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop, followAmount=followAmountForEachLoop)
 
-        sleepMinutes = randint(40,120)
+        sleepMinutes = randint(40,60)
         session.logger.info("start: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
 
         sleep(sleepMinutes*60)
