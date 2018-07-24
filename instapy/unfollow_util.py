@@ -495,7 +495,7 @@ def unfollow(browser,
 
 def follow_user(browser, follow_restrict, login, user_name, blacklist, logger, logfolder):
 
-    sleepSeconds = randint(30, 60)
+    sleepSeconds = randint(30, 50)
     logger.info("follow_user: Going to sleep for %s seconds before following", sleepSeconds)
     sleep(sleepSeconds)
 
@@ -993,7 +993,7 @@ def load_follow_restriction(logfolder):
 
 def custom_unfollow(browser, username, logger):
 
-    sleepSeconds = randint(30,55)
+    sleepSeconds = randint(30,40)
     logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)
     time.sleep(sleepSeconds)
 
