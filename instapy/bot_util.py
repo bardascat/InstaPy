@@ -13,6 +13,9 @@ from api_db import *
 def randomizeValue(value, randomizePercent, direction="random"):
     originalValue = value
 
+    if value==0:
+        return 0
+
     randomizeValue = randomizePercent * value // 100
 
     if direction == "up":

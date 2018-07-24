@@ -59,7 +59,7 @@ from .relationship_tools import get_unfollowers
 from .relationship_tools import get_nonfollowers
 from .relationship_tools import get_fans
 from .relationship_tools import get_mutual_following
-import engagements
+from engagements import Engagements
 
 import signal
 import traceback
@@ -109,6 +109,11 @@ class InstaPy:
         self.username = username or os.environ.get('INSTA_USER')
         self.password = password or os.environ.get('INSTA_PW')
         self.campaign = campaign
+
+        self.totalLikeExpected = 0
+        self.totalFollowExpected = 0
+        self.totalUnfollowExpected = 0
+
         self.nogui = nogui
         self.logfolder = Settings.log_location + os.path.sep
         if self.multi_logs == True:
@@ -200,6 +205,9 @@ class InstaPy:
         if self.selenium_local_session == True:
             self.set_selenium_local_session()
 
+        self.engagementService = Engagements(totalLikes=self.totalLikeExpected, totalFollow=self.totalFollowExpected,
+                                             totalUnfollow=self.totalUnfollowExpected, campaign=self.campaign,
+                                             instapy=self)
 
     def get_instapy_logger(self, show_logs):
         """
@@ -811,6 +819,15 @@ class InstaPy:
         self.not_valid_users += not_valid_users
 
         return followed_all
+
+    def set_max_actions(self, like, follow, unfollow):
+        self.totalUnfollowExpected = unfollow
+        self.totalUnfollowExpected = follow
+        self.totalLikeExpected = like
+
+        self.engagementService.totalLikeExpected = like
+        self.engagementService.totalFollowExpected = follow
+        self.engagementService.totalUnfollowExpected = unfollow
 
 
     def set_relationship_bounds (self,
@@ -3110,16 +3127,17 @@ class InstaPy:
         self.end()
 
 
-    def executeAngieActions(self, operations, likeAmount, followAmount):
-        self.logger.info("executeAngieLoop: Starting angie... Going to execute %s likes, %s follow/unfollow" % (
-            likeAmount, followAmount))
+    def executeAngieActions(self, operations, likeAmount, followAmount, unfollowAmount):
+        self.logger.info("executeAngieLoop: Starting angie... Going to execute %s likes, %s follow, %s unfollow" % (likeAmount, followAmount, unfollowAmount))
+
         for operation in operations:
             self.logger.info("executeAngieActions: Going to perform operation: %s", operation['configName'])
             if 'list' not in operation or len(operation['list'])==0:
                 #self.logger.info("executeAngieActions: No items to process for operation %s", operation['configName'])
                 continue
 
+            #todo like and follow amount should be split for each operation
             opCopy = operation.copy()
-            engagements.perform_engagement(self, opCopy, likeAmount=likeAmount, followAmount = followAmount)
+            self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount, followAmount=followAmount, unfollowAmount = unfollowAmount)
 
 

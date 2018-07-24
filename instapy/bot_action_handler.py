@@ -223,19 +223,28 @@ def getAmountDistribution(self, id_campaign):
     return result
 
 
-def getLikeAmount(self,id_campaign, calculatedAmount):
+def getLikeAmount(calculatedAmount):
   likesAmount=calculatedAmount['like_amount']
+
 
   return likesAmount
 
   
-  
-# there is one strange thing about the follow amount:
-# if the user has selected only the unfollow operation, the total follow/unfollow amount should be devided by 2
-def getFollowAmount(self,id_campaign, calculatedAmount):
-  followAmount=calculatedAmount['follow_amount']
 
-  return followAmount
+def getFollowAmount(calculatedAmount):
+
+    if calculatedAmount['follow_amount']<1:
+        return 0
+
+    return calculatedAmount['follow_amount'] // 2
+
+def getUnfollowAmount(calculatedAmount):
+
+    if calculatedAmount['follow_amount']<1:
+        return 0
+
+    return calculatedAmount['follow_amount'] // 2
+
 
 def getLikesPerformed(self, dateParam):
   likesPerformed=fetchOne('SELECT count(*) as no_op FROM bot_action where bot_operation like %s and date(timestamp)=%s and id_user=%s', "like"+"%", str(dateParam), self.web_application_id_user)

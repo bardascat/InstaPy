@@ -22,6 +22,14 @@ def getCampaign(campaignId):
     else:
         return None
 
+def userWasFollowedInThePast(user_name, id_user):
+    row = fetchOne("select * from bot_action where username=%s and id_user=%s", user_name, id_user)
+
+    if row == None:
+        return False
+
+    return True
+
 
 def getWebApplicationUser(id_user):
     if id_user != False:
