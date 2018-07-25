@@ -117,7 +117,7 @@ class Engagements:
         return True
 
     def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerform, unfollowAmountToPerform, numberOfPostsToExtract, operation):
-        result = {"likePerformed": 0, "followPerformed": 0}
+        result = {"likePerformed": 0, "followPerformed": 0, "unfollowPerformed":0}
 
         self.logger.info("engage: Received %s link, going to iterate through them", len(links))
 
@@ -139,12 +139,12 @@ class Engagements:
                         continue
 
 
-                    # if self.performLike(user_name=linkValidationDetails['user_name'],
-                    #                     likeAmount= likeAmountToPerform,
-                    #                     operation=operation,
-                    #                     link=link,
-                    #                     engagementValue=engagementValue) is True:
-                    #     result['likePerformed'] += 1
+                    if self.performLike(user_name=linkValidationDetails['user_name'],
+                                        likeAmount= likeAmountToPerform,
+                                        operation=operation,
+                                        link=link,
+                                        engagementValue=engagementValue) is True:
+                        result['likePerformed'] += 1
 
 
                     if self.performFollow(numberOfPostsToInteract=numberOfPostsToExtract,
@@ -154,10 +154,10 @@ class Engagements:
                                        tag=engagementValue) is True:
                         result['followPerformed'] += 1
 
-                    # if self.performUnfollow(numberOfPostsToInteract=numberOfPostsToExtract,
-                    #                         unfollowAmount=unfollowAmountToPerform,
-                    #                         operation=operation) is True:
-                    #     result['unfollowPerformed'] += 1
+                    if self.performUnfollow(numberOfPostsToInteract=numberOfPostsToExtract,
+                                            unfollowAmount=unfollowAmountToPerform,
+                                            operation=operation) is True:
+                        result['unfollowPerformed'] += 1
 
 
 
