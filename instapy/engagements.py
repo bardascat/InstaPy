@@ -333,7 +333,7 @@ class Engagements:
     def get_links(self, numberOfPostsToExtract, engagementBy, engagementByValue):
         if engagementBy == "engagement_by_hashtag":
             try:
-                links = get_links_for_tag(browser=self.browser, amount=numberOfPostsToExtract, tag=engagementByValue, skip_top_posts=True, media=None, logger=self.logger)
+                links = get_links_for_tag(browser=self.browser, amount=numberOfPostsToExtract, tag=engagementByValue, skip_top_posts=True, media=None, logger=self.logger, randomize=True)
             except NoSuchElementException:
                 self.logger.info('get_links: Too few images, skipping this tag: %s', engagementByValue)
                 return []

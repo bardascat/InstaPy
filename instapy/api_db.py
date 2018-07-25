@@ -23,7 +23,7 @@ def getCampaign(campaignId):
         return None
 
 def userWasFollowedInThePast(user_name, id_user):
-    row = fetchOne("select * from bot_action where username=%s and id_user=%s", user_name, id_user)
+    row = fetchOne("select * from bot_action where username=%s and id_user=%s and bot_operation like %s", user_name, id_user, "follow_"+'%')
 
     if row == None:
         return False
