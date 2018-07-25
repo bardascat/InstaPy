@@ -140,7 +140,6 @@ class Engagements:
 
 
                     if self.performLike(user_name=linkValidationDetails['user_name'],
-                                        likeAmount= likeAmountToPerform,
                                         operation=operation,
                                         link=link,
                                         engagementValue=engagementValue) is True:
