@@ -93,7 +93,8 @@ class Engagements:
 
             iteration = iteration + 1
 
-            self.logger.info("perform_engagement: **************** END operation: %s **********************", operation['configName'])
+        self.logger.info("perform_engagement: **************** END operation: %s **********************", operation['configName'])
+
         return likePerformed
 
 
@@ -138,14 +139,14 @@ class Engagements:
                         self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
                         continue
 
-
+                    # todo IGNORE POST IF ALREADY LIKED. You waste time on waiting
                     if self.performLike(user_name=linkValidationDetails['user_name'],
                                         operation=operation,
                                         link=link,
                                         engagementValue=engagementValue) is True:
                         result['likePerformed'] += 1
 
-
+                    #todo IGNORE USER IF ALREADY FOLLOWED. You waste time on waiting
                     if self.performFollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                        followAmount=followAmountToPerform,
                                        operation=operation, link=link,

@@ -3132,6 +3132,16 @@ class InstaPy:
         signal.signal(signal.SIGTERM, self.sigtermHandler)
         signal.signal(signal.SIGINT, self.sigIntHandler)
         atexit.register(self.atexitHandler)
+        signal.signal(signal.SIGUSR1, self.likeForLikeHandler)
+
+    def likeForLikeHandler(self, *args):
+        #TODO: call a function which is going to detect the work that needs to be done
+        #TODO: send self.browser as parameters
+        #TODO: define a special flow in case that main bot is not started. (night time etc)
+
+        self.logger.info("likeForLikeHandler: ************ Received SIGUSR1 SIGNAL. Going to start like for like process **************")
+        time.sleep(5)
+        self.logger.info("likeForLikeHandler: ************ DONE like for like, exiting handler... **************")
 
     def sigtermHandler(self, *args):
         self.logger.info("sigtermHandler: Going to execute")
@@ -3147,16 +3157,17 @@ class InstaPy:
 
 
     def executeAngieActions(self, operations, likeAmount, followAmount, unfollowAmount):
-        self.logger.info("executeAngieLoop: Starting angie... Going to execute %s likes, %s follow, %s unfollow" % (likeAmount, followAmount, unfollowAmount))
+        self.logger.info("executeAngieLoop: Going to execute %s likes, %s follow, %s unfollow" % (likeAmount, followAmount, unfollowAmount))
 
         for operation in operations:
             self.logger.info("executeAngieActions: Going to perform operation: %s", operation['configName'])
             if 'list' not in operation or len(operation['list'])==0:
-                #self.logger.info("executeAngieActions: No items to process for operation %s", operation['configName'])
+                self.logger.info("executeAngieActions: No items to process for operation %s", operation['configName'])
+                self.logger.info(operation)
                 continue
 
             #todo like and follow amount should be split for each operation
-            opCopy = operation.copy()
+            opCopy = copy.deepcopy(operation)
             self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount, followAmount=followAmount, unfollowAmount = unfollowAmount)
 
 
