@@ -60,7 +60,7 @@ from .relationship_tools import get_nonfollowers
 from .relationship_tools import get_fans
 from .relationship_tools import get_mutual_following
 from engagements import Engagements
-
+from likeforlike import LikeForLike
 import signal
 import traceback
 from random import randint
@@ -208,6 +208,8 @@ class InstaPy:
         self.engagementService = Engagements(totalLikes=self.totalLikeExpected, totalFollow=self.totalFollowExpected,
                                              totalUnfollow=self.totalUnfollowExpected, campaign=self.campaign,
                                              instapy=self)
+
+        self.likeForLikeService = LikeForLike(campaign=self.campaign, instapy=self)
 
     def get_instapy_logger(self, show_logs):
         """
@@ -389,15 +391,15 @@ class InstaPy:
         self.logger.info("check_internet_connection: Internet works fine !")
         return True
 
-    def canBotStart(self, id_campaign):
+    def canBotStart(self, id_campaign, prefix):
         self.logger.info("canBotStart: check if another bot instance is running for campaign %s", id_campaign)
-        processname = 'angie_instapy_idc' + id_campaign + ' '
+        processname = prefix+id_campaign + ' '
         tmp = os.popen("ps -Af").read()
         proccount = tmp.count(processname)
         self.logger.info("canBotStart: Found %s running processes", proccount)
         # this is not working properly on localhost
         if proccount > 1:
-            self.logger.info("canBotStart: ERROR: another bot instance is running for campaign %s", id_campaign)
+            self.logger.info("canBotStart: ERROR: another bot instance with name %s is running for campaign %s" % (prefix, id_campaign))
             exit("canBotStart: ERROR: another bot instance is running for this campaign")
 
         self.logger.info("canBotStart: All Good, no other bot instance is running for this campaign")
@@ -3135,13 +3137,32 @@ class InstaPy:
         signal.signal(signal.SIGUSR1, self.likeForLikeHandler)
 
     def likeForLikeHandler(self, *args):
-        #TODO: call a function which is going to detect the work that needs to be done
-        #TODO: send self.browser as parameters
-        #TODO: define a special flow in case that main bot is not started. (night time etc)
 
         self.logger.info("likeForLikeHandler: ************ Received SIGUSR1 SIGNAL. Going to start like for like process **************")
-        time.sleep(5)
-        self.logger.info("likeForLikeHandler: ************ DONE like for like, exiting handler... **************")
+
+        # save current window
+        curWindowHndl = self.browser.current_window_handle
+
+        # open new window
+        self.browser.execute_script("window.open('https://instagram.com');")
+        # switch to the new tab
+        self.browser.switch_to_window(self.browser.window_handles[1])
+
+        self.likeForLikeService.start()
+
+        self.logger.info("likeForLikeHandler: ******* EXITING LIKE FOR LIKE EVENT ************")
+
+        self.logger.info("likeForLikeHandler: Exiting like for like tab")
+        # close the window
+        self.browser.close()
+
+        self.logger.info("likeForLikeHandler: Switching to original tab...")
+        # go back to original tab
+        self.browser.switch_to_window(curWindowHndl)
+
+        self.logger.info("likeForLikeHandler: Done, resuming to normal flow...")
+
+
 
     def sigtermHandler(self, *args):
         self.logger.info("sigtermHandler: Going to execute")
@@ -3169,5 +3190,10 @@ class InstaPy:
             #todo like and follow amount should be split for each operation
             opCopy = copy.deepcopy(operation)
             self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount, followAmount=followAmount, unfollowAmount = unfollowAmount)
+
+
+    def startLikeForLike(self):
+        self.likeForLikeService.start()
+
 
 

@@ -49,8 +49,8 @@ try:
     session.set_max_actions(totalExpectedLikesAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount)
     session.set_relationship_bounds(enabled=True, potency_ratio=0.01, max_followers=999999, max_following=99999, min_followers=100, min_following=50)
 
-    session.logger.info("start: Instapy Started for account %s, using proxy: %s" % ( campaign['username'], campaign['ip']))
-    session.canBotStart(args.angie_campaign)
+    session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
+    session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
     status = session.login()
     if status == False:
