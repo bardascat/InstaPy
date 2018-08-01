@@ -78,6 +78,17 @@ def getOperationByName(operations, name):
 
     return False
 
+def getOperationsNumber(operations):
+    ops=0
+    for o in operations:
+        if o['configName'] == 'engagement_by_location':
+            ops+=1
+        if o['configName'] == 'engagement_by_hashtag':
+            ops+=1
+
+    return ops
+
+
 
 def getBotOperations(id_campaign, logger):
     totalLikePercentage = 0

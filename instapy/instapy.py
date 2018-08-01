@@ -68,6 +68,7 @@ from api_db import *
 import time
 import atexit
 import copy
+from bot_util import getOperationsNumber
 
 class InstaPyError(Exception):
     """General error for InstaPy exceptions"""
@@ -3180,6 +3181,15 @@ class InstaPy:
     def executeAngieActions(self, operations, likeAmount, followAmount, unfollowAmount):
         self.logger.info("executeAngieLoop: Going to execute %s likes, %s follow, %s unfollow" % (likeAmount, followAmount, unfollowAmount))
 
+        noOperations = getOperationsNumber(operations)
+
+
+        self.logger.info("executeAngieActions: Found %s operations of type engagement by location/hashtag", noOperations)
+
+        if noOperations == 0:
+            return False
+
+
         for operation in operations:
             self.logger.info("executeAngieActions: Going to perform operation: %s", operation['configName'])
             if 'list' not in operation or len(operation['list'])==0:
@@ -3187,9 +3197,8 @@ class InstaPy:
                 self.logger.info(operation)
                 continue
 
-            #todo like and follow amount should be split for each operation
             opCopy = copy.deepcopy(operation)
-            self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount, followAmount=followAmount, unfollowAmount = unfollowAmount)
+            self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount//noOperations, followAmount=followAmount//noOperations, unfollowAmount = unfollowAmount//noOperations)
 
 
     def startLikeForLike(self):
