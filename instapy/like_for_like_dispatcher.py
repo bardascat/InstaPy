@@ -63,7 +63,7 @@ class LikeForLikeDispatcher:
             self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is NOT running for campaign %s. Going to start the l4l process." % (defaultBotProcessName, user['id_campaign']))
             self.startLikeForLikeProcessProcess(user['id_campaign'])
         else:
-            self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is running for campaign %s. Going to send the SIGUSR1 signal...", defaultBotProcessName)
+            self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is running for campaign %s. Going to send the SIGUSR1 signal..." % (defaultBotProcessName, defaultBotProcessName))
             self.sendL4lSignal(pid, str(user['id_campaign']))
 
 
