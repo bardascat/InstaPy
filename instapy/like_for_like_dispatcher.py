@@ -54,7 +54,7 @@ class LikeForLikeDispatcher:
         self.logger.info("bootstrap: Done executing the script.. exiting")
 
     def startLikeForLikeProcess(self, user):
-        self.logger.info("startLikeForLikeProcess: Trigering l4l functionality for user:", user['email'])
+        self.logger.info("startLikeForLikeProcess: Trigering l4l functionality for user: %s", user['email'])
 
         defaultBotProcessName = 'angie_instapy_idc' + str(user['id_campaign'])
         pid = self.findProcessPid(defaultBotProcessName)
