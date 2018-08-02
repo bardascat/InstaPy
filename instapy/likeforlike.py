@@ -19,25 +19,16 @@ class LikeForLike:
         self.logger.info("LikeForLike:performLikes: Going to perform l4l for user with ID: %s.",
                          self.campaign['id_user'])
 
-        totalToLikeResult = api_db.fetchOne(
-
-            # Select all user_posts and exclude the ones already liked by the current user
-            "select count(*) as total from user_post "
-            " join user_subscription us on (user_post.id_user=us.id_user)"
-            " join plan plan on (us.id_plan=plan.id_plan) "
-            " join plan_type on (plan.id_plan_type=plan_type.id_plan_type)"
-            " where id_post not in  (select id_post from user_post_log where id_user=%s)  "
-
-            # exclude own posts
-            " and user_post.id_user!=%s "
-
-            # exclude posts created before enabling user's subscription
-            # IMPORTANT: this query assumes that there is always ONE single subscription 
-            " and user_post.timestamp>=(select start_date from user_subscription where id_user=%s and (user_subscription.end_date>=NOW() "
-            " or user_subscription.end_date is null))"
-
-            # like posts that ARE NOT older than 1 day
-            "and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY) ",
+        # Select all user_posts and exclude the ones already liked by the current user
+        sqlTotal = " select count(*) as total from user_post  join user_subscription us on (user_post.id_user=us.id_user) " \
+                   " join plan plan on (us.id_plan=plan.id_plan) " \
+                   " join plan_type on (plan.id_plan_type=plan_type.id_plan_type) " \
+                   " where id_post not in  (select id_post from user_post_log where id_user=%s)  " \
+                   " and user_post.id_user!=%s " \
+                   " and user_post.timestamp>=(select start_date from user_subscription where id_user=%s and (user_subscription.end_date>=NOW() " \
+                   " or user_subscription.end_date is null)) " \
+                   " and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY) " \
+                   " and user_post.code is not null"
 
             # if logged user doesn't have a trial startup plan then like only posts from users without startup plans
             # else if user have a startup plan like everything
@@ -47,7 +38,9 @@ class LikeForLike:
             # " then "
             # " plan_type.name!='TRIAL_STARTUP' "
             # " else TRUE end",
+        self.logger.info("LikeForLike: Query for total amount of work/posts: %s", sqlTotal)
 
+        totalToLikeResult = api_db.fetchOne(sqlTotal,
             self.campaign['id_user'], self.campaign['id_user'], self.campaign['id_user'])
 
         self.logger.info("LikeForLike:performLikes:: User has %s posts to like", totalToLikeResult['total'])
@@ -58,10 +51,12 @@ class LikeForLike:
         iteration = 0
 
         while havePendingWork is True and securityBreak > iteration:
-            self.logger.info("LikeForLike:performLikes:: Iteration %s started...", iteration)
-            post = api_db.fetchOne(
-                "select user_post.* from user_post join user_subscription us on (user_post.id_user=us.id_user) join plan plan on (us.id_plan=plan.id_plan) join plan_type on (plan.id_plan_type=plan_type.id_plan_type) where id_post not in  (select id_post from user_post_log where id_user=%s)  and user_post.id_user!=%s and user_post.timestamp>=(select start_date from user_subscription where id_user=%s and (user_subscription.end_date>=NOW() or user_subscription.end_date is null))   and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY) order by id_post asc limit 1",
-                self.campaign['id_user'], self.campaign['id_user'], self.campaign['id_user'])
+            self.logger.info("LikeForLike:performLikes: Iteration %s started...", iteration)
+
+            sqlForGettingOnePost = "select user_post.* from user_post join user_subscription us on (user_post.id_user=us.id_user) join plan plan on (us.id_plan=plan.id_plan) join plan_type on (plan.id_plan_type=plan_type.id_plan_type) where id_post not in  (select id_post from user_post_log where id_user=%s)  and user_post.id_user!=%s and user_post.timestamp>=(select start_date from user_subscription where id_user=%s and (user_subscription.end_date>=NOW() or user_subscription.end_date is null))   and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY) and user_post.code is not null order by id_post asc limit 1"
+            self.logger.info("LikeForLike:performLikes: sqlForGettingOnePost: %s", sqlForGettingOnePost)
+
+            post = api_db.fetchOne(sqlForGettingOnePost,self.campaign['id_user'], self.campaign['id_user'], self.campaign['id_user'])
             if post is None:
                 self.logger.info("LikeForLike:performLikes:: There are no more posts to like, going to return !")
                 havePendingWork = False
@@ -101,7 +96,7 @@ class LikeForLike:
 
     def performLike(self, post):
 
-        url = "https://instagram.com/p/" + post['code']
+        url = "https://instagram.com/p/" + str(post['code'])
 
         self.logger.info("likeForLike: performLike: Accessing url for user post %s", url)
 
