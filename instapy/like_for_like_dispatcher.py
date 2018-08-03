@@ -91,7 +91,9 @@ class LikeForLikeDispatcher:
 
         #TODO the location for the python script needs to be changed when deploying to linux server
         subprocess.Popen(
-            "bash -c \"exec -a " + processName + " python /Users/cbardas/PycharmProjects/InstaPy/like_for_like.py  -angie_campaign=" + str(id_campaign) + " \"", stdin=None, close_fds=True, shell=True)
+            "bash -c \"exec -a " + processName + " /usr/bin/python /home/InstaPy/like_for_like.py  -angie_campaign=" + str(id_campaign) + " \"", stdin=None, stdout=self.DEVNULL, stderr=self.DEVNULL, close_fds=True, shell=True)
+        
+            
         self.logger.info("startLikeForLikeProcessProcess: Successfully started process for campaign %s", id_campaign)
 
 
