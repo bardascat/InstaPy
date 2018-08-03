@@ -43,11 +43,12 @@ try:
     session.canBotStart(id_campaign=args.angie_campaign, prefix="angie_instapy_like_for_like_idc")
 
     status = session.login()
-    session.startLikeForLike()
-
 
     if status == False:
         exit("Could not  login")
+
+    session.startLikeForLike()
+
 
 
 
