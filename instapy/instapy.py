@@ -3147,6 +3147,8 @@ class InstaPy:
 
         self.isLikeForLikeProcessRunning=True
 
+        self.logger.info("browser: %s", self.browser)
+
         # save current window
         curWindowHndl = self.browser.current_window_handle
 
