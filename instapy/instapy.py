@@ -200,7 +200,7 @@ class InstaPy:
 
         # Assign logger
         self.logger = self.get_instapy_logger(self.show_logs)
-
+        self.isLikeForLikeProcessRunning = False
         self.setupSignals()
 
         if self.selenium_local_session == True:
@@ -3141,6 +3141,12 @@ class InstaPy:
 
         self.logger.info("likeForLikeHandler: ************ Received SIGUSR1 SIGNAL. Going to start like for like process **************")
 
+        if self.isLikeForLikeProcessRunning==True:
+            self.logger.info("likeForLikeHandler: The process is already running, going to skip it and resume...")
+            return False
+
+        self.isLikeForLikeProcessRunning=True
+
         # save current window
         curWindowHndl = self.browser.current_window_handle
 
@@ -3162,6 +3168,7 @@ class InstaPy:
         self.browser.switch_to_window(curWindowHndl)
 
         self.logger.info("likeForLikeHandler: Done, resuming to normal flow...")
+        self.isLikeForLikeProcessRunning = False
 
 
 
