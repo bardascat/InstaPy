@@ -88,7 +88,7 @@ class LikeForLike:
             if havePendingWork is True:
                 pause = randint(1, 1)
                 self.logger.info("LikeForLike:performLikes:: Going to sleep %s seconds until proceeding to next post",pause)
-            time.sleep(pause)
+                time.sleep(pause)
 
         self.logger.info("LikeForLike:performLikes:: DONE, total liked posts %s from a total of %s " % (
         totalLiked, totalToLikeResult['total']))
