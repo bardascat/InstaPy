@@ -3141,12 +3141,12 @@ class InstaPy:
 
         self.logger.info(
             "likeForLikeHandler: ************ Received SIGUSR1 SIGNAL. Going to start like for like process **************")
+
+        if self.isLikeForLikeProcessRunning == True:
+            self.logger.info("likeForLikeHandler: The process is already running, going to skip it and resume...")
+            return False
+
         try:
-
-            if self.isLikeForLikeProcessRunning == True:
-                self.logger.info("likeForLikeHandler: The process is already running, going to skip it and resume...")
-                return False
-
             self.isLikeForLikeProcessRunning = True
 
             self.logger.info("browser: %s", self.browser)
