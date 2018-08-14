@@ -7,7 +7,7 @@ from time import sleep
 from instapy import InstaPy
 from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, getFollowAmount, getUnfollowAmount, getActionAmountForEachLoop
 from instapy.bot_util import *
-
+from instapy.account_privacy_service import AccountPrivacyService
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -23,7 +23,6 @@ if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
 
 try:
-
 
     campaign = fetchOne("select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",args.angie_campaign)
 
@@ -62,6 +61,7 @@ try:
 
     for loopNumber in range(0, noOfLoops):
 
+        #TODO: IMPORTANT -> this is an issue with small values ! tested with like 45 follow 30
         likeAmountForEachLoop = getActionAmountForEachLoop(totalExpectedLikesAmount, noOfLoops)
         followAmountForEachLoop = getActionAmountForEachLoop(totalExpectedFollowAmount, noOfLoops)
         unFollowAmountForEachLoop = getActionAmountForEachLoop(totalExpectedUnfollowAmount, noOfLoops)
@@ -78,6 +78,11 @@ try:
 
     session.logger.info("start: Angie loop completed , going to exit...")
 
+    session.logger.info("start: Setting privacy to public to public for this account...")
+    accountPrivacyService = AccountPrivacyService(session)
+    accountPrivacyService.switchToPublic()
+
+    session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
     print(exceptionDetail)
