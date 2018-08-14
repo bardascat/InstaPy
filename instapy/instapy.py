@@ -3149,11 +3149,12 @@ class InstaPy:
         try:
             self.isLikeForLikeProcessRunning = True
 
-            self.logger.info("browser: %s", self.browser)
+            self.logger.info("likeForLikeHandler: browser: %s", self.browser)
 
             # save current window
             curWindowHndl = self.browser.current_window_handle
 
+            self.logger.info("likeForLikeHandler: current window: %s", curWindowHndl)
             # open new window
             self.browser.execute_script("window.open('https://instagram.com');")
             # switch to the new tab
@@ -3166,17 +3167,19 @@ class InstaPy:
             self.logger.info("likeForLikeHandler: Exiting like for like tab")
             # close the window
             self.browser.close()
+            self.browser.switch_to_window(curWindowHndl)
 
         except:
             exceptionDetail = traceback.format_exc()
             self.logger.error("likeForLikeHandler: except: ERROR: %s", exceptionDetail)
-        finally:
-            self.logger.info("likeForLikeHandler: finally: Switching to original tab...")
-            # go back to original tab
             self.browser.switch_to_window(curWindowHndl)
 
-            self.logger.info("likeForLikeHandler: finally: Done, resuming to normal flow...")
+        finally:
             self.isLikeForLikeProcessRunning = False
+            self.logger.info("likeForLikeHandler: finally: Switching to original tab...")
+
+            # go back to original tab
+            self.logger.info("likeForLikeHandler: finally: Done, resuming to normal flow...")
 
 
 
