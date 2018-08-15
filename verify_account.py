@@ -7,6 +7,7 @@ import traceback
 
 from instapy import InstaPy
 from instapy.bot_util import *
+from instapy.account_privacy_service import AccountPrivacyService
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -41,6 +42,9 @@ try:
     status = session.login()
     if status is True:
         result['status']=True
+
+        accountPrivacyService = AccountPrivacyService(session)
+        accountPrivacyService.switchToPublic()
 
     session.logger.info("start: ALL DONE, CLOSING APP")
 except:
