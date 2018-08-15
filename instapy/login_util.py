@@ -245,13 +245,13 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     # Enter username and password and logs the user in
     # Sometimes the element name isn't 'Username' and 'Password'
     # (valid for placeholder too)
-    sleep(2)
+    #sleep(2)
     input_username = browser.find_elements_by_xpath(
         "//input[@name='username']")
 
     ActionChains(browser).move_to_element(input_username[0]). \
         click().send_keys(username).perform()
-    sleep(1)
+    time.sleep(0.3)
     input_password = browser.find_elements_by_xpath(
         "//input[@name='password']")
     if not isinstance(password, str):
@@ -271,8 +271,9 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
         logger.info("execute_login: Bypass_suspicious_attempt is true...")
         bypass_suspicious_login(browser)
 
-    logger.info("execute_login: Sleeping 1 second")
-    sleep(1)
+    if force_login is not True:
+        logger.info("execute_login: Sleeping 1 second")
+        sleep(1)
 
     if is_user_logged_in(username, browser, logger, cmp, force_login)==True:
         # create cookie for username
