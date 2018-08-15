@@ -16,7 +16,6 @@ sys.path.append(os.path.join(sys.path[0], '../'))
 parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-settings', type=str, help="settings")
 args = parser.parse_args()
-args.settings='{"u":"catalinbardas","p":"atitudinE22c","id_campaign":1}'
 
 if args.settings is None:
     exit("verify_account: settings are not specified !")
@@ -31,13 +30,13 @@ try:
 
     session = InstaPy(username=settings['u'],
                       password=settings['p'],
-                      headless_browser=False,
+                      headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
-                      show_logs=True,
+                      show_logs=False,
                       force_login=True)
 
     status = session.login()

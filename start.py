@@ -36,7 +36,8 @@ try:
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
                       proxy_port="80",
-                      multi_logs=True)
+                      multi_logs=True,
+                      force_login=True)
 
     calculatedAmount = getAmountDistribution(session, args.angie_campaign)
     totalExpectedLikesAmount = int(getLikeAmount(calculatedAmount))
