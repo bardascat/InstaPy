@@ -581,7 +581,7 @@ def interruption_handler(SIG_type=signal.SIGINT, handler=signal.SIG_IGN, notify=
 
 
 
-def highlight_print(username=None, message=None, priority=None, level=None, logger=None):
+def highlight_print(username=None, message=None, priority=None, level=None, logger=None, show_logs=True):
     """ Print headers in a highlighted style """
     #can add other highlighters at other priorities enriching this function
 
@@ -608,8 +608,8 @@ def highlight_print(username=None, message=None, priority=None, level=None, logg
         #""""""""""""""""""""""""""""""""""""""""""""""""
         upper_char = "_"
         lower_char = "\""
-
-    print("\n{}".format(upper_char*output_len))
+    if show_logs is True:
+        print("\n{}".format(upper_char*output_len))
 
     if level == "info":
         logger.info(message)
@@ -618,7 +618,8 @@ def highlight_print(username=None, message=None, priority=None, level=None, logg
     elif level == "critical":
         logger.critical(message)
 
-    print("{}".format(lower_char*output_len))
+    if show_logs is True:
+        print("{}".format(lower_char*output_len))
 
 
 def remove_duplicated_from_list_keep_order(_list):

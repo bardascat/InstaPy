@@ -92,7 +92,8 @@ class InstaPy:
                  proxy_chrome_extension=None,
                  proxy_port=0,
                  bypass_suspicious_attempt=False,
-                 multi_logs=True):
+                 multi_logs=True,
+                 force_login=False):
 
         if nogui:
             self.display = Display(visible=0, size=(800, 600))
@@ -104,6 +105,7 @@ class InstaPy:
         self.proxy_port = proxy_port
         self.proxy_chrome_extension = proxy_chrome_extension
         self.multi_logs = multi_logs
+        self.force_login = force_login
         self.selenium_local_session = selenium_local_session
         self.show_logs = show_logs
 
@@ -334,8 +336,8 @@ class InstaPy:
         self.browser.implicitly_wait(self.page_delay)
 
         message = "Session started!"
-        highlight_print(self.username, message, "initialization", "info", self.logger)
-        print('')
+        highlight_print(self.username, message, "initialization", "info", self.logger, self.show_logs)
+        #print('')
 
         return self
 
@@ -421,21 +423,16 @@ class InstaPy:
                           self.logfolder,
                           self.switch_language,
                           self.bypass_suspicious_attempt,
-                          self.logger, self.campaign):
+                          self.logger, self.campaign, self.force_login):
             message = "Could not login... but we don't know why !"
-            highlight_print(self.username, message, "login", "critical", self.logger)
+            highlight_print(self.username, message, "login", "critical", self.logger, self.show_logs)
             self.logger.error("login: COULD NOT LOGIN")
-            exit("COULD NOT LOGIN")
-
             self.aborting = True
+            raise Exception("Could not login...")
         else:
             message = "Logged in successfully!"
-            highlight_print(self.username, message, "login", "info", self.logger)
-
-        #self.followed_by = log_follower_num(self.browser, self.username, self.logfolder)
-        #self.following_num = log_following_num(self.browser, self.username, self.logfolder)
-
-        return self
+            highlight_print(self.username, message, "login", "info", self.logger, self.show_logs)
+            return True
 
     def set_sleep_reduce(self, percentage):
         set_sleep_percentage(percentage)
@@ -3167,7 +3164,7 @@ class InstaPy:
         finally:
             self.isLikeForLikeProcessRunning = False
 
-            self.logger.info("finallikeForLikeHandler: finally: Switching to original tab...")
+            self.logger.info("likeForLikeHandler: finally: Switching to original tab...")
             self.browser.switch_to_window(self.browser.window_handles[0])
             # go back to original tab
             self.logger.info("likeForLikeHandler: finally: Done, resuming to normal flow...")
