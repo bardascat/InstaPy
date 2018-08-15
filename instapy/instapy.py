@@ -3168,11 +3168,9 @@ class InstaPy:
             # close the window
             self.browser.close()
             self.browser.switch_to_window(curWindowHndl)
-
         except:
             exceptionDetail = traceback.format_exc()
             self.logger.error("likeForLikeHandler: except: ERROR: %s", exceptionDetail)
-            self.browser.switch_to_window(curWindowHndl)
 
         finally:
             self.isLikeForLikeProcessRunning = False
