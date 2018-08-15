@@ -3151,10 +3151,6 @@ class InstaPy:
 
             self.logger.info("likeForLikeHandler: browser: %s", self.browser)
 
-            # save current window
-            curWindowHndl = self.browser.current_window_handle
-
-            self.logger.info("likeForLikeHandler: current window: %s", curWindowHndl)
             # open new window
             self.browser.execute_script("window.open('https://instagram.com');")
             # switch to the new tab
@@ -3162,24 +3158,19 @@ class InstaPy:
 
             self.likeForLikeService.start()
 
-            self.logger.info("likeForLikeHandler: ******* EXITING LIKE FOR LIKE EVENT ************")
-
             self.logger.info("likeForLikeHandler: Exiting like for like tab")
-            # close the window
             self.browser.close()
-            self.browser.switch_to_window(curWindowHndl)
         except:
             exceptionDetail = traceback.format_exc()
             self.logger.error("likeForLikeHandler: except: ERROR: %s", exceptionDetail)
 
         finally:
             self.isLikeForLikeProcessRunning = False
-            self.logger.info("likeForLikeHandler: finally: Switching to original tab...")
 
+            self.logger.info("finallikeForLikeHandler: finally: Switching to original tab...")
+            self.browser.switch_to_window(self.browser.window_handles[0])
             # go back to original tab
             self.logger.info("likeForLikeHandler: finally: Done, resuming to normal flow...")
-
-
 
 
     def sigtermHandler(self, *args):
