@@ -410,6 +410,9 @@ class InstaPy:
 
     def login(self):
 
+        self.logger.info("custom_login_user: Setting implicit wait to 3 seconds")
+        self.browser.implicitly_wait(2)
+
         if not self.check_internet_connection():
             self.logger.critical("login: Could not verify internet connection/proxy settings")
             self.aborting = True
@@ -424,14 +427,18 @@ class InstaPy:
                           self.switch_language,
                           self.bypass_suspicious_attempt,
                           self.logger, self.campaign, self.force_login):
-            message = "Could not login... but we don't know why !"
+            message = "login: Could not login... but we don't know why !"
             highlight_print(self.username, message, "login", "critical", self.logger, self.show_logs)
             self.logger.error("login: COULD NOT LOGIN")
             self.aborting = True
             raise Exception("Could not login...")
         else:
-            message = "Logged in successfully!"
+            message = "login: Logged in successfully!"
             highlight_print(self.username, message, "login", "info", self.logger, self.show_logs)
+
+            self.logger.info("login:Setting implicit wait to %s seconds", self.page_delay)
+            self.browser.implicitly_wait(self.page_delay)
+
             return True
 
     def set_sleep_reduce(self, percentage):

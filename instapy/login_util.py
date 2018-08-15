@@ -310,6 +310,9 @@ def find_login_issues(browser, logger, cmp, force_login=False):
     #CHECK FOR PHONE VALIDATION
     check_phone_verification(browser, logger, cmp, force_login)
 
+    #CHECK IF INSTAGRAM DETECTED UNSUAL LOGIN ATTEMPT
+    check_unusual_login_attempt(browser, logger, cmp, force_login)
+
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
 
 def check_invalid_credentials(browser, logger, campaign, force_login=False):
@@ -337,3 +340,15 @@ def check_phone_verification(browser, logger, campaign, force_login=False):
             logger.info("Going to send an email to the user.")
             browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
         raise Exception("ADD_PHONE_NUMBER")
+
+def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
+
+    unusualAttempt = browser.find_elements_by_xpath("//h2[contains(text(), 'We Detected An Unusual Login Attempt')]")
+
+    if len(unusualAttempt) > 0:
+        logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
+
+        if force_login is not True:
+            logger.info("Going to send an email to the user.")
+            browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
+        raise Exception("UNUSUAL_LOGIN_ATTEMPT")
