@@ -3152,20 +3152,33 @@ class InstaPy:
 
     def likeForLikeHandler(self, *args):
 
-        self.logger.info(
-            "likeForLikeHandler: ************ Received SIGUSR1 SIGNAL. Going to start like for like process **************")
+        time.sleep(1)
+        self.logger.info("likeForLikeHandler: ************ Received SIGUSR1 SIGNAL. Going to start like for like process **************")
 
         if self.isLikeForLikeProcessRunning == True:
             self.logger.info("likeForLikeHandler: The process is already running, going to skip it and resume...")
             return False
+
+        #DANGEROUS SHIT :)
+        hasError = True
+        spamCheck=0
+        while hasError is True and spamCheck<10:
+            try:
+                # open new window
+                self.browser.execute_script("window.open('https://instagram.com');")
+                hasError = False
+            except:
+                hasError = True
+                self.logger.error("likeForLikeHandler: except: There was an error opening a new tab...")
+                time.sleep(1)
+            finally:
+                spamCheck = spamCheck + 1
 
         try:
             self.isLikeForLikeProcessRunning = True
 
             self.logger.info("likeForLikeHandler: browser: %s", self.browser)
 
-            # open new window
-            self.browser.execute_script("window.open('https://instagram.com');")
             # switch to the new tab
             self.browser.switch_to_window(self.browser.window_handles[1])
 
