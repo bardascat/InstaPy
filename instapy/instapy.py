@@ -411,7 +411,7 @@ class InstaPy:
     def login(self):
 
         self.logger.info("custom_login_user: Setting implicit wait to 3 seconds")
-        self.browser.implicitly_wait(2)
+        self.browser.implicitly_wait(5)
 
         if not self.check_internet_connection():
             self.logger.critical("login: Could not verify internet connection/proxy settings")
