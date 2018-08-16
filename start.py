@@ -37,7 +37,7 @@ try:
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
-                      force_login=True)
+                      force_login=False)
 
     calculatedAmount = getAmountDistribution(session, args.angie_campaign)
     totalExpectedLikesAmount = int(getLikeAmount(calculatedAmount))
