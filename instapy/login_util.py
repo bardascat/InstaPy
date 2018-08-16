@@ -6,6 +6,7 @@ from selenium.common.exceptions import WebDriverException
 from .util import update_activity
 import pickle
 import time
+import api_db
 
 
 def bypass_suspicious_login(browser):
@@ -320,6 +321,9 @@ def check_invalid_credentials(browser, logger, campaign, force_login=False):
     invalidCredentials = browser.find_elements_by_xpath("//p[contains(text(), 'password was incorrect')]")
     if len(invalidCredentials) > 0:
         logger.info("find_login_issues: Invalid credentials")
+        api_db.insert(
+            "INSERT INTO `instagram_log` (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())",
+            campaign['id_user'], "INVALID_CREDENTIALS", "login", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
@@ -335,7 +339,9 @@ def check_phone_verification(browser, logger, campaign, force_login=False):
 
     if len(instagramWantsToConfirmPhoneNumber) > 0:
         logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
-
+        api_db.insert(
+            "INSERT INTO `instagram_log` (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())",
+            campaign['id_user'], "ADD_PHONE_NUMBER", "login", "login_error")
         if force_login is not True:
             logger.info("Going to send an email to the user.")
             browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
@@ -347,8 +353,24 @@ def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
 
     if len(unusualAttempt) > 0:
         logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
+        api_db.insert(
+            "INSERT INTO `instagram_log` (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())",
+            campaign['id_user'], "UNUSUAL_LOGIN_ATTEMPT", "login", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
             browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
         raise Exception("UNUSUAL_LOGIN_ATTEMPT")
+
+
+
+def isLogginAllowed(campaign, logger):
+    logger.info("canBotStart: Checking if bot can start...")
+    result = api_db.fetchOne("select count(*) as total_login_failures from instagram_log where date(timestamp)=CURDATE() and id_user=%s and details=%s", campaign['id_user'], "login_error")
+
+    if result['total_login_failures']>1:
+        logger.error("canBotStart: BOT CANNOT START, login failures: %s", result['total_login_failures'])
+        raise Exception("BOT CANNOT START, too many login failures.")
+
+    logger.error("canBotStart: Bot can start login failures: %s. Maximum amount is 2", result['total_login_failures'])
+    return True

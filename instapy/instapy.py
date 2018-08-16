@@ -29,7 +29,7 @@ from .like_util import get_tags
 from .like_util import get_links_for_location
 from .like_util import like_image
 from .like_util import get_links_for_username
-from .login_util import login_user, custom_login_user
+from .login_util import login_user, custom_login_user, isLogginAllowed
 from .print_log_writer import log_follower_num
 from .settings import Settings
 from .print_log_writer import log_following_num
@@ -410,6 +410,8 @@ class InstaPy:
 
     def login(self):
 
+        isLogginAllowed(self.campaign, self.logger)
+
         self.logger.info("custom_login_user: Setting implicit wait to 3 seconds")
         self.browser.implicitly_wait(5)
 
@@ -431,7 +433,14 @@ class InstaPy:
             highlight_print(self.username, message, "login", "critical", self.logger, self.show_logs)
             self.logger.error("login: COULD NOT LOGIN")
             self.aborting = True
-            raise Exception("Could not login...")
+
+            insert("INSERT INTO instagram_log (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())" ,
+                   self.campaign['id_user'],
+                   None,
+                   "login",
+                   "login_error")
+
+            raise Exception("Could not login, we don't know why...")
         else:
             message = "login: Logged in successfully!"
             highlight_print(self.username, message, "login", "info", self.logger, self.show_logs)
