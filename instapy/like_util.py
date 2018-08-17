@@ -273,10 +273,10 @@ def get_links_for_tag(browser,
                 nap = 3 if try_again==1 else 5
                 logger.info("Insufficient amount of links ~ trying again: {}".format(try_again))
                 sleep(3)
-                if try_again > 2:   #you can try again as much as you want by changing this number
+                if try_again > 4:   #you can try again as much as you want by changing this number
                     if put_sleep < 1 and filtered_links <= 21 :
-                        logger.info("Cor! Did you send too many requests? ~ let's rest some")
-                        sleep(600)
+                        logger.info("Cor! Did you send too many requests? ~ let's rest some, about 1 minute")
+                        sleep(60)
                         put_sleep += 1
                         browser.execute_script("location.reload()")
                         try_again = 0

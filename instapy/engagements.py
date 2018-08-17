@@ -139,14 +139,12 @@ class Engagements:
                         self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
                         continue
 
-                    # todo IGNORE POST IF ALREADY LIKED. You waste time on waiting
                     if self.performLike(user_name=linkValidationDetails['user_name'],
                                         operation=operation,
                                         link=link,
                                         engagementValue=engagementValue) is True:
                         result['likePerformed'] += 1
 
-                    #todo IGNORE USER IF ALREADY FOLLOWED. You waste time on waiting
                     if self.performFollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                        followAmount=followAmountToPerform,
                                        operation=operation, link=link,
@@ -172,6 +170,17 @@ class Engagements:
 
         if self.totalLikePerformed >= self.totalLikeExpected:
             self.logger.error("performLike: ERROR - The like amount is reached. Expected %s, performed %s " % (self.totalLikeExpected, self.totalLikePerformed))
+            return False
+
+        try:
+            linkCode = link.split("https://www.instagram.com/p/")[1].split("/")[0]
+        except:
+            linkCode = link
+
+        result = fetchOne("select count(*) as wasPostLiked  from bot_action where post_link like %s and id_user=%s and bot_operation like %s", '%'+linkCode+'%', self.campaign['id_user'], "like_engagement_"+'%')
+
+        if result['wasPostLiked']>0:
+            self.logger.info("performLike: Post %s was liked in the past, skipping...", link)
             return False
 
         liked = like_image(self.browser,
