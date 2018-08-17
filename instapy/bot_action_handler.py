@@ -44,10 +44,10 @@ def getInitialActionAmount(self, id_campaign):
       result['accountMaturity']['warmingUp']=True
       return result
     
-    if isAccountStartup(self)==True:
-      result['calculatedAmount']=getWarmUpResult(self, result['initialAmount'], 15)
-      result['accountMaturity']['startup']=True
-      return result
+    #if isAccountStartup(self)==True:
+    #  result['calculatedAmount']=getWarmUpResult(self, result['initialAmount'], 15)
+    #  result['accountMaturity']['startup']=True
+    #  return result
     
 
     #check maturity of account
