@@ -3227,7 +3227,7 @@ class InstaPy:
         for operation in operations:
             self.logger.info("executeAngieActions: Going to perform operation: %s", operation['configName'])
             if 'list' not in operation or len(operation['list'])==0:
-                self.logger.info("executeAngieActions: No items to process for operation %s", operation['configName'])
+                self.logger.info("executeAngieActions: Operation %s is not enabled by user.", operation['configName'])
                 self.logger.info(operation)
                 continue
 
