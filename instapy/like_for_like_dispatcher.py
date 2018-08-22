@@ -24,6 +24,8 @@ class LikeForLikeDispatcher:
 
         self.DEVNULL = open(os.devnull, 'wb')
 
+    #this method is going to select all users that have an active subscription (account is enabled) and have posts to like
+    #and each user will have to perform likeForLike for posts that are not liked yet and are not older than 1 day
     def bootstrap(self):
         self.logger.info("bootstrap: ************* Like for like dispatcher STARTED ! *****************")
         self.logger.info("bootstrap: Checking if process is already started...")
@@ -37,7 +39,7 @@ class LikeForLikeDispatcher:
             self.logger.info("bootstrap: All good ! There is no other l4l dispatcher process running !")
 
         # select users that have an active subscription, and have pending posts to like.
-        result = api_db.select("select users.id_user, email, username, campaign.password, campaign.id_campaign from users join campaign on (users.id_user=campaign.id_user) join user_subscription on (users.id_user = user_subscription.id_user) join plan on (user_subscription.id_plan=plan.id_plan) join plan_type on (plan.id_plan_type=plan_type.id_plan_type) where (user_subscription.end_date>now() or user_subscription.end_date is null) and (select count(*) as total from user_post join user_subscription us2 on (user_post.id_user=us2.id_user) join plan plan2 on (us2.id_plan=plan2.id_plan) join plan_type plan_type2 on (plan2.id_plan_type=plan_type2.id_plan_type) where id_post not in (select id_post from user_post_log where id_user=users.id_user) and user_post.id_user!=users.id_user and user_post.timestamp>=user_subscription.start_date and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY))>0 and campaign.active=1 and campaign.instagram_verified=1 order by rand()")
+        result = api_db.select("select users.id_user, email, username, campaign.password, campaign.id_campaign from users join campaign on (users.id_user=campaign.id_user) join user_subscription on (users.id_user = user_subscription.id_user) join plan on (user_subscription.id_plan=plan.id_plan) join plan_type on (plan.id_plan_type=plan_type.id_plan_type) where (user_subscription.end_date>now() or user_subscription.end_date is null) and (select count(*) as total from user_post join user_subscription us2 on (user_post.id_user=us2.id_user) join plan plan2 on (us2.id_plan=plan2.id_plan) join plan_type plan_type2 on (plan2.id_plan_type=plan_type2.id_plan_type) where id_post not in (select id_post from user_post_log where id_user=users.id_user) and user_post.id_user!=users.id_user and user_post.timestamp>=user_subscription.start_date and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY))>0 and campaign.active=1 order by rand()")
 
         # self.logger.info(result)
         self.logger.info("bootstrap: Found %s users with pending work", len(result))
