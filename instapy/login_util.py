@@ -321,9 +321,9 @@ def check_invalid_credentials(browser, logger, campaign, force_login=False):
     invalidCredentials = browser.find_elements_by_xpath("//p[contains(text(), 'password was incorrect')]")
     if len(invalidCredentials) > 0:
         logger.info("find_login_issues: Invalid credentials")
+
         api_db.insert(
-            "INSERT INTO `instagram_log` (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())",
-            campaign['id_user'], "INVALID_CREDENTIALS", "login", "login_error")
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
@@ -340,8 +340,8 @@ def check_phone_verification(browser, logger, campaign, force_login=False):
     if len(instagramWantsToConfirmPhoneNumber) > 0:
         logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
         api_db.insert(
-            "INSERT INTO `instagram_log` (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())",
-            campaign['id_user'], "ADD_PHONE_NUMBER", "login", "login_error")
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ADD_PHONE_NUMBER", "login_error")
+
         if force_login is not True:
             logger.info("Going to send an email to the user.")
             browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
@@ -353,9 +353,7 @@ def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
 
     if len(unusualAttempt) > 0:
         logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
-        api_db.insert(
-            "INSERT INTO `instagram_log` (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())",
-            campaign['id_user'], "UNUSUAL_LOGIN_ATTEMPT", "login", "login_error")
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "UNUSUAL_LOGIN_ATTEMPT", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
@@ -363,10 +361,11 @@ def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
         raise Exception("UNUSUAL_LOGIN_ATTEMPT")
 
 
-
+#TODO UPDATE THIS METHOD
 def isLogginAllowed(campaign, logger):
+
     logger.info("canBotStart: Checking if bot can start...")
-    result = api_db.fetchOne("select count(*) as total_login_failures from instagram_log where date(timestamp)=CURDATE() and id_user=%s and details=%s", campaign['id_user'], "login_error")
+    result = api_db.fetchOne("select count(*) as total_login_failures from campaign_log where date(timestamp)=CURDATE() and id_campaign=%s and details=%s", campaign['id_campaign'], "login_error")
 
     if result['total_login_failures']>1:
         logger.error("canBotStart: BOT CANNOT START, login failures: %s", result['total_login_failures'])

@@ -434,14 +434,11 @@ class InstaPy:
             self.logger.error("login: COULD NOT LOGIN")
             self.aborting = True
 
-            insert("INSERT INTO instagram_log (`id_user`, `log`, `operation`, `details`, `timestamp`) VALUES (%s, %s, %s, %s, now())" ,
-                   self.campaign['id_user'],
-                   None,
-                   "login",
-                   "login_error")
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())" , self.campaign['id_campaign'], "UNSUCCESSFUL_LOGIN", "login_error")
 
             raise Exception("Could not login, we don't know why...")
         else:
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'],"SUCCESSFULLY_LOGGED_IN", None)
             message = "login: Logged in successfully!"
             highlight_print(self.username, message, "login", "info", self.logger, self.show_logs)
 
