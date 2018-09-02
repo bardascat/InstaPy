@@ -140,26 +140,6 @@ def getBotOperations(id_campaign, logger):
     logger.info("getBotOperations: Found %s operations", len(operations))
     return operations
 
-
-def get_spam_delay(self):
-    self.logger.info("get_spam_delay: Calculating the spam delay")
-    self.logger.info("get_spam_delay: Getting amounts of times the user %s was blocked", self.web_application_id_user)
-    result = fetchOne(
-        "select count(*) as total from instagram_log where id_user=%s and details='spam' and date(timestamp)=curdate()",
-        self.web_application_id_user)
-    if result['total'] >= 12:
-        self.logger.info("get_spam_delay: There were more than 12 blocks today, going to stop the bot")
-        raise Exception("get_spam_delay: More than 12 blocks today")
-    if result['total'] >= 4:
-        sleep = randint(60, 90)
-        self.logger.info("get_spam_delay: There were more than 4 blocks today, going to pause for %s minutes ", sleep)
-        return sleep
-    else:
-        sleep = randint(10, 25)
-        self.logger.info("get_spam_delay: There were less than 4 blocks today, going to pause for %s minutes ", sleep)
-        return sleep
-
-
 def how_many_seconds_until_midnight():
     tomorrow = date.today() + timedelta(1)
     midnight = datetime.combine(tomorrow, time())
