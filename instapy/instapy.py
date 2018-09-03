@@ -409,8 +409,9 @@ class InstaPy:
         return True
 
     def login(self):
-
         isLogginAllowed(self.campaign, self.logger)
+
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "TRYING_TO_LOGIN", None)
 
         self.logger.info("custom_login_user: Setting implicit wait to 3 seconds")
         self.browser.implicitly_wait(5)
@@ -418,6 +419,7 @@ class InstaPy:
         if not self.check_internet_connection():
             self.logger.critical("login: Could not verify internet connection/proxy settings")
             self.aborting = True
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "UNSUCCESSFUL_PROXY_CHECK", "proxy_error")
             return False
 
         self.logger.info("login: Going to login user %s into instagram ", self.username)
