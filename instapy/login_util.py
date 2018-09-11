@@ -352,7 +352,7 @@ def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
     unusualAttempt = browser.find_elements_by_xpath("//h2[contains(text(), 'We Detected An Unusual Login Attempt')]")
 
     if len(unusualAttempt) > 0:
-        logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
+        logger.info("find_login_issues: Instagram detected an unsual login attempt. Going to notify user by email")
         api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "UNUSUAL_LOGIN_ATTEMPT", "login_error")
 
         if force_login is not True:
