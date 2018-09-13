@@ -409,7 +409,7 @@ class InstaPy:
         return True
 
     def login(self):
-        isLogginAllowed(self.campaign, self.logger)
+        isLogginAllowed(self.campaign, self.force_login, self.logger)
 
         insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "TRYING_TO_LOGIN", None)
 
@@ -420,6 +420,7 @@ class InstaPy:
             self.logger.critical("login: Could not verify internet connection/proxy settings")
             self.aborting = True
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "UNSUCCESSFUL_PROXY_CHECK", "proxy_error")
+            #TODO: send an email with this error
             return False
 
         self.logger.info("login: Going to login user %s into instagram ", self.username)

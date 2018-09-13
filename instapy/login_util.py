@@ -105,7 +105,7 @@ def login_user(browser,
     try:
         browser.get('https://www.google.com')
         for cookie in pickle.load(open('{0}{1}_cookie.pkl'
-                                       .format(logfolder,username), 'rb')):
+                                               .format(logfolder, username), 'rb')):
             browser.add_cookie(cookie)
             cookie_loaded = True
     except (WebDriverException, OSError, IOError):
@@ -127,14 +127,14 @@ def login_user(browser,
 
     # If not, issue with cookie, create new cookie
     if cookie_loaded:
-        logger.info("Issue with cookie for user " + username+ ". Creating new cookie...")
+        logger.info("Issue with cookie for user " + username + ". Creating new cookie...")
 
     # Changes instagram language to english, to ensure no errors ensue from
     # having the site on a different language
     # Might cause problems if the OS language is english
     if switch_language:
         browser.find_element_by_xpath(
-          "//select[@class='hztqj']/option[text()='English']").click()
+            "//select[@class='hztqj']/option[text()='English']").click()
 
     # Check if the first div is 'Create an Account' or 'Log In'
     login_elem = browser.find_element_by_xpath(
@@ -175,60 +175,64 @@ def login_user(browser,
     if len(nav) == 2:
         # create cookie for username
         pickle.dump(browser.get_cookies(),
-                    open('{0}{1}_cookie.pkl'.format(logfolder,username), 'wb'))
+                    open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
         return True
     else:
         return False
 
 
 def custom_login_user(browser,
-               username,
-               password,
-               logfolder,
-               switch_language=True,
-               bypass_suspicious_attempt=False, logger=None, cmp=None, force_login=False):
+                      username,
+                      password,
+                      logfolder,
+                      switch_language=True,
+                      bypass_suspicious_attempt=False, logger=None, cmp=None, force_login=False):
     """Logins the user with the given username and password"""
     assert username, 'Username not provided'
     assert password, 'Password not provided'
 
-    #browser.get('https://www.instagram.com')
+    # browser.get('https://www.instagram.com')
     # update server calls
-    #update_activity()
+    # update_activity()
     cookie_loaded = False
     logger.info("custom_login_user: Trying to login...")
 
     if force_login is not True:
         # try to load cookie from username
         try:
-            #logger.info("login_user: Accesing google to get the cookie...")
-            #browser.get('https://www.google.com')
+            # logger.info("login_user: Accesing google to get the cookie...")
+            # browser.get('https://www.google.com')
             for cookie in pickle.load(open('{0}{1}_cookie.pkl'
-                                           .format(logfolder,username), 'rb')):
+                                                   .format(logfolder, username), 'rb')):
                 browser.add_cookie(cookie)
                 cookie_loaded = True
         except (WebDriverException, OSError, IOError):
             logger.info("custom_login_user: Cookie file not found. Going to manually login...")
 
-    #logger.info("SLeeping 1 second to prevent getting stuck on google.com")
+    # logger.info("SLeeping 1 second to prevent getting stuck on google.com")
     # include time.sleep(1) to prevent getting stuck on google.com
-    #time.sleep(1)
+    # time.sleep(1)
 
-    if cookie_loaded==True:
+    if cookie_loaded == True:
         logger.info("custom_login_user: Cookie was loaded, going to check if user is automatically logged in...")
         logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
         browser.get("https://www.instagram.com/")
         sleep(1)
-        if is_user_logged_in(username, browser, logger, cmp, force_login)==True:
+        if is_user_logged_in(username, browser, logger, cmp, force_login) == True:
             logger.info("custom_login_user: The user was successfully logged in...")
             return True
         else:
-            logger.info("custom_login_user: The user was not automatically logged in. Maybe error with the cookie ?. Going to manually login...")
-            return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp, force_login)
+            logger.info(
+                "custom_login_user: The user was not automatically logged in. Maybe error with the cookie ?. Going to manually login...")
+            return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger,
+                                 logfolder, cmp, force_login)
 
-    return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp, force_login)
+    return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder,
+                         cmp, force_login)
 
 
-def execute_login(username, password, browser,switch_language,bypass_suspicious_attempt, logger, logfolder, cmp, force_login=False):
+def execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp,
+                  force_login=False):
     # Changes instagram language to english, to ensure no errors ensue from
     # having the site on a different language
     # Might cause problems if the OS language is english
@@ -236,17 +240,16 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     logger.info("execute_login: Started login process... going to open instagram login page")
 
     browser.get("https://www.instagram.com/accounts/login/")
-    #not sure if this is needed in our use cases
-    #if switch_language:
+    # not sure if this is needed in our use cases
+    # if switch_language:
     #    browser.find_element_by_xpath(
     #      "//select[@class='hztqj']/option[text()='English']").click()
-
 
     logger.info("execute_login: Going to fill in username and password.")
     # Enter username and password and logs the user in
     # Sometimes the element name isn't 'Username' and 'Password'
     # (valid for placeholder too)
-    #sleep(2)
+    # sleep(2)
     input_username = browser.find_elements_by_xpath(
         "//input[@name='username']")
 
@@ -266,8 +269,6 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
         "//form/span/button[text()='Log in']")
     ActionChains(browser).move_to_element(login_button).click().perform()
 
-
-
     if bypass_suspicious_attempt is True:
         logger.info("execute_login: Bypass_suspicious_attempt is true...")
         bypass_suspicious_login(browser)
@@ -276,7 +277,7 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
         logger.info("execute_login: Sleeping 1 second")
         sleep(1)
 
-    if is_user_logged_in(username, browser, logger, cmp, force_login)==True:
+    if is_user_logged_in(username, browser, logger, cmp, force_login) == True:
         # create cookie for username
         logger.info("execute_login: Login was successfully. Going to create the cookie")
         pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
@@ -285,9 +286,7 @@ def execute_login(username, password, browser,switch_language,bypass_suspicious_
     return False
 
 
-
 def is_user_logged_in(username, browser, logger, cmp, force_login=False):
-
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
     edit_profile_button = browser.find_elements_by_xpath("//a[text()='Profile']")
@@ -295,26 +294,29 @@ def is_user_logged_in(username, browser, logger, cmp, force_login=False):
     logger.info("is_user_logged_in: Done searching for  Profile button !")
 
     if len(edit_profile_button) == 0:
-        logger.info("is_user_logged_in: Profile button was NOT found, going to assume user is not logged in. Going to check for login issues...")
+        logger.info(
+            "is_user_logged_in: Profile button was NOT found, going to assume user is not logged in. Going to check for login issues...")
         find_login_issues(browser, logger, cmp, force_login)
         return False
     else:
         logger.info("is_user_logged_in: Profile button was found... user succesffully LOGGED IN")
         return True
 
+
 def find_login_issues(browser, logger, cmp, force_login=False):
     logger.info("find_login_issues: Starting to detect login issues...")
 
-    #CHECK INVALID CREDENTIALS
+    # CHECK INVALID CREDENTIALS
     check_invalid_credentials(browser, logger, cmp, force_login)
 
-    #CHECK FOR PHONE VALIDATION
+    # CHECK FOR PHONE VALIDATION
     check_phone_verification(browser, logger, cmp, force_login)
 
-    #CHECK IF INSTAGRAM DETECTED UNSUAL LOGIN ATTEMPT
+    # CHECK IF INSTAGRAM DETECTED UNSUAL LOGIN ATTEMPT
     check_unusual_login_attempt(browser, logger, cmp, force_login)
 
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
+
 
 def check_invalid_credentials(browser, logger, campaign, force_login=False):
     # CHECK FOR INVALID CREDENTIALS
@@ -323,15 +325,15 @@ def check_invalid_credentials(browser, logger, campaign, force_login=False):
         logger.info("find_login_issues: Invalid credentials")
 
         api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+            campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
-            browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id='+str(campaign['id_user']))
+            browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id=' + str(campaign['id_user']))
 
         raise Exception("INVALID_CREDENTIALS")
     return True
-
 
 
 def check_phone_verification(browser, logger, campaign, force_login=False):
@@ -340,20 +342,23 @@ def check_phone_verification(browser, logger, campaign, force_login=False):
     if len(instagramWantsToConfirmPhoneNumber) > 0:
         logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
         api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ADD_PHONE_NUMBER", "login_error")
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+            campaign['id_campaign'], "ADD_PHONE_NUMBER", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
             browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
         raise Exception("ADD_PHONE_NUMBER")
 
-def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
 
+def check_unusual_login_attempt(browser, logger, campaign, force_login=False):
     unusualAttempt = browser.find_elements_by_xpath("//h2[contains(text(), 'We Detected An Unusual Login Attempt')]")
 
     if len(unusualAttempt) > 0:
         logger.info("find_login_issues: Instagram detected an unsual login attempt. Going to notify user by email")
-        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "UNUSUAL_LOGIN_ATTEMPT", "login_error")
+        api_db.insert(
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+            campaign['id_campaign'], "UNUSUAL_LOGIN_ATTEMPT", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
@@ -361,13 +366,17 @@ def check_unusual_login_attempt(browser, logger,campaign, force_login=False):
         raise Exception("UNUSUAL_LOGIN_ATTEMPT")
 
 
-#TODO UPDATE THIS METHOD
-def isLogginAllowed(campaign, logger):
+# TODO UPDATE THIS METHOD ? for what?
+def isLogginAllowed(campaign, force_login, logger):
+    if force_login == True:
+        return True
 
     logger.info("canBotStart: Checking if bot can start...")
-    result = api_db.fetchOne("select count(*) as total_login_failures from campaign_log where date(timestamp)=CURDATE() and id_campaign=%s and details=%s", campaign['id_campaign'], "login_error")
+    result = api_db.fetchOne(
+        "select count(*) as total_login_failures from campaign_log where date(timestamp)=CURDATE() and id_campaign=%s and details=%s",
+        campaign['id_campaign'], "login_error")
 
-    if result['total_login_failures']>1:
+    if result['total_login_failures'] > 1:
         logger.error("canBotStart: BOT CANNOT START, login failures: %s", result['total_login_failures'])
         raise Exception("BOT CANNOT START, too many login failures.")
 
