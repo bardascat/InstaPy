@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-angie_campaign', type=str, help="angie_campaign")
 args = parser.parse_args()
 
-#args.angie_campaign='2'
+args.angie_campaign='1'
 
 if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
@@ -31,7 +31,7 @@ try:
 
     session = InstaPy(username=campaign['username'],
                       password=campaign['password'],
-                      headless_browser=True,
+                      headless_browser=False,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
@@ -59,6 +59,7 @@ try:
     noOfLoops = randint(6,8)
 
     session.logger.info("start: Bot started going to perform %s likes, %s follow, %s unfollow during %s loops" % (totalExpectedLikesAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)
 
     for loopNumber in range(0, noOfLoops):
 
@@ -79,7 +80,7 @@ try:
 
     session.logger.info("start: Angie loop completed , going to exit...")
 
-    session.logger.info("start: Setting privacy to public to public for this account...")
+    session.logger.info("start: Setting privacy to public for this account...")
     accountPrivacyService = AccountPrivacyService(session)
     accountPrivacyService.switchToPublic()
 

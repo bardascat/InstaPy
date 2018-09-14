@@ -434,10 +434,10 @@ class InstaPy:
                           self.logger, self.campaign, self.force_login):
             message = "login: Could not login... but we don't know why !"
             highlight_print(self.username, message, "login", "critical", self.logger, self.show_logs)
-            self.logger.error("login: COULD NOT LOGIN")
+            self.logger.error("login: COULD NOT LOGIN, DONT KNOW WHY")
             self.aborting = True
 
-            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())" , self.campaign['id_campaign'], "UNSUCCESSFUL_LOGIN", "login_error")
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())" , self.campaign['id_campaign'], "UNSUCCESSFUL_LOGIN_NO_REASON", "login_error")
 
             raise Exception("Could not login, we don't know why...")
         else:
