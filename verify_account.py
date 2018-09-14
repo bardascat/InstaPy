@@ -50,8 +50,8 @@ try:
 except:
     exceptionDetail = traceback.format_exc()
     #print(exceptionDetail)
-    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception']=exceptionDetail
 finally:
     print(json.dumps(result))
-    session.logger.info("start:finally: Closing process...")
+    #session.logger.info("start:finally: Closing process...")
