@@ -29,6 +29,7 @@ try:
     if campaign['ip'] is None:
         exit("Invalid proxy")
 
+
     session = InstaPy(username=campaign['username'],
                       password=campaign['password'],
                       headless_browser=False,
@@ -38,7 +39,7 @@ try:
                       proxy_port="80",
                       multi_logs=True,
                       force_login=False)
-
+    session.info("start:Bot for campaign: %s constructed, going to try login...", campaign['id_campaign'])
     status = session.login()
     if status == False:
         exit("Could not  login")
