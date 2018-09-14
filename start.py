@@ -39,6 +39,10 @@ try:
                       multi_logs=True,
                       force_login=False)
 
+    status = session.login()
+    if status == False:
+        exit("Could not  login")
+
     calculatedAmount = getAmountDistribution(session, args.angie_campaign)
     totalExpectedLikesAmount = int(getLikeAmount(calculatedAmount))
     totalExpectedFollowAmount = int(getFollowAmount(calculatedAmount))
@@ -52,9 +56,7 @@ try:
     session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
     session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
-    status = session.login()
-    if status == False:
-        exit("Could not  login")
+
 
     noOfLoops = randint(6,8)
 
