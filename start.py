@@ -26,14 +26,13 @@ try:
 
     campaign = fetchOne("select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",args.angie_campaign)
 
-    print("found campaign")
     if campaign['ip'] is None:
         exit("Invalid proxy")
 
 
     session = InstaPy(username=campaign['username'],
                       password=campaign['password'],
-                      headless_browser=False,
+                      headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
