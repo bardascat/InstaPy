@@ -376,7 +376,7 @@ def isLogginAllowed(campaign, force_login, logger):
         "select count(*) as total_login_failures from campaign_log where date(timestamp)=CURDATE() and id_campaign=%s and details=%s",
         campaign['id_campaign'], "login_error")
 
-    if result['total_login_failures'] > 1:
+    if result['total_login_failures'] > 2:
         logger.error("canBotStart: BOT CANNOT START, login failures: %s", result['total_login_failures'])
         raise Exception("BOT CANNOT START, too many login failures.")
 
