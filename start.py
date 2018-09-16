@@ -91,6 +91,7 @@ try:
 except:
     exceptionDetail = traceback.format_exc()
     print(exceptionDetail)
-    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
+    #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
 finally:
     session.logger.info("start: Instapy ended for user: %s", campaign['username'])
