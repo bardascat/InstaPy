@@ -90,6 +90,7 @@ try:
     session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
+    print("EXCEPTION CATCHED: ")
     print(exceptionDetail)
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
     #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
