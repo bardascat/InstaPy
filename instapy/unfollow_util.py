@@ -969,7 +969,6 @@ def dump_follow_restriction(followRes, logfolder):
 
 def load_follow_restriction(logfolder):
     data = {}
-    print("no need to low follow restriciton")
     return data
 
     """Loads the saved """
