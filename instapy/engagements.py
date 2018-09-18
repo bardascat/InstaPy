@@ -63,8 +63,6 @@ class Engagements:
             unfollowAmountForEachRandomized = randint(unfollowAmountForEachTag,
                                                       bot_util.randomizeValue(unfollowAmountForEachTag, 10, "up"))
 
-            operation['list']= []
-
             engagementValue = self.getItemToProcess(operation, operation['configName'])
 
             self.logger.info("perform_engagement: ************** TAG %s, ITERATION NUMBER %s*****************" % (
