@@ -25,6 +25,7 @@ if args.angie_campaign is None:
 try:
 
     campaign = fetchOne("select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",args.angie_campaign)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)
 
     if campaign['ip'] is None:
         exit("Invalid proxy")
@@ -58,11 +59,10 @@ try:
     session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
 
-
     noOfLoops = randint(6,8)
 
     session.logger.info("start: Bot started going to perform %s likes, %s follow, %s unfollow during %s loops" % (totalExpectedLikesAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 
     for loopNumber in range(0, noOfLoops):
 
