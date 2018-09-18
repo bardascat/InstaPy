@@ -146,7 +146,7 @@ class InstaPy:
         self.unfollowNumber = 0
         self.not_valid_users = 0
 
-        #self.follow_restrict = load_follow_restriction(self.logfolder)
+        self.follow_restrict = load_follow_restriction(self.logfolder)
 
         self.follow_times = 1
         self.do_follow = False

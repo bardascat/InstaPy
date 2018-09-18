@@ -968,6 +968,9 @@ def dump_follow_restriction(followRes, logfolder):
 
 
 def load_follow_restriction(logfolder):
+    data = {}
+    return data
+
     """Loads the saved """
     filename = '{}followRestriction.json'.format(logfolder)
 
