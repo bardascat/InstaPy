@@ -63,22 +63,26 @@ def getInitialActionAmount(self, id_campaign):
         result['calculatedAmount'] = result['initialAmount']
         result['accountMaturity']['reachedMaturity'] = True
         self.logger.info(
-            "getInitialActionAmount: Account is fullyFunctional ! %s days passed since signup. Minimum is %s" % (delta.days, accountIsFullyFunctionalAfter))
+            "getInitialActionAmount: Account is fullyFunctional ! %s days passed since signup. Minimum is %s" % (
+                delta.days, accountIsFullyFunctionalAfter))
         return result
     else:
         self.logger.info(
             "getInitialActionAmount: Account is not fully functional, going to apply the percentage based on instagram account maturity...")
 
     self.logger.info(
-        "getInitialActionAmount: Going to calculated action number based on account type: month_start: %s, month_end:%s, percentage: %s" % ( campaign['month_start'], campaign['month_end'], campaign['percentage_amount']))
+        "getInitialActionAmount: Going to calculated action number based on account type: month_start: %s, month_end:%s, percentage: %s" % (
+            campaign['month_start'], campaign['month_end'], campaign['percentage_amount']))
     result['accountMaturity']['usage_percentage'] = campaign['percentage_amount']
     calculatedAmount = getWarmUpResult(self, result['initialAmount'], campaign['percentage_amount'])
     result['calculatedAmount'] = calculatedAmount
-    self.logger.info("getInitialActionAmount: After applying %s percentage, the result is: %s" % ( campaign['percentage_amount'], result))
+    self.logger.info("getInitialActionAmount: After applying %s percentage, the result is: %s" % (
+        campaign['percentage_amount'], result))
     return result
 
 
 def isAccountWarmingUp(self):
+    return True
     warmUpDays = 3
     self.logger.info("getInitialActionAmount: Checking if account is warming up...")
     workedDaysResult = fetchOne(
@@ -87,11 +91,13 @@ def isAccountWarmingUp(self):
 
     if workedDaysResult['worked_days'] < warmUpDays:
         self.logger.info(
-            "getInitialActionAmount: The bot warmed  up for %s days so far. This means the bot still needs to warm up until reaches %s days." % (workedDaysResult['worked_days'], warmUpDays))
+            "getInitialActionAmount: The bot warmed  up for %s days so far. This means the bot still needs to warm up until reaches %s days." % (
+                workedDaysResult['worked_days'], warmUpDays))
         return True
     else:
         self.logger.info(
-            "getInitialActionAmount: The bot worked for %s days so far. This means it is fully warmed up ! Minimum %s days to warmup !" % ( workedDaysResult['worked_days'], warmUpDays))
+            "getInitialActionAmount: The bot worked for %s days so far. This means it is fully warmed up ! Minimum %s days to warmup !" % (
+                workedDaysResult['worked_days'], warmUpDays))
         return False
 
 
@@ -299,9 +305,11 @@ def getLikesPerformed(self, dateParam):
         "like" + "%", str(dateParam), self.web_application_id_user)
 
     if likesPerformed['no_op'] > 0:
-        self.logger.info("getLikesPerformed: Campaign id %s has  ALREADY performed %s likes. in day %s" % ( self.campaign['id_campaign'], likesPerformed['no_op'], dateParam))
+        self.logger.info("getLikesPerformed: Campaign id %s has  ALREADY performed %s likes. in day %s" % (
+            self.campaign['id_campaign'], likesPerformed['no_op'], dateParam))
     else:
-        self.logger.info("getLikesPerformed: 0 likes PREVIOUSLY performed for campaign id  %s, in day %s" % (self.campaign['id_campaign'], dateParam))
+        self.logger.info("getLikesPerformed: 0 likes PREVIOUSLY performed for campaign id  %s, in day %s" % (
+            self.campaign['id_campaign'], dateParam))
 
     return likesPerformed['no_op']
 
@@ -312,8 +320,10 @@ def getActionAmountForEachLoop(noActions, noLoops):
 
     actionsPerLoop = noActions // noLoops
 
-    randomizedActionPerLoop = randint(bot_util.randomizeValue(actionsPerLoop, 10, "down"),
-                                      bot_util.randomizeValue(actionsPerLoop, 10, "up"))
+    if noActions < 100:
+        randomizedActionPerLoop = bot_util.randomizeValue(actionsPerLoop, 10, "up")
+    else:
+        randomizedActionPerLoop = randint(bot_util.randomizeValue(actionsPerLoop, 10, "down"), bot_util.randomizeValue(actionsPerLoop, 10, "up"))
 
     return randomizedActionPerLoop
 
