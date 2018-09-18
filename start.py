@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-angie_campaign', type=str, help="angie_campaign")
 args = parser.parse_args()
 
-#args.angie_campaign='1'
+args.angie_campaign='1'
 
 if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
@@ -33,7 +33,7 @@ try:
 
     session = InstaPy(username=campaign['username'],
                       password=campaign['password'],
-                      headless_browser=True,
+                      headless_browser=False,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
@@ -71,7 +71,6 @@ try:
                campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 
         for loopNumber in range(0, noOfLoops):
-            # TODO: IMPORTANT -> this is an issue with small values ! tested with like 45 follow 30
             likeAmountForEachLoop = getActionAmountForEachLoop(totalExpectedLikeAmount, noOfLoops)
             followAmountForEachLoop = getActionAmountForEachLoop(totalExpectedFollowAmount, noOfLoops)
             unFollowAmountForEachLoop = getActionAmountForEachLoop(totalExpectedUnfollowAmount, noOfLoops)
