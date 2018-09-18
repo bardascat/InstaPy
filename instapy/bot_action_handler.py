@@ -1,4 +1,5 @@
 from api_db import fetchOne, select, insert
+from bot_util import getBotOperations
 import datetime
 import json
 from random import randint
@@ -62,21 +63,18 @@ def getInitialActionAmount(self, id_campaign):
         result['calculatedAmount'] = result['initialAmount']
         result['accountMaturity']['reachedMaturity'] = True
         self.logger.info(
-            "getInitialActionAmount: Account is fullyFunctional ! %s days passed since signup. Minimum is %s" % (
-            delta.days, accountIsFullyFunctionalAfter))
+            "getInitialActionAmount: Account is fullyFunctional ! %s days passed since signup. Minimum is %s" % (delta.days, accountIsFullyFunctionalAfter))
         return result
     else:
         self.logger.info(
             "getInitialActionAmount: Account is not fully functional, going to apply the percentage based on instagram account maturity...")
 
     self.logger.info(
-        "getInitialActionAmount: Going to calculated action number based on account type: month_start: %s, month_end:%s, percentage: %s" % (
-        campaign['month_start'], campaign['month_end'], campaign['percentage_amount']))
+        "getInitialActionAmount: Going to calculated action number based on account type: month_start: %s, month_end:%s, percentage: %s" % ( campaign['month_start'], campaign['month_end'], campaign['percentage_amount']))
     result['accountMaturity']['usage_percentage'] = campaign['percentage_amount']
     calculatedAmount = getWarmUpResult(self, result['initialAmount'], campaign['percentage_amount'])
     result['calculatedAmount'] = calculatedAmount
-    self.logger.info("getInitialActionAmount: After applying %s percentage, the result is: %s" % (
-    campaign['percentage_amount'], result))
+    self.logger.info("getInitialActionAmount: After applying %s percentage, the result is: %s" % ( campaign['percentage_amount'], result))
     return result
 
 
@@ -89,13 +87,11 @@ def isAccountWarmingUp(self):
 
     if workedDaysResult['worked_days'] < warmUpDays:
         self.logger.info(
-            "getInitialActionAmount: The bot warmed  up for %s days so far. This means the bot still needs to warm up until reaches %s days." % (
-            workedDaysResult['worked_days'], warmUpDays))
+            "getInitialActionAmount: The bot warmed  up for %s days so far. This means the bot still needs to warm up until reaches %s days." % (workedDaysResult['worked_days'], warmUpDays))
         return True
     else:
         self.logger.info(
-            "getInitialActionAmount: The bot worked for %s days so far. This means it is fully warmed up ! Minimum %s days to warmup !" % (
-            workedDaysResult['worked_days'], warmUpDays))
+            "getInitialActionAmount: The bot worked for %s days so far. This means it is fully warmed up ! Minimum %s days to warmup !" % ( workedDaysResult['worked_days'], warmUpDays))
         return False
 
 
@@ -226,6 +222,8 @@ def getAmountDistribution(self, id_campaign):
         result['follow_amount'] = randint(initialActionAmountResult['calculatedAmount']['minimumFollowAmount'] + 1,
                                           initialActionAmountResult['calculatedAmount']['maximumFollowAmount'] - 1)
 
+    operations = getBotOperations(id_campaign, self.logger)
+    finalActionAmount = get_action_amount(result, operations)
     # create the log in database
     log = {}
     log['amount_selected_category'] = {}
@@ -233,16 +231,44 @@ def getAmountDistribution(self, id_campaign):
     log['amount_selected_category']['daysAllocatedForThisCategory'] = daysForThisCategory
     log['amount_selected_category']['usedDaysForThisCategory'] = usedDaysForThisCategory
     log['amount_selected_category']['currentMonthNumberOfDays'] = currentMonthNumberOfDays
-    log['expected_amount'] = result
+    log['expected_amount'] = finalActionAmount
     log['initial_action_amount'] = initialActionAmountResult
     log['id_amount_distribution'] = foundRightCategory['id_amount_distribution']
     logJson = json.dumps(log)
 
-    id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
-                id_campaign, logJson, 'CALCULATE_AMOUNT_OF_ACTIONS')
+    # id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
+    #            id_campaign, logJson, 'CALCULATE_AMOUNT_OF_ACTIONS')
     self.id_log = id
-    self.logger.info("getAmountDistribution: Final action amount: %s", result)
+    self.logger.info("getAmountDistribution: Final action amount: %s", finalActionAmount)
     self.logger.info("getAmountDistribution: ID_LOG: %s", id)
+
+    return finalActionAmount
+
+
+def get_action_amount(result, operations):
+    enableLikes = False
+    enableFollows = False
+
+    for o in operations:
+        if o['configName'] == 'engagement_by_location' and o['enabled'] == 1:
+            if o['like_post'] == 1:
+                enableLikes = True
+
+            if o['follow_user'] == 1:
+                enableFollows = True
+
+        if o['configName'] == 'engagement_by_hashtag' and o['enabled'] == 1:
+            if o['like_post'] == 1:
+                enableLikes = True
+
+            if o['follow_user'] == 1:
+                enableFollows = True
+
+    if enableLikes == False:
+        result['like_amount'] = 0
+
+    if enableFollows == False:
+        result['follow_amount'] = 0
 
     return result
 
@@ -273,11 +299,9 @@ def getLikesPerformed(self, dateParam):
         "like" + "%", str(dateParam), self.web_application_id_user)
 
     if likesPerformed['no_op'] > 0:
-        self.logger.info("getLikesPerformed: Campaign id %s has  ALREADY performed %s likes. in day %s" % (
-        self.campaign['id_campaign'], likesPerformed['no_op'], dateParam))
+        self.logger.info("getLikesPerformed: Campaign id %s has  ALREADY performed %s likes. in day %s" % ( self.campaign['id_campaign'], likesPerformed['no_op'], dateParam))
     else:
-        self.logger.info("getLikesPerformed: 0 likes PREVIOUSLY performed for campaign id  %s, in day %s" % (
-        self.campaign['id_campaign'], dateParam))
+        self.logger.info("getLikesPerformed: 0 likes PREVIOUSLY performed for campaign id  %s, in day %s" % (self.campaign['id_campaign'], dateParam))
 
     return likesPerformed['no_op']
 
@@ -302,9 +326,9 @@ def getFollowPerformed(self, dateParam):
 
     if followsPerformed['no_op'] > 0:
         self.logger.info("getFollowAmount: Campaign id %s has ALREADY performed %s follow/unfollow, in day %s ." % (
-        self.campaign['id_campaign'], followsPerformed['no_op'], dateParam))
+            self.campaign['id_campaign'], followsPerformed['no_op'], dateParam))
     else:
         self.logger.info("getLikesPerformed: 0 follow ALREADY performed for campaign %s, in day %s" % (
-        self.campaign['id_campaign'], dateParam))
+            self.campaign['id_campaign'], dateParam))
 
     return followsPerformed['no_op']

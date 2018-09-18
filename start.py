@@ -5,7 +5,8 @@ import sys
 import traceback
 from time import sleep
 from instapy import InstaPy
-from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, getFollowAmount, getUnfollowAmount, getActionAmountForEachLoop
+from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, getFollowAmount, getUnfollowAmount, \
+    getActionAmountForEachLoop
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
 
@@ -24,12 +25,11 @@ if args.angie_campaign is None:
 
 try:
 
-    campaign = fetchOne("select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",args.angie_campaign)
+    campaign = fetchOne("select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s", args.angie_campaign)
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)
 
     if campaign['ip'] is None:
         exit("Invalid proxy")
-
 
     session = InstaPy(username=campaign['username'],
                       password=campaign['password'],
@@ -46,53 +46,63 @@ try:
         exit("Could not  login")
 
     calculatedAmount = getAmountDistribution(session, args.angie_campaign)
-    totalExpectedLikesAmount = int(getLikeAmount(calculatedAmount))
-    totalExpectedFollowAmount = int(getFollowAmount(calculatedAmount))
-    totalExpectedUnfollowAmount = int(getUnfollowAmount(calculatedAmount))
+    if calculatedAmount['like_amount'] == 0 and calculatedAmount['follow_amount'] == 0:
+        session.logger.info("start: No actions set, going to exit. like_amount:%s, follow_amount:%s" % (calculatedAmount['like_amount'], calculatedAmount['follow_amount']))
+    else:
+        totalExpectedLikeAmount = int(getLikeAmount(calculatedAmount))
+        totalExpectedFollowAmount = int(getFollowAmount(calculatedAmount))
+        totalExpectedUnfollowAmount = int(getUnfollowAmount(calculatedAmount))
 
-    operations = getBotOperations(campaign['id_campaign'], session.logger)
+        operations = getBotOperations(campaign['id_campaign'], session.logger)
 
-    session.set_max_actions(totalExpectedLikesAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount)
-    session.set_relationship_bounds(enabled=True, potency_ratio=0.01, max_followers=999999, max_following=99999, min_followers=100, min_following=50)
+        session.set_max_actions(totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount)
+        session.set_relationship_bounds(enabled=True, potency_ratio=0.01, max_followers=999999, max_following=99999,
+                                        min_followers=100, min_following=50)
 
-    session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
-    session.canBotStart(args.angie_campaign, "angie_instapy_idc")
+        session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (
+        os.getpid(), campaign['username'], campaign['ip']))
+        session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
+        noOfLoops = randint(6, 8)
 
-    noOfLoops = randint(6,8)
+        session.logger.info("start: Bot started going to perform %s likes, %s follow, %s unfollow during %s loops" % (
+        totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+               campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 
-    session.logger.info("start: Bot started going to perform %s likes, %s follow, %s unfollow during %s loops" % (totalExpectedLikesAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
+        for loopNumber in range(0, noOfLoops):
+            # TODO: IMPORTANT -> this is an issue with small values ! tested with like 45 follow 30
+            likeAmountForEachLoop = getActionAmountForEachLoop(totalExpectedLikeAmount, noOfLoops)
+            followAmountForEachLoop = getActionAmountForEachLoop(totalExpectedFollowAmount, noOfLoops)
+            unFollowAmountForEachLoop = getActionAmountForEachLoop(totalExpectedUnfollowAmount, noOfLoops)
 
-    for loopNumber in range(0, noOfLoops):
+            session.logger.info(
+                "start: Starting loop number %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (
+                loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
 
-        #TODO: IMPORTANT -> this is an issue with small values ! tested with like 45 follow 30
-        likeAmountForEachLoop = getActionAmountForEachLoop(totalExpectedLikesAmount, noOfLoops)
-        followAmountForEachLoop = getActionAmountForEachLoop(totalExpectedFollowAmount, noOfLoops)
-        unFollowAmountForEachLoop = getActionAmountForEachLoop(totalExpectedUnfollowAmount, noOfLoops)
+            session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop,
+                                        followAmount=followAmountForEachLoop, unfollowAmount=unFollowAmountForEachLoop)
 
-        session.logger.info("start: Starting loop number %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
+            sleepMinutes = randint(30, 60)
+            session.logger.info("start: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
 
-        session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop, followAmount=followAmountForEachLoop, unfollowAmount=unFollowAmountForEachLoop)
+            sleep(sleepMinutes * 60)
+            session.logger.info("start: Done sleeping going to continue looping...")
 
-        sleepMinutes = randint(30,60)
-        session.logger.info("start: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
+        session.logger.info("start: Angie loop completed , going to exit...")
 
-        sleep(sleepMinutes*60)
-        session.logger.info("start: Done sleeping going to continue looping...")
+        session.logger.info("start: Setting privacy to public for this account...")
+        accountPrivacyService = AccountPrivacyService(session)
+        accountPrivacyService.switchToPublic()
 
-    session.logger.info("start: Angie loop completed , going to exit...")
-
-    session.logger.info("start: Setting privacy to public for this account...")
-    accountPrivacyService = AccountPrivacyService(session)
-    accountPrivacyService.switchToPublic()
-
-    session.logger.info("start: ALL DONE, CLOSING APP")
+        session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
     print("EXCEPTION CATCHED: ")
     print(exceptionDetail)
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
-    #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    # TODO: I think this log catches our own exception, find a way to not log them in database as they are already logged. Or log them only once here ?
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+           campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
+    # session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
 finally:
     session.logger.info("start: Instapy ended for user: %s", campaign['username'])
