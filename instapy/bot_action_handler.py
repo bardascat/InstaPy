@@ -82,7 +82,6 @@ def getInitialActionAmount(self, id_campaign):
 
 
 def isAccountWarmingUp(self):
-    return True
     warmUpDays = 3
     self.logger.info("getInitialActionAmount: Checking if account is warming up...")
     workedDaysResult = fetchOne(
