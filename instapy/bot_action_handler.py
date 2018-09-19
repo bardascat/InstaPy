@@ -242,8 +242,8 @@ def getAmountDistribution(self, id_campaign):
     log['id_amount_distribution'] = foundRightCategory['id_amount_distribution']
     logJson = json.dumps(log)
 
-    # id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
-    #            id_campaign, logJson, 'CALCULATE_AMOUNT_OF_ACTIONS')
+    id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
+                id_campaign, logJson, 'CALCULATE_AMOUNT_OF_ACTIONS')
     self.id_log = id
     self.logger.info("getAmountDistribution: Final action amount: %s", finalActionAmount)
     self.logger.info("getAmountDistribution: ID_LOG: %s", id)
@@ -323,7 +323,8 @@ def getActionAmountForEachLoop(noActions, noLoops):
     if noActions < 100:
         randomizedActionPerLoop = bot_util.randomizeValue(actionsPerLoop, 10, "up")
     else:
-        randomizedActionPerLoop = randint(bot_util.randomizeValue(actionsPerLoop, 10, "down"), bot_util.randomizeValue(actionsPerLoop, 10, "up"))
+        randomizedActionPerLoop = randint(bot_util.randomizeValue(actionsPerLoop, 10, "down"),
+                                          bot_util.randomizeValue(actionsPerLoop, 10, "up"))
 
     return randomizedActionPerLoop
 
