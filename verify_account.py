@@ -39,7 +39,7 @@ try:
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
-                      show_logs=True,
+                      show_logs=False,
                       force_login=True)
 
     status = session.login()
