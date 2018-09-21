@@ -21,12 +21,15 @@ if args.settings is None:
     exit("verify_account: settings are not specified !")
 
 result = {}
-result['status']=False
+result['status'] = False
 
 try:
     settings = json.loads(args.settings)
     campaign = fetchOne(
-        "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s", settings['id_campaign'])
+        "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
+        settings['id_campaign'])
+
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "TRYING_TO_VERIFY_INSTAGRAM_CREDENTIALS", None)
 
     session = InstaPy(username=settings['u'],
                       password=settings['p'],
@@ -41,17 +44,19 @@ try:
 
     status = session.login()
     if status is True:
-        result['status']=True
+        result['status'] = True
+
 
         accountPrivacyService = AccountPrivacyService(session)
         accountPrivacyService.switchToPublic()
+        accountPrivacyService.extractInstagramUsername()
 
     session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
-    #print(exceptionDetail)
-    #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
-    result['exception']=exceptionDetail
+    # print(exceptionDetail)
+    # session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    result['exception'] = exceptionDetail
 finally:
     print(json.dumps(result))
-    #session.logger.info("start:finally: Closing process...")
+    # session.logger.info("start:finally: Closing process...")
