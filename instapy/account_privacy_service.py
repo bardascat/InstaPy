@@ -53,5 +53,6 @@ class AccountPrivacyService:
         if instagramUsername is None:
             raise Exception("Could not find instagram username while verifying instagram credentials, tho user logged in")
 
+        self.logger.info("extractInstagramUsername: Username is %s:", instagramUsername)
         insert("update campaign set instagram_username=%s where id_campaign=%s", instagramUsername,self.instapy.campaign['id_campaign'])
         return instagramUsername
