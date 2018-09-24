@@ -102,6 +102,6 @@ except:
     # TODO: I think this log catches our own exception, find a way to not log them in database as they are already logged. Or log them only once here ?
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
            campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
-    # session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
 finally:
     session.logger.info("start: Instapy ended for user: %s", campaign['username'])
