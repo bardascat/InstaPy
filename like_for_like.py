@@ -55,6 +55,7 @@ try:
 except:
     exceptionDetail = traceback.format_exc()
     print(exceptionDetail)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "L4L_RUNTIME_ERROR", exceptionDetail)
     session.logger.critical("start: Like for Like FATAL ERROR: %s", exceptionDetail)
 finally:
     session.logger.info("start: LIke For Like ended for user: %s", campaign['username'])

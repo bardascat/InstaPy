@@ -104,4 +104,5 @@ except:
            campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
     session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
 finally:
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_ENDED", None)
     session.logger.info("start: Instapy ended for user: %s", campaign['username'])
