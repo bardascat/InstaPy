@@ -39,7 +39,7 @@ try:
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
-                      show_logs=True,
+                      show_logs=False,
                       force_login=True)
 
     status = session.login()
@@ -55,7 +55,7 @@ try:
 except:
     exceptionDetail = traceback.format_exc()
     # print(exceptionDetail)
-    # session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception'] = exceptionDetail
 finally:
     print(json.dumps(result))
