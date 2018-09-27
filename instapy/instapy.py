@@ -69,6 +69,7 @@ import time
 import atexit
 import copy
 from bot_util import getOperationsNumber
+import urllib2
 
 class InstaPyError(Exception):
     """General error for InstaPy exceptions"""
@@ -364,8 +365,6 @@ class InstaPy:
         return self
 
     def check_internet_connection(self):
-
-        self.logger.info("check_internet_connection: Checking internet connection...")
         #self.browser.get("https://google.com")
 
         #try:
@@ -420,7 +419,11 @@ class InstaPy:
             self.logger.critical("login: Could not verify internet connection/proxy settings")
             self.aborting = True
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "UNSUCCESSFUL_PROXY_CHECK", "proxy_error")
-            #TODO: send an email with this error
+
+            #reset the ip using rest api
+            urllib2.urlopen("https://rest.angie.one/api/bot/assignIp?id_campaign="+str(self.campaign['id_campaign'])).read()
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "NEW_IP_ASSIGNED", "proxy_error")
+            self.logger.info("Done resetting the ip...")
             return False
 
         self.logger.info("login: Going to login user %s into instagram ", self.username)

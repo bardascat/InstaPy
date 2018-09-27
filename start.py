@@ -40,7 +40,7 @@ try:
                       proxy_port="80",
                       multi_logs=True,
                       force_login=False)
-    session.logger.info("start:Bot for campaign: %s constructed, going to try login...", campaign['id_campaign'])
+    session.logger.info("start: ENGAGEMENT BOT STARTED for campaign: %s, with ip: %s. Going to try login..." % (campaign['id_campaign'], campaign['ip']))
     status = session.login()
     if status == False:
         exit("Could not  login")
@@ -65,7 +65,7 @@ try:
 
         noOfLoops = randint(6, 8)
 
-        session.logger.info("start: Bot started going to perform %s likes, %s follow, %s unfollow during %s loops" % (
+        session.logger.info("start: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % (
         totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
         insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
                campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
