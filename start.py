@@ -9,6 +9,8 @@ from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, get
     getActionAmountForEachLoop
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
+from selenium.common.exceptions import NoSuchElementException
+import urllib2
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -95,13 +97,19 @@ try:
         accountPrivacyService.switchToPublic()
 
         session.logger.info("start: ALL DONE, CLOSING APP")
-except:
+except Exception as exc:
+
     exceptionDetail = traceback.format_exc()
-    print("EXCEPTION CATCHED: ")
-    print(exceptionDetail)
-    # TODO: I think this log catches our own exception, find a way to not log them in database as they are already logged. Or log them only once here ?
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-           campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
+
+    if isinstance(exc, NoSuchElementException):
+        session.logger.info("start: IMPORTANT ERROR: NoSuchElementException -> maybe instagram changed their DOM again.")
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "NO_SUCH_ELEMENT_EXCEPTION", exceptionDetail)
+        urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=NoSuchElementException&id_campaign=" + str(campaign['id_campaign'])).read()
+
+    else:
+        # TODO: I think this log catches our own exception, find a way to not log them in database as they are already logged. Or log them only once here ?
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
+
     session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
 finally:
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_ENDED", None)
