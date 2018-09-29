@@ -2,15 +2,13 @@ import argparse
 import codecs
 import os
 import sys
-import traceback
 from time import sleep
 from instapy import InstaPy
 from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, getFollowAmount, getUnfollowAmount, \
     getActionAmountForEachLoop
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
-from selenium.common.exceptions import NoSuchElementException
-import urllib2
+from instapy.exception_handler import ExceptionHandler
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -20,7 +18,7 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-angie_campaign', type=str, help="angie_campaign")
 args = parser.parse_args()
 
-#args.angie_campaign='1'
+args.angie_campaign='1'
 
 if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
@@ -98,19 +96,9 @@ try:
 
         session.logger.info("start: ALL DONE, CLOSING APP")
 except Exception as exc:
+    exceptionHandler = ExceptionHandler(session,'engagement_bot')
+    exceptionHandler.handle(exc)
 
-    exceptionDetail = traceback.format_exc()
-
-    if isinstance(exc, NoSuchElementException):
-        session.logger.info("start: IMPORTANT ERROR: NoSuchElementException -> maybe instagram changed their DOM again.")
-        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "NO_SUCH_ELEMENT_EXCEPTION", exceptionDetail)
-        urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=NoSuchElementException&id_campaign=" + str(campaign['id_campaign'])).read()
-
-    else:
-        # TODO: I think this log catches our own exception, find a way to not log them in database as they are already logged. Or log them only once here ?
-        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
-
-    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
 finally:
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_ENDED", None)
     session.logger.info("start: Instapy ended for user: %s", campaign['username'])

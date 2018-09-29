@@ -2,7 +2,6 @@ import argparse
 import codecs
 import os
 import sys
-import traceback
 
 from instapy import InstaPy
 from instapy.bot_util import *
@@ -14,6 +13,7 @@ sys.path.append(os.path.join(sys.path[0], '../'))
 parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-angie_campaign', type=str, help="angie_campaign")
 args = parser.parse_args()
+from instapy.exception_handler import ExceptionHandler
 
 #args.angie_campaign='1'
 
@@ -49,13 +49,8 @@ try:
 
     session.startLikeForLike()
 
-
-
-
-except:
-    exceptionDetail = traceback.format_exc()
-    print(exceptionDetail)
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "L4L_RUNTIME_ERROR", exceptionDetail)
-    session.logger.critical("start: Like for Like FATAL ERROR: %s", exceptionDetail)
+except Exception as exc:
+    exceptionHandler = ExceptionHandler(session,'like_for_like')
+    exceptionHandler.handle(exc)
 finally:
     session.logger.info("start: LIke For Like ended for user: %s", campaign['username'])
