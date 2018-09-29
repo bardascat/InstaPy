@@ -132,7 +132,6 @@ def bypass_suspicious_login(browser):
 def login_user(browser,
                username,
                password,
-               logger,
                logfolder,
                switch_language=True,
                bypass_suspicious_attempt=False, logger=None):

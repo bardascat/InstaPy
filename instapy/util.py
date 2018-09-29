@@ -607,10 +607,10 @@ def get_number_of_posts(browser):
 
 
 def get_relationship_counts(browser, username, logger):
-    try:
-        """ Gets the followers & following counts of a given user """
 
-        user_link = "https://www.instagram.com/{}/".format(username)
+    """ Gets the followers & following counts of a given user """
+
+    user_link = "https://www.instagram.com/"+username
 
     # check URL of the webpage, if it already is user's profile page, then do not navigate to it again
     web_address_navigator(browser, user_link)
