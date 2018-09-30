@@ -319,7 +319,7 @@ def custom_login_user(browser,
         logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
         browser.get("https://www.instagram.com/")
         sleep(1)
-        if is_user_logged_in(username, browser, logger, cmp, force_login) == True:
+        if is_user_logged_in(username, browser, logger, cmp, force_login, detect_issues=False) == True:
             logger.info("custom_login_user: The user was successfully logged in...")
             return True
         else:
@@ -392,7 +392,7 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
     return False
 
 
-def is_user_logged_in(username, browser, logger, cmp, force_login=False):
+def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_issues=True):
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
     edit_profile_button = browser.find_elements_by_xpath("//a[text()='Profile']")
@@ -400,9 +400,12 @@ def is_user_logged_in(username, browser, logger, cmp, force_login=False):
     logger.info("is_user_logged_in: Done searching for  Profile button !")
 
     if len(edit_profile_button) == 0:
-        logger.info(
-            "is_user_logged_in: Profile button was NOT found, going to assume user is not logged in. Going to check for login issues...")
-        find_login_issues(browser, logger, cmp, force_login)
+        logger.info("is_user_logged_in: Profile button was NOT found, going to assume user is not logged in")
+
+        if detect_issues == True:
+            logger.info("is_user_logged_in: Going to check for log in issues...")
+            find_login_issues(browser, logger, cmp, force_login)
+
         return False
     else:
         logger.info("is_user_logged_in: Profile button was found... user succesffully LOGGED IN")
