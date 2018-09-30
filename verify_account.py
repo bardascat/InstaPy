@@ -29,7 +29,7 @@ try:
         "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
         settings['id_campaign'])
 
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "TRYING_TO_VERIFY_INSTAGRAM_CREDENTIALS", None)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "USER_TRYING_TO_VERIFY_INSTAGRAM_CREDENTIALS", None)
 
     session = InstaPy(username=settings['u'],
                       password=settings['p'],

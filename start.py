@@ -2,13 +2,13 @@ import argparse
 import codecs
 import os
 import sys
-import traceback
 from time import sleep
 from instapy import InstaPy
 from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, getFollowAmount, getUnfollowAmount, \
     getActionAmountForEachLoop
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
+from instapy.exception_handler import ExceptionHandler
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -36,11 +36,16 @@ try:
                       headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
+                      disable_image_load=True,
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
                       force_login=False)
-    session.logger.info("start:Bot for campaign: %s constructed, going to try login...", campaign['id_campaign'])
+
+    session.set_quota_supervisor(enabled=True)
+
+
+    session.logger.info("start: ENGAGEMENT BOT STARTED for campaign: %s, with ip: %s. Going to try login..." % (campaign['id_campaign'], campaign['ip']))
     status = session.login()
     if status == False:
         exit("Could not  login")
@@ -65,7 +70,7 @@ try:
 
         noOfLoops = randint(6, 8)
 
-        session.logger.info("start: Bot started going to perform %s likes, %s follow, %s unfollow during %s loops" % (
+        session.logger.info("start: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % (
         totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
         insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
                campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
@@ -95,14 +100,6 @@ try:
         accountPrivacyService.switchToPublic()
 
         session.logger.info("start: ALL DONE, CLOSING APP")
-except:
-    exceptionDetail = traceback.format_exc()
-    print("EXCEPTION CATCHED: ")
-    print(exceptionDetail)
-    # TODO: I think this log catches our own exception, find a way to not log them in database as they are already logged. Or log them only once here ?
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-           campaign['id_campaign'], "RUNTIME_ERROR", exceptionDetail)
-    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
-finally:
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_ENDED", None)
-    session.logger.info("start: Instapy ended for user: %s", campaign['username'])
+except Exception as exc:
+    exceptionHandler = ExceptionHandler(session,'engagement_bot')
+    exceptionHandler.handle(exc)
