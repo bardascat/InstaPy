@@ -36,10 +36,15 @@ try:
                       headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
+                      disable_image_load=True,
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
                       force_login=False)
+
+    session.set_quota_supervisor(enabled=True)
+
+
     session.logger.info("start: ENGAGEMENT BOT STARTED for campaign: %s, with ip: %s. Going to try login..." % (campaign['id_campaign'], campaign['ip']))
     status = session.login()
     if status == False:
@@ -98,7 +103,3 @@ try:
 except Exception as exc:
     exceptionHandler = ExceptionHandler(session,'engagement_bot')
     exceptionHandler.handle(exc)
-
-finally:
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_ENDED", None)
-    session.logger.info("start: Instapy ended for user: %s", campaign['username'])

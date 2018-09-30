@@ -429,7 +429,7 @@ def check_link(browser, post_link, dont_like, mandatory_words, ignore_if_contain
     """
 
     #Check URL of the webpage, if it already is post's page, then do not navigate to it again
-    web_adress_navigator(browser, post_link, logger)
+    web_address_navigator(browser, post_link)
 
     """Check if the Post is Valid/Exists"""
     try:

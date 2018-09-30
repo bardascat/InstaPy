@@ -601,14 +601,14 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
 
     ## general tasks after a successful follow
 
-    logger.info("--> Followed '{}'!".format(user_name.encode("utf-8")))
+    logger.info("follow_user: Followed user: '{}'!".format(user_name.encode("utf-8")))
     update_activity('follows')
 
     # get user ID to record alongside username
-    user_id = get_user_id(browser, track, user_name, logger)
+    #user_id = get_user_id(browser, track, user_name, logger)
 
     logtime = datetime.now().strftime('%Y-%m-%d %H:%M')
-    log_followed_pool(login, user_name, logger, logfolder, logtime, user_id)
+    #log_followed_pool(login, user_name, logger, logfolder, logtime, user_id)
 
     follow_restriction("write", user_name, None, logger)
 
@@ -1318,7 +1318,7 @@ def custom_unfollow(browser, username, logger):
     user_link = 'https://www.instagram.com/{}/'.format(username)
 
     # Check URL of the webpage, if it already is the one to be navigated, then do not navigate to it again
-    web_adress_navigator(browser, user_link, logger)
+    web_address_navigator(browser, user_link)
 
     following = False
     try:

@@ -367,8 +367,13 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
     logger.info("execute_login: Done... going to click log in button")
 
     login_button = browser.find_element_by_xpath(
-        "//form/span/button[text()='Log in']")
-    ActionChains(browser).move_to_element(login_button).click().perform()
+        "//button[text()='Log in']")
+
+    (ActionChains(browser)
+     .move_to_element(login_button)
+     .click()
+     .perform())
+
 
     if bypass_suspicious_attempt is True:
         logger.info("execute_login: Bypass_suspicious_attempt is true...")

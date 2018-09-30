@@ -10,7 +10,7 @@ from .like_util import get_links_for_tag, check_link, get_links_for_location
 from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 from .util import validate_username
-from .util import web_adress_navigator
+from .util import web_address_navigator
 import traceback
 
 
@@ -140,7 +140,7 @@ class Engagements:
 
                     # navigate to url ! (previously it was on user profile page)
                     try:
-                        web_adress_navigator(self.browser, link, self.logger)
+                        web_address_navigator(self.browser, link)
                     except:
                         exceptionDetail = traceback.format_exc()
                         self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
@@ -240,13 +240,14 @@ class Engagements:
                     return False
 
                 # todo: follow_user method is overengineered , try to simplify it
-                followed = follow_user(self.browser,
-                                       self.instapy.follow_restrict,
-                                       self.username,
-                                       user_name,
-                                       self.instapy.blacklist,
-                                       self.logger,
-                                       self.instapy.logfolder)
+                followed, msg = follow_user(self.browser,
+                                            ['profile', 'post'],
+                                            None,
+                                            user_name,
+                                            None,
+                                            self.instapy.blacklist,
+                                            self.logger,
+                                            self.instapy.logfolder)
 
                 if followed:
                     insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
@@ -255,7 +256,8 @@ class Engagements:
                                     link, 'follow_' + operation['configName'], tag, self.instapy.id_log)
                     return True
                 else:
-                    self.logger.error("peformFollow: Error could not perform follow for user %s", user_name)
+                    self.logger.error(
+                        "peformFollow: Error could not perform follow for user %s, reason: %s" % (user_name, msg))
                     return False
             else:
                 self.logger.info(
@@ -322,6 +324,7 @@ class Engagements:
                            link,
                            [],
                            [],
+                           [],
                            self.logger)
             )
             time.sleep(2)
@@ -386,11 +389,14 @@ class Engagements:
 
         # we need to refresh the operation list
         if len(operation['list']) < 1:
-            self.logger.info("getItemToProcess: We used all the hashtags/locations, going to refresh the list with all the values from db.")
+            self.logger.info(
+                "getItemToProcess: We used all the hashtags/locations, going to refresh the list with all the values from db.")
             if engagement_by == "engagement_by_location":
-                operation['list'] = select("SELECT * FROM `instagram_locations` WHERE `id_config` = %s",operation['id_config'])
+                operation['list'] = select("SELECT * FROM `instagram_locations` WHERE `id_config` = %s",
+                                           operation['id_config'])
             if engagement_by == "engagement_by_hashtag":
-                operation['list'] = select("SELECT * FROM `instagram_hashtags` WHERE `id_config` = %s",operation['id_config'])
+                operation['list'] = select("SELECT * FROM `instagram_hashtags` WHERE `id_config` = %s",
+                                           operation['id_config'])
 
         # extract a random hashtag from the list
         itemIndex = randint(0, len(operation['list']) - 1)

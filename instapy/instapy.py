@@ -78,6 +78,7 @@ import atexit
 import copy
 from bot_util import getOperationsNumber
 import urllib2
+from datetime import datetime
 
 class InstaPyError(Exception):
     """General error for InstaPy exceptions"""
@@ -467,10 +468,10 @@ class InstaPy:
 
         self.logger.info("login: Going to login user %s into instagram ", self.username)
         """Used to login the user either with the username and password"""
+
         if not custom_login_user(self.browser,
                           self.username,
                           self.password,
-                          self.logger,
                           self.logfolder,
                           self.switch_language,
                           self.bypass_suspicious_attempt,
@@ -3448,7 +3449,7 @@ class InstaPy:
     def end(self):
         self.logger.info("end: Going to stop the bot")
         """Closes the current session"""
-        dump_follow_restriction(self.follow_restrict, self.logfolder)
+        #dump_follow_restriction(self.follow_restrict, self.logfolder)
 
         try:
             self.browser.delete_all_cookies()

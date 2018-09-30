@@ -12,6 +12,7 @@ class ExceptionHandler:
 
     def handle(self, exc):
         exceptionDetail = traceback.format_exc()
+        #print(exceptionDetail)
 
         if isinstance(exc, NoSuchElementException):
             self.logger.info("ExceptionHandler: IMPORTANT ERROR: NoSuchElementException -> maybe instagram changed their DOM again.")
