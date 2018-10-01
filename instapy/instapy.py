@@ -20,7 +20,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 
 # import InstaPy modules
-from .clarifai_util import check_image
+#from .clarifai_util import check_image
 from .comment_util import comment_image
 from .comment_util import verify_commenting
 from .like_util import check_link
