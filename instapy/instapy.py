@@ -106,7 +106,8 @@ class InstaPy:
                  disable_image_load=False,
                  bypass_suspicious_attempt=False,
                  multi_logs=True,
-                 force_login=False):
+                 force_login=False,
+                 bot_type="engagement_bot"):
 
 
         if nogui:
@@ -120,6 +121,7 @@ class InstaPy:
         self.proxy_chrome_extension = proxy_chrome_extension
         self.multi_logs = multi_logs
         self.force_login = force_login
+        self.bot_type = bot_type
         self.selenium_local_session = selenium_local_session
         self.show_logs = show_logs
         self.bypass_suspicious_attempt = bypass_suspicious_attempt
@@ -3466,13 +3468,13 @@ class InstaPy:
         if self.nogui:
             self.display.stop()
 
-        self.logger.info('Session ended - {}'.format(
-            datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-        self.logger.info('-' * 20 + '\n\n')
+        #self.logger.info('end: Session ended - {}'.format(
+        #    datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        #self.logger.info('-' * 20 + '\n\n')
 
         # with open('{}followed.txt'.format(self.logfolder), 'w') as followFile:
         #    followFile.write(str(self.followed))
-        self.logger.info("end: Done stopping the bot !")
+        self.logger.info("end: Done stopping the bot type: %s !", self.bot_type)
 
     def follow_by_tags(self,
                      tags=None,

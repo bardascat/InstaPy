@@ -40,6 +40,7 @@ try:
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
+                      bot_type="engagement_bot",
                       force_login=False)
 
     session.set_quota_supervisor(enabled=True)

@@ -39,6 +39,7 @@ try:
                       disable_image_load=True,
                       campaign=campaign,
                       proxy_port="80",
+                      bot_type="like_for_like",
                       multi_logs=True)
 
     session.logger.info(
