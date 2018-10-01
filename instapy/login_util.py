@@ -296,7 +296,7 @@ def custom_login_user(browser,
     # update server calls
     # update_activity()
     cookie_loaded = False
-    logger.info("custom_login_user: Trying to login...")
+    logger.info("custom_login_user: Trying to login, force login is: %s...", force_login)
 
     if force_login is not True:
         # try to load cookie from username
