@@ -192,7 +192,7 @@ class Engagements:
             self.logger.info("performLike: Post %s was liked in the past, skipping...", link)
             return False
 
-        liked = like_image(self.browser,
+        liked, msg = like_image(self.browser,
                            user_name,
                            self.instapy.blacklist,
                            self.logger,

@@ -456,7 +456,7 @@ class InstaPy:
         self.browser.implicitly_wait(5)
 
         if not self.check_internet_connection():
-            self.logger.critical("login: Could not verify internet connection/proxy settings")
+            self.logger.critical("login: ERROR: Could not verify internet connection/proxy settings")
             self.aborting = True
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", self.campaign['id_campaign'], "UNSUCCESSFUL_PROXY_CHECK", "proxy_error")
 
