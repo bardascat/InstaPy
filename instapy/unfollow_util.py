@@ -602,7 +602,7 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     ## general tasks after a successful follow
 
     logger.info("follow_user: Followed user: '{}'!".format(user_name.encode("utf-8")))
-    update_activity('follows')
+    #update_activity('follows')
 
     # get user ID to record alongside username
     #user_id = get_user_id(browser, track, user_name, logger)
@@ -610,16 +610,16 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     logtime = datetime.now().strftime('%Y-%m-%d %H:%M')
     #log_followed_pool(login, user_name, logger, logfolder, logtime, user_id)
 
-    follow_restriction("write", user_name, None, logger)
+    #follow_restriction("write", user_name, None, logger)
 
-    if blacklist['enabled'] == True:
-        action = 'followed'
-        add_user_to_blacklist(user_name,
-                               blacklist['campaign'],
-                                action,
-                                 logger,
-                                  logfolder)
-    sleep(3)
+    #if blacklist['enabled'] == True:
+    #    action = 'followed'
+    #    add_user_to_blacklist(user_name,
+    #                           blacklist['campaign'],
+    #                            action,
+    #                             logger,
+    #                              logfolder)
+    #sleep(3)
 
     return True, "success"
 

@@ -561,7 +561,8 @@ def like_image(browser, username, blacklist, logger, logfolder):
     sleepSeconds = random.randint(17,25)
     logger.info("like_image: Going to like image after sleeping %s seconds", sleepSeconds)
     time.sleep(sleepSeconds)
-    """Likes the browser opened image"""
+
+
     # check action availability
     #if quota_supervisor("likes") == "jump":
     #    return False, "jumped"
@@ -580,20 +581,19 @@ def like_image(browser, username, blacklist, logger, logfolder):
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
 
         if len(liked_elem) == 1:
-            logger.info('like_image: --> Image Liked!')
-            update_activity('likes')
+            logger.info('like_image: Image Liked')
+            #update_activity('likes')
 
-            if blacklist['enabled'] is True:
-                action = 'liked'
-                add_user_to_blacklist(
-                    username, blacklist['campaign'], action, logger, logfolder)
-            sleep(2)
+            #if blacklist['enabled'] is True:
+                #action = 'liked'
+                #add_user_to_blacklist(username, blacklist['campaign'], action, logger, logfolder)
+            #sleep(2)
             return True, "success"
 
         else:
             # if like not seceded wait for 2 min
             logger.info('like_image: --> Image was not able to get Liked! maybe blocked ?')
-            sleep(120)
+            sleep(20)
 
     else:
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
@@ -601,7 +601,7 @@ def like_image(browser, username, blacklist, logger, logfolder):
             logger.info('like_image: --> Image already liked!')
             return False, "already liked"
 
-    logger.info('--> Invalid Like Element!')
+    logger.info('like_image: --> Invalid Like Element!')
 
     return False, "invalid element"
 
