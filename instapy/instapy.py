@@ -3946,6 +3946,10 @@ class InstaPy:
             finally:
                 spamCheck = spamCheck + 1
 
+        if hasError==False:
+            self.logger.error("likeForLikeHandler: I couldnt open a new tab for l4l process, going to skip it for the moment...")
+            return False
+
         try:
             self.isLikeForLikeProcessRunning = True
 
