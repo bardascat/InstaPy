@@ -99,14 +99,16 @@ class LikeForLike:
         self.browser.get(url)
 
         liked, msg = like_image(self.browser,
-                           self.username,
-                           self.instapy.blacklist,
-                           self.logger,
-                           self.instapy.logfolder)
+                                self.username,
+                                self.instapy.blacklist,
+                                self.logger,
+                                self.instapy.logfolder,
+                                self.instapy)
 
         if liked is True:
             self.logger.info("likeForLike: performLike: SUCCESSFUL liked post id %s", post['id_post'])
         else:
-            self.logger.info("likeForLike: performLike: UNSUCCESSFUL liking post id %s, reason: %s" % (post['id_post'], msg))
+            self.logger.info(
+                "likeForLike: performLike: UNSUCCESSFUL liking post id %s, reason: %s" % (post['id_post'], msg))
 
         return liked

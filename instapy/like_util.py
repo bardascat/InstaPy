@@ -16,6 +16,7 @@ from .util import update_activity
 from .util import web_address_navigator
 from .util import get_number_of_posts
 from .quota_supervisor import quota_supervisor
+import action_delay_util
 
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import NoSuchElementException
@@ -556,9 +557,9 @@ def check_link(browser, post_link, dont_like, mandatory_words, ignore_if_contain
 
 
 
-def like_image(browser, username, blacklist, logger, logfolder):
+def like_image(browser, username, blacklist, logger, logfolder, instapy):
 
-    sleepSeconds = random.randint(17,25)
+    sleepSeconds = action_delay_util.get_like_delay(instapy=instapy)
     logger.info("like_image: Going to like image after sleeping %s seconds", sleepSeconds)
     time.sleep(sleepSeconds)
 
@@ -588,6 +589,7 @@ def like_image(browser, username, blacklist, logger, logfolder):
                 #action = 'liked'
                 #add_user_to_blacklist(username, blacklist['campaign'], action, logger, logfolder)
             #sleep(2)
+            action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
             return True, "success"
 
         else:

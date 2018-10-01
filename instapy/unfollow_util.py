@@ -44,7 +44,7 @@ from random import randint
 from selenium.common.exceptions import StaleElementReferenceException
 from random import randint
 import time
-
+import action_delay_util
 
 
 def set_automated_followed_pool(username, unfollow_after, logger, logfolder):
@@ -504,8 +504,9 @@ def unfollow(browser,
 
 
 
-def follow_user(browser, track, login, user_name, button, blacklist, logger, logfolder):
-    sleepSeconds = randint(30, 50)
+def follow_user(browser, track, login, user_name, button, blacklist, logger, logfolder, instapy):
+
+    sleepSeconds = action_delay_util.get_follow_delay(instapy=instapy)
     logger.info("follow_user: Going to sleep for %s seconds before following", sleepSeconds)
     sleep(sleepSeconds)
 
@@ -621,6 +622,7 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     #                              logfolder)
     #sleep(3)
 
+    action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
     return True, "success"
 
 
@@ -1309,11 +1311,12 @@ def verify_username_by_id(browser, username, person, person_id, logger, logfolde
 
 
 
-def custom_unfollow(browser, username, logger):
+def custom_unfollow(browser, username, logger, instapy):
 
-    sleepSeconds = randint(30,40)
+    sleepSeconds = action_delay_util.get_unfollow_delay(instapy=instapy)
     logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)
-    time.sleep(sleepSeconds)
+    sleep(sleepSeconds)
+
 
     user_link = 'https://www.instagram.com/{}/'.format(username)
 
@@ -1360,6 +1363,7 @@ def custom_unfollow(browser, username, logger):
 
         if follow_button.text in ['Follow', 'Follow Back']:
             logger.info("custom_unfollow: Unfollowed user: %s", username)
+            action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
             return True
         else:
             logger.error("Unfollow error, COULD NOT PRESS THE LAST UNFOLLOW BUTTON -> user: %s might be blocked or deleted" %  username)

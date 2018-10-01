@@ -46,6 +46,7 @@ try:
         "likeforlike: START PID: %s, account %s, using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
     session.canBotStart(id_campaign=args.angie_campaign, prefix="angie_instapy_like_for_like_idc")
 
+    session.set_quota_supervisor(enabled=True)
     status = session.login()
 
     if status == False:

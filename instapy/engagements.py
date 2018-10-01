@@ -196,7 +196,8 @@ class Engagements:
                            user_name,
                            self.instapy.blacklist,
                            self.logger,
-                           self.instapy.logfolder)
+                           self.instapy.logfolder,
+                           self.instapy)
         if liked:
             self.logger.info("engage: Link %s was liked. User %s" % (link, user_name))
 
@@ -247,7 +248,8 @@ class Engagements:
                                             None,
                                             self.instapy.blacklist,
                                             self.logger,
-                                            self.instapy.logfolder)
+                                            self.instapy.logfolder,
+                                            self.instapy)
 
                 if followed:
                     insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
@@ -294,7 +296,7 @@ class Engagements:
                                         self.campaign['id_user'], 1)
 
             if recordToUnfollow:
-                status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger)
+                status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
                 lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                 None, None, recordToUnfollow['username'],
                                                 None, None, None, None, 'unfollow_' + operation['configName'],

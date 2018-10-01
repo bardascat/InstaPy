@@ -60,6 +60,7 @@ from .relationship_tools import get_unfollowers
 from .relationship_tools import get_nonfollowers
 from .relationship_tools import get_fans
 from .relationship_tools import get_mutual_following
+import action_delay_util
 from .database_engine import get_database
 
 # import exceptions
@@ -107,6 +108,9 @@ class InstaPy:
                  bypass_suspicious_attempt=False,
                  multi_logs=True,
                  force_login=False,
+                 like_delay=20,
+                 follow_delay=40,
+                 unfollow_delay=40,
                  bot_type="engagement_bot"):
 
 
@@ -236,6 +240,11 @@ class InstaPy:
         self.logger = self.get_instapy_logger(self.show_logs)
         self.isLikeForLikeProcessRunning = False
         self.setupSignals()
+
+        self.last_action_timestamp = action_delay_util.get_last_action_timestamp(self.campaign, self.logger)
+        self.like_delay = like_delay
+        self.follow_delay = follow_delay
+        self.unfollow_delay = unfollow_delay
 
         #get_database(make=True)
 
