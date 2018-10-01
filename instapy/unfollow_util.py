@@ -511,8 +511,8 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
 
     """ Follows the user from either its 'profile' page, a 'post' page or the users 'dialog' box """
     # check action availability
-    if quota_supervisor("follows") == "jump":
-        return False, "jumped"
+    #if quota_supervisor("follows") == "jump":
+    #    return False, "jumped"
 
     # available tracks are to follow in `profile`, `post` and `dialog`
     if track in ["profile", "post"]:
@@ -1107,8 +1107,8 @@ def follow_restriction(operation, username, limit, logger):
 def unfollow_user(browser, track, username, person, person_id, button, relationship_data, logger, logfolder):
     """ Unfollow user from either `profile' or a 'post' page or from a 'dialog' box """
     # check action availability
-    if quota_supervisor("unfollows") == "jump":
-        return False, "jumped"
+    #if quota_supervisor("unfollows") == "jump":
+    #    return False, "jumped"
 
     # available tracks to unfollow in are `profile`, `post` and `dialog`
     if track in ["profile", "post"]:

@@ -69,9 +69,7 @@ class LikeForLike:
                     self.logger.info("LikeForLike:performLikes:: Success: Post %s was liked !", post['id_post'])
 
                     # update the log
-                    api_db.insert(
-                        "INSERT INTO `user_post_log` (`id_post`, `id_user`, `like_timestamp`,`liked`) VALUES (%s, %s, CURRENT_TIMESTAMP, %s)",
-                        post['id_post'], self.campaign['id_user'], wasPostLiked)
+                    api_db.insert("INSERT INTO `user_post_log` (`id_post`, `id_user`, `like_timestamp`,`liked`) VALUES (%s, %s, CURRENT_TIMESTAMP, %s)",post['id_post'], self.campaign['id_user'], wasPostLiked)
                     self.logger.info("LikeForLike:performLikes:: user_post_log was updated")
 
                 else:

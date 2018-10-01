@@ -16,6 +16,8 @@ from .settings import Storage
 
 
 def quota_supervisor(job, update=False):
+    return False
+
     """ Supervise activity flow through action engines and take measures"""
     # --ACTION----------ENGINE--------------FILE--------------OPTION--- #
     #   Like         `like_image`       [like_util.py]      jump|sleep  #

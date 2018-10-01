@@ -563,8 +563,8 @@ def like_image(browser, username, blacklist, logger, logfolder):
     time.sleep(sleepSeconds)
     """Likes the browser opened image"""
     # check action availability
-    if quota_supervisor("likes") == "jump":
-        return False, "jumped"
+    #if quota_supervisor("likes") == "jump":
+    #    return False, "jumped"
 
     like_xpath = "//button/span[@aria-label='Like']"
     unlike_xpath = "//button/span[@aria-label='Unlike']"
