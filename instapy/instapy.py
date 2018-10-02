@@ -85,7 +85,9 @@ class InstaPyError(Exception):
     """General error for InstaPy exceptions"""
     pass
 
-
+class AngieError(Exception):
+    """General error for InstaPy exceptions"""
+    pass
 
 class InstaPy:
     """Class to be instantiated to use the script"""
@@ -3948,16 +3950,14 @@ class InstaPy:
                 # open new window
                 self.browser.execute_script("window.open('https://instagram.com');")
                 hasError = False
-            except:
+            except Exception as exc:
                 hasError = True
-                self.logger.error("likeForLikeHandler: except: There was an error opening a new tab...")
-                time.sleep(1)
+                self.logger.error("likeForLikeHandler: Error: l4l new tab attempt: %s, There was an error opening a new tab...: %s" % (spamCheck, exc))
             finally:
                 spamCheck = spamCheck + 1
 
         if hasError==False:
-            self.logger.error("likeForLikeHandler: I couldnt open a new tab for l4l process, going to skip it for the moment...")
-            return False
+            raise AngieError('likeForLikeHandler: Could not open a new tab for l4l after 10 attempts. Going to stop the process to avoid memory leak.')
 
         try:
             self.isLikeForLikeProcessRunning = True
