@@ -130,11 +130,11 @@ class Engagements:
         self.logger.info("engage: Received %s link, going to iterate through them", len(links))
 
         for i, link in enumerate(links):
-            self.logger.info('engage: TAG {}, [{}/{}], link: {}'.format(engagementValue, i + 1, len(links), link))
+            self.logger.info('engage: **************** START PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(link, engagementValue, i + 1, len(links)))
 
             try:
                 # todo: check if this function is needed
-                self.logger.info("engage: Going to interact with the link...")
+                self.logger.info("engage: Trying to interact with the link...")
                 linkValidationDetails = self.canInteractWithLink(link)
 
                 self.logger.info("engage: Navigating to link: %s", link)
@@ -156,7 +156,7 @@ class Engagements:
                                         engagementValue=engagementValue) is True:
                         result['likePerformed'] += 1
 
-                    self.logger.info("engage: Going to follow user: %s", linkValidationDetails['user_name'])
+                    self.logger.info("engage: Trying to follow user: %s", linkValidationDetails['user_name'])
                     if self.performFollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                           followAmount=followAmountToPerform,
                                           operation=operation, link=link,
@@ -164,7 +164,7 @@ class Engagements:
                                           tag=engagementValue) is True:
                         result['followPerformed'] += 1
 
-                    self.logger.info("engage: Going to unfollow an user from database...")
+                    self.logger.info("engage: Trying to unfollow an user from database...")
 
                     if self.performUnfollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                             unfollowAmount=unfollowAmountToPerform,
@@ -176,6 +176,8 @@ class Engagements:
             except NoSuchElementException as err:
                 self.logger.error('engage: Invalid Page: {}'.format(err))
                 continue
+
+            self.logger.info('engage: **************** DONE PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(link, engagementValue, i + 1, len(links)))
 
         return result
 
