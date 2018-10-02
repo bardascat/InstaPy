@@ -39,14 +39,14 @@ class LikeForLikeDispatcher:
             self.logger.info("bootstrap: All good ! There is no other l4l dispatcher process running !")
 
         # select users that have an active subscription, and have pending posts to like.
-        result = api_db.select("select users.id_user, email, username, campaign.password, campaign.id_campaign from users join campaign on (users.id_user=campaign.id_user) join user_subscription on (users.id_user = user_subscription.id_user) join plan on (user_subscription.id_plan=plan.id_plan) join plan_type on (plan.id_plan_type=plan_type.id_plan_type) where (user_subscription.end_date>now() or user_subscription.end_date is null) and (select count(*) as total from user_post join user_subscription us2 on (user_post.id_user=us2.id_user) join plan plan2 on (us2.id_plan=plan2.id_plan) join plan_type plan_type2 on (plan2.id_plan_type=plan_type2.id_plan_type) where id_post not in (select id_post from user_post_log where id_user=users.id_user) and user_post.id_user!=users.id_user and user_post.timestamp>=user_subscription.start_date and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY))>0 and campaign.active=1 and campaign.id_campaign=3 order by rand()")
+        result = api_db.select("select users.id_user, email, username, campaign.password, campaign.id_campaign from users join campaign on (users.id_user=campaign.id_user) join user_subscription on (users.id_user = user_subscription.id_user) join plan on (user_subscription.id_plan=plan.id_plan) join plan_type on (plan.id_plan_type=plan_type.id_plan_type) where (user_subscription.end_date>now() or user_subscription.end_date is null) and (select count(*) as total from user_post join user_subscription us2 on (user_post.id_user=us2.id_user) join plan plan2 on (us2.id_plan=plan2.id_plan) join plan_type plan_type2 on (plan2.id_plan_type=plan_type2.id_plan_type) where id_post not in (select id_post from user_post_log where id_user=users.id_user) and user_post.id_user!=users.id_user and user_post.timestamp>=user_subscription.start_date and user_post.timestamp>=DATE(NOW() - INTERVAL 1 DAY))>0 and campaign.active=1 order by rand()")
 
         # self.logger.info(result)
         self.logger.info("bootstrap: Found %s users with pending work", len(result))
         for user in result:
             self.logger.info("bootstrap: Going to process user %s", user['email'])
 
-            self.startLikeForLikeProcess(user)
+            self.startLikeForLike(user)
 
             pause = randint(1, 1)
             self.logger.info("bootstrap: Going to wait %s seconds before processing another user !", pause)
@@ -55,17 +55,17 @@ class LikeForLikeDispatcher:
 
         self.logger.info("bootstrap: Done executing the script.. exiting")
 
-    def startLikeForLikeProcess(self, user):
-        self.logger.info("startLikeForLikeProcess: Trigering l4l functionality for user: %s", user['email'])
+    def startLikeForLike(self, user):
+        self.logger.info("startLikeForLike: Trigering l4l functionality for user: %s", user['email'])
 
         defaultBotProcessName = 'angie_instapy_idc' + str(user['id_campaign'])
         pid = self.findProcessPid(defaultBotProcessName)
 
         if pid == False:
-            self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is NOT running for campaign %s. Going to start the l4l process." % (defaultBotProcessName, user['id_campaign']))
+            self.logger.info("startLikeForLike: Default bot campaign process(%s) is NOT running for campaign %s. Going to start the l4l process." % (defaultBotProcessName, user['id_campaign']))
             self.startLikeForLikeProcess(user['id_campaign'])
         else:
-            self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is running for campaign %s. Going to send the SIGUSR1 signal..." % (defaultBotProcessName, defaultBotProcessName))
+            self.logger.info("startLikeForLike: Default bot campaign process(%s) is running for campaign %s. Going to send the SIGUSR1 signal..." % (defaultBotProcessName, defaultBotProcessName))
             self.sendL4lSignal(pid, str(user['id_campaign']))
 
 
