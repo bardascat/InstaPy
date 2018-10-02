@@ -63,7 +63,7 @@ class LikeForLikeDispatcher:
 
         if pid == False:
             self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is NOT running for campaign %s. Going to start the l4l process." % (defaultBotProcessName, user['id_campaign']))
-            self.startLikeForLikeProcessProcess(user['id_campaign'])
+            self.startLikeForLikeProcess(user['id_campaign'])
         else:
             self.logger.info("startLikeForLikeProcess: Default bot campaign process(%s) is running for campaign %s. Going to send the SIGUSR1 signal..." % (defaultBotProcessName, defaultBotProcessName))
             self.sendL4lSignal(pid, str(user['id_campaign']))
@@ -76,27 +76,26 @@ class LikeForLikeDispatcher:
         self.logger.info("sendL4lSignal: Done sending the signal.")
         return True
 
-    #TODO: IMPORTANT::::::::: what happens if this process starts first and then the default one start over ???
+    #TODO: IMPORTANT::::::::: what happens if this process starts first and then the engagement bot starts after ???
 
-    def startLikeForLikeProcessProcess(self, id_campaign):
+    def startLikeForLikeProcess(self, id_campaign):
 
-        self.logger.info("startLikeForLikeProcessProcess: Starting like for like process for campaign %s", id_campaign)
+        self.logger.info("startLikeForLikeProcess: Starting like for like process for campaign %s", id_campaign)
         processName = "angie_instapy_like_for_like_idc" + str(id_campaign)
 
-        self.logger.info("startLikeForLikeProcessProcess: checking if there is already a process started with name %s", processName)
+        self.logger.info("startLikeForLikeProcess: checking if there is already a process started with name %s", processName)
         pid = self.findProcessPid(processName)
         if pid != False:
-            self.logger.info("startLikeForLikeProcessProcess: Error - there is already an active like for like process for campaign %s, GOING TO SKIP THIS USER",id_campaign)
+            self.logger.info("startLikeForLikeProcess: Error - there is already an active like for like process for campaign %s, GOING TO SKIP THIS USER",id_campaign)
             return False
         else:
-            self.logger.info("startLikeForLikeProcessProcess: All good, the like for like process with name %s is not active, going to start it now !",processName)
+            self.logger.info("startLikeForLikeProcess: All good, the like for like process with name %s is not active, going to start it now !",processName)
 
-        #TODO the location for the python script needs to be changed when deploying to linux server
         subprocess.Popen(
             "bash -c \"exec -a " + processName + " /usr/bin/python /home/InstaPy/like_for_like.py  -angie_campaign=" + str(id_campaign) + " \"", stdin=None, stdout=self.DEVNULL, stderr=self.DEVNULL, close_fds=True, shell=True)
         
             
-        self.logger.info("startLikeForLikeProcessProcess: Successfully started process for campaign %s", id_campaign)
+        self.logger.info("startLikeForLikeProcess: Successfully started process for campaign %s", id_campaign)
 
 
     def findProcessPid(self, processName):

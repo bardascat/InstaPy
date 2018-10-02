@@ -130,11 +130,14 @@ class Engagements:
         self.logger.info("engage: Received %s link, going to iterate through them", len(links))
 
         for i, link in enumerate(links):
-            self.logger.info('engage: TAG {}, [{}/{}]'.format(engagementValue, i + 1, len(links)))
+            self.logger.info('engage: TAG {}, [{}/{}], link: {}'.format(engagementValue, i + 1, len(links), link))
 
             try:
                 # todo: check if this function is needed
+                self.logger.info("engage: Going to interact with the link...")
                 linkValidationDetails = self.canInteractWithLink(link)
+
+                self.logger.info("engage: Navigating to link: %s", link)
 
                 if linkValidationDetails is not False:
 
@@ -146,18 +149,22 @@ class Engagements:
                         self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
                         continue
 
+                    self.logger.info("engage: Going to like the link: %s", link)
                     if self.performLike(user_name=linkValidationDetails['user_name'],
                                         operation=operation,
                                         link=link,
                                         engagementValue=engagementValue) is True:
                         result['likePerformed'] += 1
 
+                    self.logger.info("engage: Going to follow user: %s", linkValidationDetails['user_name'])
                     if self.performFollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                           followAmount=followAmountToPerform,
                                           operation=operation, link=link,
                                           user_name=linkValidationDetails['user_name'],
                                           tag=engagementValue) is True:
                         result['followPerformed'] += 1
+
+                    self.logger.info("engage: Going to unfollow an user from database...")
 
                     if self.performUnfollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                             unfollowAmount=unfollowAmountToPerform,
@@ -269,7 +276,7 @@ class Engagements:
             return False
 
     def performUnfollow(self, unfollowAmount, numberOfPostsToInteract, operation):
-
+        #todo check if there is user to unfollow
         if self.totalUnfollowPerformed >= self.totalUnfollowExpected:
             self.logger.error("performLike: ERROR - The unfollow amount is reached. Expected %s, performed %s " % (
                 self.totalUnfollowExpected, self.totalUnfollowPerformed))
@@ -303,10 +310,10 @@ class Engagements:
                                                 None,
                                                 self.instapy.id_log)
 
+                self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
                 insert("update bot_action set bot_operation_reverted=%s where id=%s", lastBotAction,
                        recordToUnfollow['id'])
-                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
-                    lastBotAction, recordToUnfollow['id']))
+                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (lastBotAction, recordToUnfollow['id']))
                 return True
             else:
                 self.logger.info("performUnfollow: No user found in database to unfollow...")

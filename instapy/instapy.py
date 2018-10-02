@@ -3956,7 +3956,7 @@ class InstaPy:
             finally:
                 spamCheck = spamCheck + 1
 
-        if hasError==False:
+        if hasError==True:
             raise AngieError('likeForLikeHandler: Could not open a new tab for l4l after 10 attempts. Going to stop the process to avoid memory leak.')
 
         try:
