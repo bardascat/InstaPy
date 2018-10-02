@@ -40,16 +40,3 @@ def get_current_timestamp():
 def set_last_action_timestamp(instapy, last_action_timestamp):
     instapy.logger.info("set_last_action_timestamp: setting last action timestamp to: %s", last_action_timestamp)
     instapy.last_action_timestamp = last_action_timestamp
-
-
-def get_last_action_timestamp(campaign, logger):
-    logger.info("Getting last action timestamp for campaign: %s", campaign['id_campaign'])
-    record = api_db.fetchOne("select timestamp from bot_action where id_campaign=%s order by timestamp desc limit 1",
-                             campaign['id_campaign'])
-
-    if record is not None:
-        if record['timestamp'] is not None:
-            logger.info("get_last_action_timestamp: last_action_performed: %s", record['timestamp'])
-            return record['timestamp']
-
-    return 0

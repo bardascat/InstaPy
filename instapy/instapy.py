@@ -241,7 +241,7 @@ class InstaPy:
         self.isLikeForLikeProcessRunning = False
         self.setupSignals()
 
-        self.last_action_timestamp = action_delay_util.get_last_action_timestamp(self.campaign, self.logger)
+        self.last_action_timestamp = action_delay_util.get_current_timestamp()
         self.like_delay = like_delay
         self.follow_delay = follow_delay
         self.unfollow_delay = unfollow_delay
