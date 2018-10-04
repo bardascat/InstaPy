@@ -4002,6 +4002,7 @@ class InstaPy:
 
         noOperations = getOperationsNumber(operations)
 
+        result = {"totalLikePerformed": 0, "totalFollowPerformed": 0, "totalUnfollowPerformed": 0}
 
         self.logger.info("executeAngieActions: Found %s operations of type engagement by location/hashtag", noOperations)
 
@@ -4017,7 +4018,13 @@ class InstaPy:
                 continue
 
             opCopy = copy.deepcopy(operation)
-            self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount//noOperations, followAmount=followAmount//noOperations, unfollowAmount = unfollowAmount//noOperations)
+            operationResult = self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount//noOperations, followAmount=followAmount//noOperations, unfollowAmount = unfollowAmount//noOperations)
+            result['totalLikePerformed'] += operationResult['totalLikePerformed']
+            result['totalFollowPerformed'] += operationResult['totalFollowPerformed']
+            result['totalUnfollowPerformed'] += operationResult['totalUnfollowPerformed']
+
+
+        return result
 
 
     def startLikeForLike(self):

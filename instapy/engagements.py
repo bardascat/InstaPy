@@ -40,7 +40,7 @@ class Engagements:
 
     def perform_engagement(self, operation, likeAmount, followAmount, unfollowAmount):
         self.logger.info(
-            "perform_engagement: *********************** STARTED operation: %s, Going to perform %s likes, %s follow, %s Unfollow. ******************************" % (
+            "start perform engagement : *********************** STARTED operation: %s, Going to perform %s likes, %s follow, %s Unfollow. ******************************" % (
                 operation['configName'], likeAmount, followAmount, unfollowAmount))
 
         iteration = 0
@@ -65,10 +65,7 @@ class Engagements:
 
             engagementValue = self.getItemToProcess(operation, operation['configName'])
 
-            self.logger.info("perform_engagement: ************** TAG %s, ITERATION NUMBER %s*****************" % (
-                engagementValue, iteration + 1))
-
-            self.logger.info("perform_engagement: Going to perform likes: %s, follow: %s, unfollow: %s for tag: %s" % (
+            self.logger.info("perform_engagement start iteration: %s, TAG: %s. Going to perform likes: %s, follow: %s, unfollow: %s for tag: %s" % (iteration+1, engagementValue,
                 likeAmountForeachRandomized, followAmountForeachRandomized, unfollowAmountForEachRandomized,
                 engagementValue))
 
@@ -99,12 +96,15 @@ class Engagements:
             followPerformed += result['followPerformed']
             unfollowPerformed += result['unfollowPerformed']
 
+            self.logger.info("-------------- perform_engagement end iteration: %s, TAG: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
+                % (iteration+1, engagementValue, result['likePerformed'], likeAmountForeachRandomized, result['followPerformed'], followAmountForeachRandomized,  result['unfollowPerformed'], unfollowAmountForEachRandomized))
+
             iteration = iteration + 1
 
-        self.logger.info("perform_engagement: **************** END operation: %s **********************",
-                         operation['configName'])
+        self.logger.info("-------------- end perform_engagement: END operation: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
+            % (likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed, unfollowAmount))
 
-        return likePerformed
+        return {"totalLikePerformed": likePerformed, "totalFollowPerformed": followPerformed, "totalUnfollowPerformed": unfollowPerformed}
 
     def shouldContinueLooping(self, likePerformed, followPerformed, unfollowPerformed, likeAmountExpected,
                               followAmountExpected, unfollowAmountExpected, iteration):
