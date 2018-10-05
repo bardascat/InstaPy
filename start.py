@@ -9,6 +9,7 @@ from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, get
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
 from instapy.exception_handler import ExceptionHandler
+import traceback
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -18,7 +19,7 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-angie_campaign', type=str, help="angie_campaign")
 args = parser.parse_args()
 
-#args.angie_campaign='1'
+args.angie_campaign='1'
 
 if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
@@ -33,7 +34,7 @@ try:
 
     session = InstaPy(username=campaign['username'],
                       password=campaign['password'],
-                      headless_browser=True,
+                      headless_browser=False,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       disable_image_load=True,
@@ -112,5 +113,7 @@ try:
 
         session.logger.info("start: ALL DONE, CLOSING ENGAGEMENT BOT")
 except Exception as exc:
+    exceptionDetail = traceback.format_exc()
+    print(exceptionDetail)
     exceptionHandler = ExceptionHandler(session,'engagement_bot')
     exceptionHandler.handle(exc)

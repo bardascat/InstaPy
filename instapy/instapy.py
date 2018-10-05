@@ -299,6 +299,7 @@ class InstaPy:
             return self
 
         if self.use_firefox:
+            import selenium.webdriver.firefox.options as OptionsFirefox
             if self.browser_profile_path is not None:
                 firefox_profile = webdriver.FirefoxProfile(
                     self.browser_profile_path)
@@ -320,8 +321,9 @@ class InstaPy:
                                                self.proxy_address)
                 firefox_profile.set_preference('network.proxy.ssl_port',
                                                self.proxy_port)
-
-            self.browser = webdriver.Firefox(firefox_profile=firefox_profile)
+            options = OptionsFirefox()
+            options.add_argument('-headless')
+            self.browser = webdriver.Firefox(firefox_profile=firefox_profile, executable_path="/Users/cbardas/Downloads/geckodriver", firefox_options=options)
 
         else:
             chromedriver_location = Settings.chromedriver_location
