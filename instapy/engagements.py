@@ -101,8 +101,8 @@ class Engagements:
 
             iteration = iteration + 1
 
-        self.logger.info("-------------- end perform_engagement: END operation: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
-            % (likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed, unfollowAmount))
+        self.logger.info("-------------- END PERFORM_ENGAGEMENT: END operation: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
+            % (operation['configName'], likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed, unfollowAmount))
 
         return {"totalLikePerformed": likePerformed, "totalFollowPerformed": followPerformed, "totalUnfollowPerformed": unfollowPerformed}
 
