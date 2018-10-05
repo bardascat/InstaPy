@@ -505,7 +505,6 @@ def unfollow(browser,
 
 
 def follow_user(browser, track, login, user_name, button, blacklist, logger, logfolder, instapy):
-    return False, "skip"
 
     sleepSeconds = action_delay_util.get_follow_delay(instapy=instapy)
     logger.info("follow_user: Going to sleep for %s seconds before following", sleepSeconds)
@@ -1314,7 +1313,6 @@ def verify_username_by_id(browser, username, person, person_id, logger, logfolde
 
 
 def custom_unfollow(browser, username, logger, instapy):
-    return False, "skip"
 
     sleepSeconds = action_delay_util.get_unfollow_delay(instapy=instapy)
     logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)

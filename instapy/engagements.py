@@ -1,18 +1,14 @@
-import time
-import bot_util
 from random import randint
 
 from selenium.common.exceptions import NoSuchElementException
 
+import bot_util
 from .api_db import *
-from .bot_util import getOperationByName, isOperationEnabled, getIfUserWantsToUnfollow
+from .bot_util import getIfUserWantsToUnfollow
 from .like_util import get_links_for_tag, check_link, get_links_for_location
 from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
-from .util import validate_username
-from .util import web_address_navigator
-import traceback
-
+import time
 
 class Engagements:
     def __init__(self,
@@ -133,21 +129,12 @@ class Engagements:
             self.logger.info('engage: **************** START PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(link, engagementValue, i + 1, len(links)))
 
             try:
-                # todo: check if this function is needed
-                self.logger.info("engage: Trying to interact with the link...")
-                linkValidationDetails = self.canInteractWithLink(link)
 
                 self.logger.info("engage: Navigating to link: %s", link)
+                linkValidationDetails = self.canInteractWithLink(link)
+
 
                 if linkValidationDetails is not False:
-
-                    # navigate to url ! (previously it was on user profile page)
-                    try:
-                        web_address_navigator(self.browser, link)
-                    except:
-                        exceptionDetail = traceback.format_exc()
-                        self.logger.critical("engage: EXCEPTION on http connection: %s", exceptionDetail)
-                        continue
 
                     self.logger.info("engage: Going to like the link: %s", link)
                     if self.performLike(user_name=linkValidationDetails['user_name'],
@@ -208,12 +195,14 @@ class Engagements:
                            self.instapy.logfolder,
                            self.instapy)
         if liked:
-            self.logger.info("engage: Link %s was liked. User %s" % (link, user_name))
+            self.logger.info("performLike: Link %s was liked. User %s" % (link, user_name))
 
             insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                             None, None, user_name,
                             None, None, None,
                             link, 'like_' + operation['configName'], engagementValue, self.instapy.id_log)
+            self.logger.info("performLike: Going to sleep 3 seconds after jumping to other page...")
+            time.sleep(3)
             return True
 
         return False
@@ -265,6 +254,10 @@ class Engagements:
                                     None, None, user_name,
                                     None, None, None,
                                     link, 'follow_' + operation['configName'], tag, self.instapy.id_log)
+
+                    self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
+                    time.sleep(3)
+
                     return True
                 else:
                     self.logger.error(
@@ -316,6 +309,8 @@ class Engagements:
                 insert("update bot_action set bot_operation_reverted=%s where id=%s", lastBotAction,
                        recordToUnfollow['id'])
                 self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (lastBotAction, recordToUnfollow['id']))
+                self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
+                time.sleep(3)
                 return True
             else:
                 self.logger.info("performUnfollow: No user found in database to unfollow...")
@@ -329,7 +324,7 @@ class Engagements:
 
     def canInteractWithLink(self, link):
         try:
-            # TODO: i don't think this is required
+            #this is going to open the post link
             inappropriate, user_name, is_video, reason, scope = (
                 check_link(self.browser,
                            link,
@@ -338,25 +333,9 @@ class Engagements:
                            [],
                            self.logger)
             )
-            time.sleep(2)
-            if not inappropriate:
-                # validate user
-                validation, details = validate_username(self.browser,
-                                                        user_name,
-                                                        self.username,
-                                                        self.instapy.ignore_users,
-                                                        self.instapy.blacklist,
-                                                        self.instapy.potency_ratio,
-                                                        self.instapy.delimit_by_numbers,
-                                                        self.instapy.max_followers,
-                                                        self.instapy.max_following,
-                                                        self.instapy.min_followers,
-                                                        self.instapy.min_following,
-                                                        self.logger)
-                if validation is True:
-                    return {'status': True, 'user_name': user_name}
-                else:
-                    self.logger.info("canInteractWithLink: Error, link is not good %s", details)
+
+
+            return {'status': True, 'user_name': user_name}
 
         except NoSuchElementException as err:
             self.logger.error('canInteractWithLink: Invalid Page: {}'.format(err))
