@@ -46,7 +46,7 @@ for campaign in campaigns:
         "bash -c \"exec -a " + processName + " /usr/bin/python /home/InstaPy/start.py -angie_campaign=" + str(
             campaign) + "\"", stdin=None, stdout=DEVNULL, stderr=DEVNULL, close_fds=True, shell=True)
     logger.info("schedule_bot: Done staring campaign for %s", campaign)
-    pause=randint(10,30)
+    pause=randint(5,10)
     logger.info("schedule_bot: Going to sleep %s seconds",pause)
     time.sleep(pause)
 
