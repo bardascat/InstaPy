@@ -39,7 +39,7 @@ try:
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       disable_image_load=True,
                       campaign=campaign,
-                      proxy_port="80",
+                      proxy_port=80,
                       multi_logs=True,
                       use_firefox=True,
                       bot_type="engagement_bot",

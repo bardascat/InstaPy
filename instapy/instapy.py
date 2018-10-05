@@ -321,6 +321,10 @@ class InstaPy:
                                                self.proxy_address)
                 firefox_profile.set_preference('network.proxy.ssl_port',
                                                self.proxy_port)
+
+                firefox_profile.update_preferences()
+
+
             options = OptionsFirefox.Options()
             options.add_argument('-headless')
             self.browser = webdriver.Firefox(firefox_profile=firefox_profile, executable_path="/home/geckodriver", firefox_options=options)
