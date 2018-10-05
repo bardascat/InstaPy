@@ -91,7 +91,7 @@ try:
             iterationResults = session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop,
                                         followAmount=followAmountForEachLoop, unfollowAmount=unFollowAmountForEachLoop)
 
-            session.logger.info("-------------- END ITERATION %s : LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (iterationResults['totalLikePerformed'], likeAmountForEachLoop, iterationResults['totalFollowPerformed'], followAmountForEachLoop, iterationResults['totalUnfollowPerformed'], unFollowAmountForEachLoop ))
+            session.logger.info("-------------- END ITERATION %s : LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (loopNumber, iterationResults['totalLikePerformed'], likeAmountForEachLoop, iterationResults['totalFollowPerformed'], followAmountForEachLoop, iterationResults['totalUnfollowPerformed'], unFollowAmountForEachLoop ))
 
 
             if session.engagementService.totalLikePerformed>=totalExpectedLikeAmount and session.engagementService.totalFollowPerformed>=totalExpectedFollowAmount and session.engagementService.totalUnfollowPerformed>=totalExpectedUnfollowAmount:
