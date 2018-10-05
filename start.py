@@ -41,6 +41,7 @@ try:
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
+                      use_firefox=True,
                       bot_type="engagement_bot",
                       force_login=False)
 
