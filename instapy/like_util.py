@@ -559,6 +559,8 @@ def check_link(browser, post_link, dont_like, mandatory_words, ignore_if_contain
 
 def like_image(browser, username, blacklist, logger, logfolder, instapy):
 
+    return False, "skip"
+
     sleepSeconds = action_delay_util.get_like_delay(instapy=instapy)
     logger.info("like_image: Going to like image after sleeping %s seconds", sleepSeconds)
     time.sleep(sleepSeconds)

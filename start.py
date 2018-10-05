@@ -97,10 +97,10 @@ try:
                 session.logger.info("start: going to break the loop. Number of actions reached for all ops !")
                 break
 
-            sleepMinutes = randint(30, 60)
-            session.logger.info("start: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
-            sleep(sleepMinutes * 60)
-            session.logger.info("start: Done sleeping going to continue looping...")
+            #sleepMinutes = randint(30, 60)
+            #session.logger.info("start: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
+            #sleep(sleepMinutes * 60)
+            #session.logger.info("start: Done sleeping going to continue looping...")
 
         session.logger.info("start: Angie loop completed , going to exit...")
         session.logger.info("--------------ENGAGEMENT BOT RESULT : LIKE PERFORMED/EXPECTED %s/%s FOLLOW PERFORMED/EXPECTED: %s/%s UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
