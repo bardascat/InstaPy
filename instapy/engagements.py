@@ -209,6 +209,10 @@ class Engagements:
 
     def performFollow(self, followAmount, numberOfPostsToInteract, operation, link, user_name, tag):
 
+        if user_name is None:
+            self.logger.error("performFollow: Cannot follow user: %s ", user_name)
+            return False
+
         if self.totalFollowPerformed >= self.totalFollowExpected:
             self.logger.error("performLike: ERROR - The follow amount is reached. Expected %s, performed %s " % (
                 self.totalFollowExpected, self.totalFollowPerformed))
