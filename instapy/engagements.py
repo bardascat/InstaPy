@@ -9,19 +9,18 @@ from .like_util import get_links_for_tag, check_link, get_links_for_location
 from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 import time
+import  bot_action_handler
+from datetime import datetime
 
 class Engagements:
     def __init__(self,
-                 totalLikes,
-                 totalFollow,
-                 totalUnfollow,
                  campaign,
                  instapy
                  ):
 
-        self.totalLikeExpected = totalLikes
-        self.totalFollowExpected = totalFollow
-        self.totalUnfollowExpected = totalUnfollow
+        self.totalLikeExpected = 0
+        self.totalFollowExpected = 0
+        self.totalUnfollowExpected = 0
 
         self.username = campaign['username']
         self.campaign = campaign
@@ -29,15 +28,12 @@ class Engagements:
         self.browser = instapy.browser
         self.logger = instapy.logger
 
-        # TODO: these values should be extracted from db ???
-        self.totalLikePerformed = 0
-        self.totalFollowPerformed = 0
-        self.totalUnfollowPerformed = 0
+        self.totalLikePerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.today().date(), "like", self.logger)
+        self.totalFollowPerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.today().date(), "follow", self.logger)
+        self.totalUnfollowPerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.today().date(), "unfollow", self.logger)
 
     def perform_engagement(self, operation, likeAmount, followAmount, unfollowAmount):
-        self.logger.info(
-            "start perform engagement : *********************** STARTED operation: %s, Going to perform %s likes, %s follow, %s Unfollow. ******************************" % (
-                operation['configName'], likeAmount, followAmount, unfollowAmount))
+        self.logger.info("start perform engagement: ----------------- STARTED operation: %s, Going to perform %s likes, %s follow, %s Unfollow. -------------------" % ( operation['configName'], likeAmount, followAmount, unfollowAmount))
 
         iteration = 0
         likePerformed = 0
@@ -49,19 +45,15 @@ class Engagements:
         unfollowAmountForEachTag = self.splitTotalAmount(unfollowAmount, len(operation['list']), divideAmountTo=4)
 
         # run while we have hashtags and the amount of likes,follow,unfollow is not exceeded
-        while self.shouldContinueLooping(likePerformed, followPerformed, unfollowPerformed, likeAmount, followAmount,
-                                         unfollowAmount, iteration) is True:
+        while self.shouldContinueLooping(likePerformed, followPerformed, unfollowPerformed, likeAmount, followAmount, unfollowAmount, iteration) is True:
 
-            likeAmountForeachRandomized = randint(likeAmountForEachTag,
-                                                  bot_util.randomizeValue(likeAmountForEachTag, 10, "up"))
-            followAmountForeachRandomized = randint(followAmountForEachTag,
-                                                    bot_util.randomizeValue(followAmountForEachTag, 10, "up"))
-            unfollowAmountForEachRandomized = randint(unfollowAmountForEachTag,
-                                                      bot_util.randomizeValue(unfollowAmountForEachTag, 10, "up"))
+            likeAmountForeachRandomized = randint(likeAmountForEachTag,bot_util.randomizeValue(likeAmountForEachTag, 10, "up"))
+            followAmountForeachRandomized = randint(followAmountForEachTag,bot_util.randomizeValue(followAmountForEachTag, 10, "up"))
+            unfollowAmountForEachRandomized = randint(unfollowAmountForEachTag, bot_util.randomizeValue(unfollowAmountForEachTag, 10, "up"))
 
             engagementValue = self.getItemToProcess(operation, operation['configName'])
 
-            self.logger.info("perform_engagement start iteration: %s, TAG: %s. Going to perform likes: %s, follow: %s, unfollow: %s for tag: %s" % (iteration+1, engagementValue,
+            self.logger.info("------------ perform_engagement start iteration: %s, TAG: %s. Going to perform likes: %s, follow: %s, unfollow: %s for tag: %s --------------" % (iteration+1, engagementValue,
                 likeAmountForeachRandomized, followAmountForeachRandomized, unfollowAmountForEachRandomized,
                 engagementValue))
 
@@ -92,13 +84,11 @@ class Engagements:
             followPerformed += result['followPerformed']
             unfollowPerformed += result['unfollowPerformed']
 
-            self.logger.info("-------------- perform_engagement end iteration: %s, TAG: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
-                % (iteration+1, engagementValue, result['likePerformed'], likeAmountForeachRandomized, result['followPerformed'], followAmountForeachRandomized,  result['unfollowPerformed'], unfollowAmountForEachRandomized))
+            self.logger.info("-------------- perform_engagement end iteration: %s, TAG: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (iteration+1, engagementValue, result['likePerformed'], likeAmountForeachRandomized, result['followPerformed'], followAmountForeachRandomized,  result['unfollowPerformed'], unfollowAmountForEachRandomized))
 
             iteration = iteration + 1
 
-        self.logger.info("-------------- END PERFORM_ENGAGEMENT: END operation: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
-            % (operation['configName'], likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed, unfollowAmount))
+        self.logger.info("-------------- END PERFORM_ENGAGEMENT: END operation: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (operation['configName'], likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed, unfollowAmount))
 
         return {"totalLikePerformed": likePerformed, "totalFollowPerformed": followPerformed, "totalUnfollowPerformed": unfollowPerformed}
 
@@ -214,7 +204,7 @@ class Engagements:
             return False
 
         if self.totalFollowPerformed >= self.totalFollowExpected:
-            self.logger.error("performLike: ERROR - The follow amount is reached. Expected %s, performed %s " % (
+            self.logger.error("performFollow: ERROR - The follow amount is reached. Expected %s, performed %s " % (
                 self.totalFollowExpected, self.totalFollowPerformed))
             return False
 

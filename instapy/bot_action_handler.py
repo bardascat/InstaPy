@@ -50,7 +50,7 @@ def getInitialActionAmount(self, id_campaign):
 
     # check maturity of account
     self.logger.info("getInitialActionAmount: Checking if the account is 100% functional...")
-    accountIsFullyFunctionalAfter = 90
+    accountIsFullyFunctionalAfter = 10
     campaign = fetchOne(
         "select campaign.timestamp, percentage_amount, month_start,month_end from campaign join instagram_account_type using (id_account_type) where id_campaign=%s",
         id_campaign)
@@ -298,21 +298,6 @@ def getUnfollowAmount(calculatedAmount):
     return calculatedAmount['follow_amount'] // 2
 
 
-def getLikesPerformed(self, dateParam):
-    likesPerformed = fetchOne(
-        'SELECT count(*) as no_op FROM bot_action where bot_operation like %s and date(timestamp)=%s and id_user=%s',
-        "like" + "%", str(dateParam), self.web_application_id_user)
-
-    if likesPerformed['no_op'] > 0:
-        self.logger.info("getLikesPerformed: Campaign id %s has  ALREADY performed %s likes. in day %s" % (
-            self.campaign['id_campaign'], likesPerformed['no_op'], dateParam))
-    else:
-        self.logger.info("getLikesPerformed: 0 likes PREVIOUSLY performed for campaign id  %s, in day %s" % (
-            self.campaign['id_campaign'], dateParam))
-
-    return likesPerformed['no_op']
-
-
 def getActionAmountForEachLoop(noActions, noLoops):
     if noActions < 1:
         return 0
@@ -328,17 +313,14 @@ def getActionAmountForEachLoop(noActions, noLoops):
     return randomizedActionPerLoop
 
 
-def getFollowPerformed(self, dateParam):
-    # follows peformed during this day
-    followsPerformed = fetchOne(
-        "SELECT count(*) as no_op FROM `bot_action` where (bot_operation like %s or bot_operation like %s) and date(timestamp)=%s and id_user=%s",
-        "follow_" + "%", "unfollow" + "%", str(dateParam), self.web_application_id_user)
+def getActionsPerformed(campaign, dateParam, operation, logger):
+    actionsPerformed = fetchOne(
+        'SELECT count(*) as no_op FROM bot_action where bot_operation like %s and date(timestamp)=%s and id_user=%s', operation + "%", str(dateParam), campaign["id_user"])
 
-    if followsPerformed['no_op'] > 0:
-        self.logger.info("getFollowAmount: Campaign id %s has ALREADY performed %s follow/unfollow, in day %s ." % (
-            self.campaign['id_campaign'], followsPerformed['no_op'], dateParam))
+    if actionsPerformed['no_op'] > 0:
+        logger.info("getActionsPerformed: Campaign id %s has  ALREADY performed %s %s. in day %s" % (
+            campaign['id_campaign'], operation, actionsPerformed['no_op'], dateParam))
     else:
-        self.logger.info("getLikesPerformed: 0 follow ALREADY performed for campaign %s, in day %s" % (
-            self.campaign['id_campaign'], dateParam))
+        logger.info("getActionsPerformed: 0 %s PREVIOUSLY performed for campaign id  %s, in day %s" % (operation, campaign['id_campaign'], dateParam))
 
-    return followsPerformed['no_op']
+    return actionsPerformed['no_op']

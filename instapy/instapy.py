@@ -138,10 +138,6 @@ class InstaPy:
         Settings.profile["name"] = self.username
         self.campaign = campaign
 
-        self.totalLikeExpected = 0
-        self.totalFollowExpected = 0
-        self.totalUnfollowExpected = 0
-
         self.nogui = nogui
         self.logfolder = Settings.log_location + os.path.sep
         if self.multi_logs == True:
@@ -253,9 +249,7 @@ class InstaPy:
         if self.selenium_local_session == True:
             self.set_selenium_local_session()
 
-        self.engagementService = Engagements(totalLikes=self.totalLikeExpected, totalFollow=self.totalFollowExpected,
-                                             totalUnfollow=self.totalUnfollowExpected, campaign=self.campaign,
-                                             instapy=self)
+        self.engagementService = Engagements(campaign=self.campaign,instapy=self)
 
         self.likeForLikeService = LikeForLike(campaign=self.campaign, instapy=self)
 
@@ -1064,10 +1058,6 @@ class InstaPy:
         return followed_all
 
     def set_max_actions(self, like, follow, unfollow):
-        self.totalUnfollowExpected = unfollow
-        self.totalUnfollowExpected = follow
-        self.totalLikeExpected = like
-
         self.engagementService.totalLikeExpected = like
         self.engagementService.totalFollowExpected = follow
         self.engagementService.totalUnfollowExpected = unfollow
@@ -4006,6 +3996,7 @@ class InstaPy:
     def executeAngieActions(self, operations, likeAmount, followAmount, unfollowAmount):
         self.logger.info("executeAngieLoop: Going to execute %s likes, %s follow, %s unfollow" % (likeAmount, followAmount, unfollowAmount))
 
+        #todo: a bug too many ops. also if the number of actions is low don t divide it to 4 hashtags
         noOperations = getOperationsNumber(operations)
 
         result = {"totalLikePerformed": 0, "totalFollowPerformed": 0, "totalUnfollowPerformed": 0}

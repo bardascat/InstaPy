@@ -72,40 +72,36 @@ try:
 
         noOfLoops = randint(6, 8)
 
-        session.logger.info("start: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % (
-        totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
+        session.logger.info("start.py: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % (totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
         insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
                campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 
-
-        angieResults={"totalLikePerformed": 0, "totalFollowPerformed": 0, "totalUnfollowPerformed": 0}
         for loopNumber in range(0, noOfLoops):
             likeAmountForEachLoop = getActionAmountForEachLoop(totalExpectedLikeAmount, noOfLoops)
             followAmountForEachLoop = getActionAmountForEachLoop(totalExpectedFollowAmount, noOfLoops)
             unFollowAmountForEachLoop = getActionAmountForEachLoop(totalExpectedUnfollowAmount, noOfLoops)
 
-            session.logger.info(
-                "START ITERATION %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (
-                loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
+            session.logger.info("-------------- start.py START ITERATION %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
 
             iterationResults = session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop,
                                         followAmount=followAmountForEachLoop, unfollowAmount=unFollowAmountForEachLoop)
 
-            session.logger.info("-------------- END ITERATION %s : LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (loopNumber, iterationResults['totalLikePerformed'], likeAmountForEachLoop, iterationResults['totalFollowPerformed'], followAmountForEachLoop, iterationResults['totalUnfollowPerformed'], unFollowAmountForEachLoop ))
+            session.logger.info("-------------- start.py END ITERATION %s : LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (loopNumber, iterationResults['totalLikePerformed'], likeAmountForEachLoop, iterationResults['totalFollowPerformed'], followAmountForEachLoop, iterationResults['totalUnfollowPerformed'], unFollowAmountForEachLoop ))
+
+            session.logger.info("-------------- start.py END ITERATION %s : SUMMARY FOR ALL ITERATIONS: TOTAL LIKE PERFORMED/EXPECTED %s/%s, TOTAL FOLLOW PERFORMED/EXPECTED: %s/%s, TOTAL UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (loopNumber, session.engagementService.totalLikePerformed, totalExpectedLikeAmount, session.engagementService.totalFollowPerformed, totalExpectedFollowAmount, session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
 
 
             if session.engagementService.totalLikePerformed>=totalExpectedLikeAmount and session.engagementService.totalFollowPerformed>=totalExpectedFollowAmount and session.engagementService.totalUnfollowPerformed>=totalExpectedUnfollowAmount:
-                session.logger.info("start: going to break the loop. Number of actions reached for all ops !")
+                session.logger.info("start.py: going to break the MAIN loop. Number of actions reached for all ops !")
                 break
 
             sleepMinutes = randint(30, 60)
-            session.logger.info("start: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
+            session.logger.info("start.py: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
             sleep(sleepMinutes * 60)
-            session.logger.info("start: Done sleeping going to continue looping...")
+            session.logger.info("start.py: Done sleeping going to continue looping...")
 
-        session.logger.info("start: Angie loop completed , going to exit...")
-        session.logger.info("--------------ENGAGEMENT BOT RESULT : LIKE PERFORMED/EXPECTED %s/%s FOLLOW PERFORMED/EXPECTED: %s/%s UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------"
-                            % (session.engagementService.totalLikePerformed, totalExpectedLikeAmount, session.engagementService.totalFollowPerformed, totalExpectedFollowAmount, session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
+        session.logger.info("start.py: Angie loop completed , going to exit...")
+        session.logger.info("-------------- start.py ENGAGEMENT BOT OVERALL RESULT : LIKE PERFORMED/EXPECTED %s/%s FOLLOW PERFORMED/EXPECTED: %s/%s UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (session.engagementService.totalLikePerformed, totalExpectedLikeAmount, session.engagementService.totalFollowPerformed, totalExpectedFollowAmount, session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
 
         session.logger.info("start: Setting privacy to public for this account...")
         accountPrivacyService = AccountPrivacyService(session)
