@@ -107,6 +107,10 @@ class Engagements:
                     unfollowAmountExpected))
             return False
 
+        if self.totalLikePerformed >= self.totalLikeExpected and self.totalFollowPerformed >= self.totalFollowExpected and self.totalUnfollowPerformed >= self.totalUnfollowExpected:
+            self.logger.info("shouldContinueLooping: Loop should stop. Total actions reached: LP: %s, FP: %s, UP: %s,  LE: %s, FE: %s, UE: %s" % (self.totalLikePerformed, self.totalFollowPerformed, self.totalUnfollowPerformed, self.totalLikeExpected, self.totalFollowExpected, self.totalUnfollowExpected))
+            return False
+
         return True
 
     def engage(self, links, engagementValue, likeAmountToPerform, followAmountToPerform, unfollowAmountToPerform,
