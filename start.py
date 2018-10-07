@@ -87,7 +87,7 @@ def start(session):
             session.logger.info("start.py: going to break the MAIN loop. Number of actions reached for all ops !")
             break
 
-        sleepMinutes = randint(30, 60)
+        sleepMinutes = randint(20, 35)
         session.logger.info("start.py: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
         sleep(sleepMinutes * 60)
         session.logger.info("start.py: Done sleeping going to continue looping...")

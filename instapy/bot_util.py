@@ -81,9 +81,9 @@ def getOperationByName(operations, name):
 def getOperationsNumber(operations):
     ops=0
     for o in operations:
-        if o['configName'] == 'engagement_by_location':
+        if o['configName'] == 'engagement_by_location' and o['list'] > 0:
             ops+=1
-        if o['configName'] == 'engagement_by_hashtag':
+        if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0:
             ops+=1
 
     return ops
