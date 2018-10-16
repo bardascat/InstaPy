@@ -239,6 +239,11 @@ def getAmountDistribution(self, id_campaign):
     log['expected_amount'] = finalActionAmount
     log['initial_action_amount'] = initialActionAmountResult
     log['id_amount_distribution'] = foundRightCategory['id_amount_distribution']
+
+    if id_campaign==1 or id_campaign==287:
+        log['expected_amount']['like_amount']= 1000
+        log['expected_amount']['follow_amount'] = 1200
+
     logJson = json.dumps(log)
 
     id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
