@@ -153,6 +153,7 @@ def resumeOperation(self, id_campaign):
 
     resumeResultParsed = json.loads(resumeResult['details'])
 
+    result['action_settings'] = resumeResultParsed['action_settings']
     result['like_amount'] = resumeResultParsed['expected_amount']['like_amount']
     result['follow_amount'] = resumeResultParsed['expected_amount']['follow_amount']
 

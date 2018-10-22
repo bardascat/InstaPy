@@ -107,10 +107,11 @@ class LikeForLike:
 
         if liked is True:
             self.logger.info("likeForLike: performLike: SUCCESSFUL liked post id %s", post['id_post'])
-            api_db.insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                            None, None, None,
-                            None, None, None,
-                            url, 'like_for_like', 'like_for_like', self.instapy.id_log)
+            #todo fix the id_log
+            #api_db.insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+            #                None, None, None,
+            #                None, None, None,
+            #                url, 'like_for_like', 'like_for_like', self.instapy.id_log)
 
         else:
             self.logger.info(
