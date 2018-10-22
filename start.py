@@ -40,7 +40,7 @@ def start(session):
 
     totalExpectedLikeAmount = int(getLikeAmount(calculatedAmount))
     totalExpectedFollowAmount = int(getFollowAmount(calculatedAmount))
-    totalExpectedUnfollowAmount = int(getUnfollowAmount(calculatedAmount))
+    totalExpectedUnfollowAmount = int(getUnfollowAmount(calculatedAmount, session.logger))
 
     #if amount of action was reached earlier this day
     if session.engagementService.totalLikePerformed >= totalExpectedLikeAmount and session.engagementService.totalFollowPerformed >= totalExpectedFollowAmount and session.engagementService.totalUnfollowPerformed >= totalExpectedUnfollowAmount:

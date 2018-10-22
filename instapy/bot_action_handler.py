@@ -17,22 +17,31 @@ def getInitialActionAmount(self, id_campaign):
     result['accountMaturity']['warmingUp'] = False
     result['accountMaturity']['startup'] = False
 
-    maximumLikeAmountResult = fetchOne("select * from bot_config where `key`='maximum_like_amount'")
-    result['initialAmount']['maximumLikeAmount'] = int(maximumLikeAmountResult['value'])
 
-    maximumFollowAmountResult = fetchOne("select * from bot_config where `key`='maximum_follow_amount'")
-    result['initialAmount']['maximumFollowAmount'] = int(maximumFollowAmountResult['value'])
+    actionConfigs = fetchOne("select bot_action_settings.* from campaign join user_subscription using (id_user) join plan using (id_plan) join bot_action_settings using (id_action_settings) where campaign.id_campaign=%s", id_campaign)
 
-    minimumLikeAmountResult = fetchOne("select * from bot_config where `key`='minimum_like_amount'")
-    result['initialAmount']['minimumLikeAmount'] = int(minimumLikeAmountResult['value'])
+    if actionConfigs is None:
+        raise Exception("Invalid bot settings for this campaign")
 
-    minimumFollowAmountResult = fetchOne("select * from bot_config where `key`='minimum_follow_amount'")
-    result['initialAmount']['minimumFollowAmount'] = int(minimumFollowAmountResult['value'])
+    self.logger.info("getInitialActionAmount: actionConfigs: %s", actionConfigs)
+
+    result['initialAmount']['maximumLikeAmount'] = int(actionConfigs['maximum_like_amount'])
+
+
+    result['initialAmount']['maximumFollowAmount'] = int(actionConfigs['maximum_follow_amount'])
+
+
+    result['initialAmount']['minimumLikeAmount'] = int(actionConfigs['minimum_like_amount'])
+
+
+    result['initialAmount']['minimumFollowAmount'] = int(actionConfigs['minimum_follow_amount'])
 
     result['initialAmount']['minimumActionAmount'] = result['initialAmount']['minimumLikeAmount'] + \
                                                      result['initialAmount']['minimumFollowAmount']
     result['initialAmount']['maximumActionAmount'] = result['initialAmount']['maximumLikeAmount'] + \
                                                      result['initialAmount']['maximumFollowAmount']
+
+    result["action_settings"]=actionConfigs
 
     self.logger.info("getInitialActionAmount: Default bot configuration is: %s ", result)
 
@@ -229,6 +238,8 @@ def getAmountDistribution(self, id_campaign):
 
     operations = getBotOperations(id_campaign, self.logger)
     finalActionAmount = get_action_amount(result, operations)
+    finalActionAmount["action_settings"]=initialActionAmountResult["action_settings"]
+
     # create the log in database
     log = {}
     log['amount_selected_category'] = {}
@@ -236,6 +247,7 @@ def getAmountDistribution(self, id_campaign):
     log['amount_selected_category']['daysAllocatedForThisCategory'] = daysForThisCategory
     log['amount_selected_category']['usedDaysForThisCategory'] = usedDaysForThisCategory
     log['amount_selected_category']['currentMonthNumberOfDays'] = currentMonthNumberOfDays
+    log['action_settings'] = initialActionAmountResult['action_settings']
     log['expected_amount'] = finalActionAmount
     log['initial_action_amount'] = initialActionAmountResult
     log['id_amount_distribution'] = foundRightCategory['id_amount_distribution']
@@ -296,11 +308,17 @@ def getFollowAmount(calculatedAmount):
     return calculatedAmount['follow_amount'] // 2
 
 
-def getUnfollowAmount(calculatedAmount):
+def getUnfollowAmount(calculatedAmount, logger):
+    logger.info("getUnfollowAmount: Calculating unfollow amount...")
+
     if calculatedAmount['follow_amount'] < 1:
+        logger.info("getUnfollowAmount: follow amount is 0")
         return 0
 
-    return calculatedAmount['follow_amount'] // 2
+    unfollowAmount = calculatedAmount['follow_amount'] - (calculatedAmount['follow_amount'] * calculatedAmount['action_settings']["follow_unfollow_ratio"])
+    logger.info("getUnfollowAmount: Follow amount: %s, follow_unfollow_ratio: %s, result: %s" % (calculatedAmount['follow_amount'], calculatedAmount['action_settings']["follow_unfollow_ratio"], unfollowAmount))
+
+    return unfollowAmount
 
 
 def getActionAmountForEachLoop(noActions, noLoops):
