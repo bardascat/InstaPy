@@ -603,7 +603,7 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
             logger.info('like_image: --> Image already liked!')
             return False, "already liked"
 
-    logger.info('like_image: --> Invalid Like Element!')
+    logger.info('like_image: --> Invalid Like Element!, element is : %s', like_elem)
 
     return False, "invalid element"
 
