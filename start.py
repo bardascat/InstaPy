@@ -133,7 +133,7 @@ try:
 
 
 except Exception as exc:
-    #exceptionDetail = traceback.format_exc()
-    #print(exceptionDetail)
+    exceptionDetail = traceback.format_exc()
+    print(exceptionDetail)
     exceptionHandler = ExceptionHandler(session,'engagement_bot')
     exceptionHandler.handle(exc)
