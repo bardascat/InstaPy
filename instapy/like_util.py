@@ -568,8 +568,8 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
     #if quota_supervisor("likes") == "jump":
     #    return False, "jumped"
 
-    like_xpath = "//button/span[@aria-label='Like']"
-    unlike_xpath = "//button/span[@aria-label='Unlike']"
+    like_xpath = "//section/span/button/span[@aria-label='Like']"
+    unlike_xpath = "//section/span/button/span[@aria-label='Unlike']"
 
     # find first for like element
     like_elem = browser.find_elements_by_xpath(like_xpath)
@@ -603,7 +603,7 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
             logger.info('like_image: --> Image already liked!')
             return False, "already liked"
 
-    logger.info('like_image: --> Invalid Like Element!')
+    logger.info('like_image: --> Invalid Like Element!, element is : %s', like_elem)
 
     return False, "invalid element"
 
