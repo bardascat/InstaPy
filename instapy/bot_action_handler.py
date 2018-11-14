@@ -302,8 +302,8 @@ def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
         result['follow_amount'] = defaultFollowAmount
 
     if userWantsToUnfollow is not True and enableFollows == True:
-        result["unfollow_amount"] = defaultFollowAmount - (defaultFollowAmount * follow_unfollow_ratio)
-        result["follow_amount"] = defaultFollowAmount - result["unfollow_amount"]
+        result["unfollow_amount"] = int(defaultFollowAmount - (defaultFollowAmount * follow_unfollow_ratio))
+        result["follow_amount"] = int(defaultFollowAmount - result["unfollow_amount"])
 
     result["total_follow"] = defaultFollowAmount
 
