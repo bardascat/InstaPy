@@ -291,7 +291,8 @@ class Engagements:
         if randomProbability <= probabilityPercentage:
             self.logger.info("performUnfollow: User wants to unfollow after %s hours" % userWantsToUnfollow['value'])
 
-            selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null order by timestamp asc limit %s"
+            #get users to unfollow older than x days. People who did not follow back are the first to be unfollowed.
+            selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null ORDER BY - follow_back desc, timestamp asc limit %s"
             recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
                                         self.campaign['id_user'], 1)
 
