@@ -17,8 +17,9 @@ def getInitialActionAmount(self, id_campaign):
     result['accountMaturity']['warmingUp'] = False
     result['accountMaturity']['startup'] = False
 
-
-    actionConfigs = fetchOne("select bot_action_settings.* from campaign join user_subscription using (id_user) join plan using (id_plan) join bot_action_settings using (id_action_settings) where campaign.id_campaign=%s", id_campaign)
+    actionConfigs = fetchOne(
+        "select bot_action_settings.* from campaign join user_subscription using (id_user) join plan using (id_plan) join bot_action_settings using (id_action_settings) where campaign.id_campaign=%s",
+        id_campaign)
 
     if actionConfigs is None:
         raise Exception("Invalid bot settings for this campaign")
@@ -27,12 +28,9 @@ def getInitialActionAmount(self, id_campaign):
 
     result['initialAmount']['maximumLikeAmount'] = int(actionConfigs['maximum_like_amount'])
 
-
     result['initialAmount']['maximumFollowAmount'] = int(actionConfigs['maximum_follow_amount'])
 
-
     result['initialAmount']['minimumLikeAmount'] = int(actionConfigs['minimum_like_amount'])
-
 
     result['initialAmount']['minimumFollowAmount'] = int(actionConfigs['minimum_follow_amount'])
 
@@ -41,7 +39,7 @@ def getInitialActionAmount(self, id_campaign):
     result['initialAmount']['maximumActionAmount'] = result['initialAmount']['maximumLikeAmount'] + \
                                                      result['initialAmount']['maximumFollowAmount']
 
-    result["action_settings"]=actionConfigs
+    result["action_settings"] = actionConfigs
 
     self.logger.info("getInitialActionAmount: Default bot configuration is: %s ", result)
 
@@ -156,6 +154,7 @@ def resumeOperation(self, id_campaign):
     result['action_settings'] = resumeResultParsed['action_settings']
     result['like_amount'] = resumeResultParsed['expected_amount']['like_amount']
     result['follow_amount'] = resumeResultParsed['expected_amount']['follow_amount']
+    result['unfollow_amount'] = resumeResultParsed['expected_amount']['unfollow_amount']
 
     return result
 
@@ -163,7 +162,7 @@ def resumeOperation(self, id_campaign):
 def getAmountDistribution(self, id_campaign):
     resume = resumeOperation(self, id_campaign)
 
-    if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None:
+    if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         return resume
 
@@ -238,8 +237,9 @@ def getAmountDistribution(self, id_campaign):
                                           initialActionAmountResult['calculatedAmount']['maximumFollowAmount'] - 1)
 
     operations = getBotOperations(id_campaign, self.logger)
-    finalActionAmount = get_action_amount(result, operations)
-    finalActionAmount["action_settings"]=initialActionAmountResult["action_settings"]
+    finalActionAmount = get_action_amount(result, operations, id_campaign,
+                                          initialActionAmountResult['action_settings']['follow_unfollow_ratio'])
+    finalActionAmount["action_settings"] = initialActionAmountResult["action_settings"]
 
     # create the log in database
     log = {}
@@ -253,10 +253,6 @@ def getAmountDistribution(self, id_campaign):
     log['initial_action_amount'] = initialActionAmountResult
     log['id_amount_distribution'] = foundRightCategory['id_amount_distribution']
 
-    if id_campaign==1 or id_campaign==287:
-        log['expected_amount']['like_amount']= 1000
-        log['expected_amount']['follow_amount'] = 1200
-
     logJson = json.dumps(log)
 
     id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
@@ -268,9 +264,10 @@ def getAmountDistribution(self, id_campaign):
     return finalActionAmount
 
 
-def get_action_amount(result, operations):
+def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
     enableLikes = False
     enableFollows = False
+    userWantsToUnfollow = bot_util.getIfUserWantsToUnfollow(id_campaign)
 
     for o in operations:
         if o['configName'] == 'engagement_by_location' and o['enabled'] == 1:
@@ -287,39 +284,30 @@ def get_action_amount(result, operations):
             if o['follow_user'] == 1:
                 enableFollows = True
 
+    defaultFollowAmount = result['follow_amount']
+
     if enableLikes == False:
         result['like_amount'] = 0
 
     if enableFollows == False:
         result['follow_amount'] = 0
 
+    if userWantsToUnfollow == False:
+        result['unfollow_amount'] = 0
+
+    if enableFollows == False and userWantsToUnfollow is not False:
+        result['unfollow_amount'] = defaultFollowAmount
+
+    if userWantsToUnfollow == False and enableFollows == True:
+        result['follow_amount'] = defaultFollowAmount
+
+    if userWantsToUnfollow is not True and enableFollows == True:
+        result["unfollow_amount"] = defaultFollowAmount - (defaultFollowAmount * follow_unfollow_ratio)
+        result["follow_amount"] = defaultFollowAmount - result["unfollow_amount"]
+
+    result["total_follow"] = defaultFollowAmount
+
     return result
-
-
-def getLikeAmount(calculatedAmount):
-    likesAmount = calculatedAmount['like_amount']
-
-    return likesAmount
-
-
-def getFollowAmount(calculatedAmount):
-    if calculatedAmount['follow_amount'] < 1:
-        return 0
-
-    return calculatedAmount['follow_amount'] // 2
-
-
-def getUnfollowAmount(calculatedAmount, logger):
-    logger.info("getUnfollowAmount: Calculating unfollow amount...")
-
-    if calculatedAmount['follow_amount'] < 1:
-        logger.info("getUnfollowAmount: follow amount is 0")
-        return 0
-
-    unfollowAmount = calculatedAmount['follow_amount'] - (calculatedAmount['follow_amount'] * calculatedAmount['action_settings']["follow_unfollow_ratio"])
-    logger.info("getUnfollowAmount: Follow amount: %s, follow_unfollow_ratio: %s, result: %s" % (calculatedAmount['follow_amount'], calculatedAmount['action_settings']["follow_unfollow_ratio"], unfollowAmount))
-
-    return unfollowAmount
 
 
 def getActionAmountForEachLoop(noActions, noLoops):
@@ -339,12 +327,14 @@ def getActionAmountForEachLoop(noActions, noLoops):
 
 def getActionsPerformed(campaign, dateParam, operation, logger):
     actionsPerformed = fetchOne(
-        'SELECT count(*) as no_op FROM bot_action where bot_operation like %s and date(timestamp)=%s and id_user=%s', operation + "%", str(dateParam), campaign["id_user"])
+        'SELECT count(*) as no_op FROM bot_action where bot_operation like %s and date(timestamp)=%s and id_user=%s',
+        operation + "%", str(dateParam), campaign["id_user"])
 
     if actionsPerformed['no_op'] > 0:
         logger.info("getActionsPerformed: Campaign id %s has  ALREADY performed %s %s. in day %s" % (
             campaign['id_campaign'], operation, actionsPerformed['no_op'], dateParam))
     else:
-        logger.info("getActionsPerformed: 0 %s PREVIOUSLY performed for campaign id  %s, in day %s" % (operation, campaign['id_campaign'], dateParam))
+        logger.info("getActionsPerformed: 0 %s PREVIOUSLY performed for campaign id  %s, in day %s" % (
+            operation, campaign['id_campaign'], dateParam))
 
     return actionsPerformed['no_op']

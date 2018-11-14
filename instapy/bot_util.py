@@ -96,6 +96,7 @@ def getBotOperations(id_campaign, logger):
     totalLikeOperations = 0
     totalFollowOperations = 0
 
+    #todo: why unfollow is not loaded?
     operations = select(
         "SELECT configName, id_config, enabled, like_post, follow_user, percentageAmount FROM campaign_config where id_campaign=%s and enabled=1",
         id_campaign)

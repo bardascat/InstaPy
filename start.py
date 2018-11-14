@@ -4,8 +4,7 @@ import os
 import sys
 from time import sleep
 from instapy import InstaPy
-from instapy.bot_action_handler import getAmountDistribution, getLikeAmount, getFollowAmount, getUnfollowAmount, \
-    getActionAmountForEachLoop
+from instapy.bot_action_handler import getAmountDistribution, getActionAmountForEachLoop
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
 from instapy.exception_handler import ExceptionHandler
@@ -24,25 +23,26 @@ args = parser.parse_args()
 if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
 
-def start(session):
 
+def start(session):
     session.logger.info("start: ENGAGEMENT BOT STARTED for campaign: %s, with ip: %s. Going to try login..." % (
-    campaign['id_campaign'], campaign['ip']))
+        campaign['id_campaign'], campaign['ip']))
     status = session.login()
     if status == False:
         exit("Could not  login")
 
-    #if no actions are set by the user
+    # if no actions are set by the user
     calculatedAmount = getAmountDistribution(session, args.angie_campaign)
     if calculatedAmount['like_amount'] == 0 and calculatedAmount['follow_amount'] == 0:
-        session.logger.info("start: No actions set, going to exit. like_amount:%s, follow_amount:%s" % (calculatedAmount['like_amount'], calculatedAmount['follow_amount']))
+        session.logger.info("start: No actions set, going to exit. like_amount:%s, follow_amount:%s" % (
+        calculatedAmount['like_amount'], calculatedAmount['follow_amount']))
         return False
 
-    totalExpectedLikeAmount = int(getLikeAmount(calculatedAmount))
-    totalExpectedFollowAmount = int(getFollowAmount(calculatedAmount))
-    totalExpectedUnfollowAmount = int(getUnfollowAmount(calculatedAmount, session.logger))
+    totalExpectedLikeAmount = int(calculatedAmount["like_amount"])
+    totalExpectedFollowAmount = int(calculatedAmount["follow_amount"])
+    totalExpectedUnfollowAmount = int(calculatedAmount["unfollow_amount"])
 
-    #if amount of action was reached earlier this day
+    # if amount of action was reached earlier this day
     if session.engagementService.totalLikePerformed >= totalExpectedLikeAmount and session.engagementService.totalFollowPerformed >= totalExpectedFollowAmount and session.engagementService.totalUnfollowPerformed >= totalExpectedUnfollowAmount:
         session.logger.info("start.py: going to break the MAIN loop. Number of actions reached for all ops !")
         return False
@@ -50,12 +50,14 @@ def start(session):
     operations = getBotOperations(campaign['id_campaign'], session.logger)
     session.set_max_actions(totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount)
 
-    session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
+    session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (
+    os.getpid(), campaign['username'], campaign['ip']))
     session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
     noOfLoops = randint(6, 8)
 
-    session.logger.info("start.py: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % ( totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
+    session.logger.info("start.py: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % (
+    totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
            campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 
@@ -64,8 +66,9 @@ def start(session):
         followAmountForEachLoop = getActionAmountForEachLoop(totalExpectedFollowAmount, noOfLoops)
         unFollowAmountForEachLoop = getActionAmountForEachLoop(totalExpectedUnfollowAmount, noOfLoops)
 
-        session.logger.info("-------------- start.py START ITERATION %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (
-            loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
+        session.logger.info(
+            "-------------- start.py START ITERATION %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (
+                loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
 
         iterationResults = session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop,
                                                        followAmount=followAmountForEachLoop,
@@ -73,15 +76,15 @@ def start(session):
 
         session.logger.info(
             "-------------- start.py END ITERATION %s : LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (
-            loopNumber, iterationResults['totalLikePerformed'], likeAmountForEachLoop,
-            iterationResults['totalFollowPerformed'], followAmountForEachLoop,
-            iterationResults['totalUnfollowPerformed'], unFollowAmountForEachLoop))
+                loopNumber, iterationResults['totalLikePerformed'], likeAmountForEachLoop,
+                iterationResults['totalFollowPerformed'], followAmountForEachLoop,
+                iterationResults['totalUnfollowPerformed'], unFollowAmountForEachLoop))
 
         session.logger.info(
             "-------------- start.py END ITERATION %s : SUMMARY FOR ALL ITERATIONS: TOTAL LIKE PERFORMED/EXPECTED %s/%s, TOTAL FOLLOW PERFORMED/EXPECTED: %s/%s, TOTAL UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (
-            loopNumber, session.engagementService.totalLikePerformed, totalExpectedLikeAmount,
-            session.engagementService.totalFollowPerformed, totalExpectedFollowAmount,
-            session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
+                loopNumber, session.engagementService.totalLikePerformed, totalExpectedLikeAmount,
+                session.engagementService.totalFollowPerformed, totalExpectedFollowAmount,
+                session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
 
         if session.engagementService.totalLikePerformed >= totalExpectedLikeAmount and session.engagementService.totalFollowPerformed >= totalExpectedFollowAmount and session.engagementService.totalUnfollowPerformed >= totalExpectedUnfollowAmount:
             session.logger.info("start.py: going to break the MAIN loop. Number of actions reached for all ops !")
@@ -95,9 +98,9 @@ def start(session):
     session.logger.info("start.py: Angie loop completed , going to exit...")
     session.logger.info(
         "-------------- start.py ENGAGEMENT BOT OVERALL RESULT : LIKE PERFORMED/EXPECTED %s/%s FOLLOW PERFORMED/EXPECTED: %s/%s UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (
-        session.engagementService.totalLikePerformed, totalExpectedLikeAmount,
-        session.engagementService.totalFollowPerformed, totalExpectedFollowAmount,
-        session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
+            session.engagementService.totalLikePerformed, totalExpectedLikeAmount,
+            session.engagementService.totalFollowPerformed, totalExpectedFollowAmount,
+            session.engagementService.totalUnfollowPerformed, totalExpectedUnfollowAmount))
 
     session.logger.info("start: Setting privacy to public for this account...")
     accountPrivacyService = AccountPrivacyService(session)
@@ -108,8 +111,11 @@ def start(session):
 
 try:
 
-    campaign = fetchOne("select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s", args.angie_campaign)
-    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)
+    campaign = fetchOne(
+        "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
+        args.angie_campaign)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+           campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)
 
     if campaign['ip'] is None:
         exit("Invalid proxy")
@@ -135,5 +141,5 @@ try:
 except Exception as exc:
     exceptionDetail = traceback.format_exc()
     print(exceptionDetail)
-    exceptionHandler = ExceptionHandler(session,'engagement_bot')
+    exceptionHandler = ExceptionHandler(session, 'engagement_bot')
     exceptionHandler.handle(exc)
