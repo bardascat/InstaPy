@@ -373,11 +373,7 @@ class InstaPy:
             chrome_options.add_experimental_option('prefs', chrome_prefs)
             try:
 
-                service_args = ['--verbose']
-                self.logger.info("Loading chromedriver from: %s", chromedriver_location)
                 self.browser = webdriver.Chrome(chromedriver_location,
-                                                service_args=service_args,
-                                                service_log_path="/home/ubuntu/chromedriver.log",
                                                 desired_capabilities=capabilities,
                                                 chrome_options=chrome_options)
             except WebDriverException as exc:
