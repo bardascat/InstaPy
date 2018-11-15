@@ -372,6 +372,7 @@ class InstaPy:
 
             chrome_options.add_experimental_option('prefs', chrome_prefs)
             try:
+                self.logger.info("Loading chromedriver from: %s", chromedriver_location)
                 self.browser = webdriver.Chrome(chromedriver_location,
                                                 desired_capabilities=capabilities,
                                                 chrome_options=chrome_options)
