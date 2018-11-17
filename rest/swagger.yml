@@ -95,3 +95,43 @@ paths:
           description: Successfully started l4l dispatcher
         404:
           description: No active l4l dispatcher was found
+  /bot/verify:
+    get:
+      operationId: bot.verify
+      tags:
+        - Verify instagram connection
+      summary: Verify instagram credentials
+      parameters:
+        - name: username
+          in: query
+          description: instagram username
+          type: string
+          required: True
+        - name: password
+          in: query
+          description: instagram password
+          type: string
+          required: True
+        - name: id_campaign
+          in: query
+          description: id_campaign
+          type: string
+          required: True
+      responses:
+        200:
+          description: Successfully connected to instagram
+  /location:
+    get:
+      operationId: location.search
+      tags:
+        - Search for instagram locations
+      summary: Search instagram locations
+      parameters:
+        - name: location
+          in: query
+          description: location
+          type: string
+          required: True
+      responses:
+        200:
+          description: Locations
