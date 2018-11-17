@@ -17,7 +17,7 @@ def getLogger():
     sys.stdout = codecs.getwriter('utf8')(sys.stdout)
     sys.path.append(os.path.join(sys.path[0], '../'))
     fileName = "rest_application.log"
-    logging.basicConfig(format='%(asctime)s %(message)s', filename='/Users/cbardas/instapy-log/' + fileName, level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s %(message)s', filename='/home/instapy-log/' + fileName, level=logging.INFO)
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
