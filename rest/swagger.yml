@@ -1,0 +1,97 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: Angie Rest API for Python APP
+consumes:
+  - application/json
+produces:
+  - application/jsona
+
+basePath: /api
+
+# Paths supported by the server application
+paths:
+  /engagement-bots:
+    get:
+      operationId: engagement-bot.readAll
+      tags:
+        - Retrieve all active engagement bots
+      summary: Returns all engagement bots
+      responses:
+        200:
+          description: Successfully returned engagement bot list
+  /engagement-bots:
+    delete:
+      operationId: engagement-bot.stopAll
+      tags:
+        - Stop all bots
+      summary: Stop all bots
+      responses:
+        200:
+          description: Successfully stopped all bots
+  /engagement-bot:
+    post:
+      operationId: engagement-bot.start
+      tags:
+        - Start engagement bot
+      summary: Starts a new engageemnt bot for a specific id_campaign
+      parameters:
+        - name: id_campaign
+          in: body
+          required: True
+          schema:
+            type: integer
+      responses:
+        201:
+          description: Successfully started engagement bot
+  /engagement-bot/{id_campaign}:
+    get:
+      operationId: engagement-bot.getBot
+      tags:
+        - GET an engagement bot
+      summary: Returns the status of an engagement bot for a specific campaign
+      parameters:
+        - name: id_campaign
+          in: path
+          description: Id of the campaign
+          type: string
+          required: True
+      responses:
+        200:
+          description: Returns bot details
+        404:
+          description: Engagement bot was not found for campaign
+  /engagement-bot/scheduler:
+    post:
+      operationId: engagement-bot.scheduler
+      tags:
+        - Schedule engagment bots
+      summary: Creates a new engagemnt bot scheduler
+      parameters:
+        - name: id_campaign
+          in: body
+          required: True
+          schema:
+            type: string
+      responses:
+        201:
+          description: Successfully started an engagment bot scheduler
+  /l4l-dispatcher:
+    post:
+      operationId: l4l-dispatcher.start
+      tags:
+        - Start l4l dispatcher
+      summary: Starts a new instance of like for like dispatcher
+      responses:
+        201:
+          description: Successfully started l4l dispatcher
+    get:
+      operationId: l4l-dispatcher.getDispatcher
+      tags:
+        - Retrieve l4l dispatcher
+      summary: Retrieves the active l4l dispatcher or 404
+      responses:
+        200:
+          description: Successfully started l4l dispatcher
+        404:
+          description: No active l4l dispatcher was found

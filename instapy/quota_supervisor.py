@@ -4,7 +4,6 @@ from datetime import time, timedelta, date, datetime
 import random
 from sys import platform
 import sqlite3
-from plyer import notification
 
 from .time_util import sleep_actual
 from .time_util import get_time
