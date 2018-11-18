@@ -35,12 +35,16 @@ paths:
       tags:
         - Start engagement bot
       summary: Starts a new engageemnt bot for a specific id_campaign
+      consumes:
+        - application/json
+      produces:
+        - application/json
       parameters:
-        - name: id_campaign
-          in: body
-          required: True
+        - in: body
+          name: campaign
+          required: true
           schema:
-            type: string
+            $ref: '#/definitions/campaign'
       responses:
         201:
           description: Successfully started engagement bot
@@ -135,3 +139,10 @@ paths:
       responses:
         200:
           description: Locations
+definitions:
+  campaign:
+    type: object
+    properties:
+      id_campaign:
+        type: number
+    title: campaign
