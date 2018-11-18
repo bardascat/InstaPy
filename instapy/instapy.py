@@ -454,7 +454,7 @@ class InstaPy:
         proccount = tmp.count(processname)
         self.logger.info("canBotStart: Found %s running processes", proccount)
         # this is not working properly on localhost
-        if proccount > 1:
+        if proccount > 2:
             self.logger.info("canBotStart: ERROR: another bot instance with name %s is running for campaign %s" % (prefix, id_campaign))
             exit("canBotStart: ERROR: another bot instance is running for this campaign")
 
