@@ -127,7 +127,7 @@ paths:
         - Search for instagram locations
       summary: Search instagram locations
       parameters:
-        - name: location
+        - name: query
           in: query
           description: location
           type: string
