@@ -23,7 +23,7 @@ def start(campaign):
         id_campaign) + " \""
 
     logger.info("executing command: %s", command)
-    subprocess.Popen(command)
+    subprocess.Popen(command, close_fds=True, shell=True)
 
 
 def getBot(id_campaign):
