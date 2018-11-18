@@ -40,7 +40,7 @@ paths:
           in: body
           required: True
           schema:
-            type: integer
+            type: string
       responses:
         201:
           description: Successfully started engagement bot

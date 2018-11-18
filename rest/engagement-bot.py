@@ -1,7 +1,7 @@
 import subprocess
 import os
 from rest_logger import getLogger
-
+import json
 python_path = "python"
 base_path = "/home/ubuntu/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
@@ -11,8 +11,11 @@ def readAll():
     x = 1
 
 
-def start(id_campaign):
+def start(body):
     logger = getLogger()
+    bodyObject = json.loads(body)
+    logger.info(body)
+    id_campaign = bodyObject["id_campaign"]
     logger.info("engagement-bot.start: Going to start bot for campaign id: %s", id_campaign)
 
     processName = 'angie_instapy_idc'+str(id_campaign)
