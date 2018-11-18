@@ -38,8 +38,10 @@ def scheduler(id_campaigns):
 
 
 def stopAll():
-    x = 1
-    DEVNULL = open(os.devnull, 'wb')
+    logger = getLogger()
+    logger.info("engagement-bot.stopAll")
     processName = 'angie_stop_bots'
-    subprocess.Popen("bash -c \"exec -a " + processName + " python " + base_path + "/stop_bot.py " + " \"", stdin=None,
-                     stdout=DEVNULL, stderr=DEVNULL, close_fds=True, shell=True)
+
+    command = "bash -c \"exec -a " + processName + " python " + base_path + "/stop_bot.py" + " \""
+    logger.info("executing command: %s", command)
+    subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
