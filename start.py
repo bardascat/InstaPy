@@ -52,7 +52,6 @@ def start(session):
 
     session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (
     os.getpid(), campaign['username'], campaign['ip']))
-    session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
     noOfLoops = randint(6, 8)
 
@@ -131,6 +130,8 @@ try:
                       multi_logs=True,
                       bot_type="engagement_bot",
                       force_login=False)
+
+    session.canBotStart(args.angie_campaign, "angie_instapy_idc")
 
     session.set_quota_supervisor(enabled=True)
     session.set_relationship_bounds(enabled=True, potency_ratio=0.01, max_followers=999999, max_following=99999,min_followers=100, min_following=50)
