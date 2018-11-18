@@ -28,8 +28,17 @@ def start(campaign):
 
 
 def getBot(id_campaign):
-    # todo ->
-    x = 1
+    logger = getLogger()
+    logger.info("engagement-bot.getBot: Getting bot for campaign id: %s", id_campaign)
+
+    processname = 'angie_instapy_idc' + str(id_campaign)
+    tmp = os.popen("ps -Af").read()
+    proccount = tmp.count(processname)
+
+    logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (proccount, processname))
+    if proccount > 0:
+        return True
+    return False
 
 
 def scheduler(campaigns):
@@ -42,7 +51,8 @@ def scheduler(campaigns):
     for campaign in campaigns:
         campaignsList.append(campaign['id_campaign'])
 
-    command = "bash -c \"exec -a " + processName + " python " + base_path + "/schedule.py  -angie_campaigns='" + json.dumps(campaignsList) + "' \""
+    command = "bash -c \"exec -a " + processName + " python " + base_path + "/schedule.py  -angie_campaigns='" + json.dumps(
+        campaignsList) + "' \""
 
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
