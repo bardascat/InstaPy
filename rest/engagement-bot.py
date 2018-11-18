@@ -1,5 +1,6 @@
 import os
 import subprocess
+import json
 
 from rest_logger import getLogger
 
@@ -31,10 +32,20 @@ def getBot(id_campaign):
     x = 1
 
 
-def scheduler(id_campaigns):
+def scheduler(campaigns):
+    logger = getLogger()
+    logger.info("engagement-bot.scheduler: Going to schedule the following campaigns: %s", campaigns)
+
     processName = 'angie_schedule_instapy_bot_to_start'
-    subprocess.Popen("bash -c \"exec -a " + processName + " python " + base_path + "/start.py  -angie_campaign=" + str(
-        id_campaigns) + " \"", stdin=None, stdout=DEVNULL, stderr=DEVNULL, close_fds=True, shell=True)
+
+    campaignsList = []
+    for campaign in campaigns:
+        campaignsList.append(campaign['id_campaign'])
+
+    command = "bash -c \"exec -a " + processName + " python " + base_path + "/schedule.py  -angie_campaigns='" + json.dumps(campaignsList) + "' \""
+
+    logger.info("executing command: %s", command)
+    subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
 def stopAll():

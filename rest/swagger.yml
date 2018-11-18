@@ -72,11 +72,13 @@ paths:
         - Schedule engagment bots
       summary: Creates a new engagemnt bot scheduler
       parameters:
-        - name: id_campaign
-          in: body
-          required: True
+        - in: body
+          name: campaigns
+          required: true
           schema:
-            type: string
+            type: array
+            items:
+              $ref: '#/definitions/campaign'
       responses:
         201:
           description: Successfully started an engagment bot scheduler
