@@ -1,7 +1,7 @@
 import os
 import subprocess
 import json
-
+from flask import abort
 from rest_logger import getLogger
 
 python_path = "python"
@@ -38,7 +38,7 @@ def getBot(id_campaign):
     logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (proccount, processname))
     if proccount > 0:
         return True
-    return False
+    return abort(404)
 
 
 def scheduler(campaigns):
