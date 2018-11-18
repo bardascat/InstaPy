@@ -8,8 +8,8 @@ base_path = "/home/ubuntu/projects/instabot/run"
 DEVNULL = open(os.devnull, 'wb')
 
 
-def search(location):
-
+def search(query):
+    location = query
     SEARCH_LOCATION_ACCOUNT_OP_ART = '3'
 
     logger = getLogger()

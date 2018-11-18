@@ -2,7 +2,7 @@ import subprocess
 import os
 
 python_path = "python"
-base_path = "/Users/cbardas/PycharmProjects/InstaPy"
+base_path = "/home/ubuntu/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
 
 def readAll():
