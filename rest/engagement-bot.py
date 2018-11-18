@@ -19,8 +19,11 @@ def start(campaign):
     id_campaign = campaign["id_campaign"]
 
     processName = 'angie_instapy_idc' + str(id_campaign)
-    subprocess.Popen("bash -c \"exec -a " + processName + " python " + base_path + "/start.py  -angie_campaign=" + str(
-        id_campaign) + " \"", stdin=None, stdout=DEVNULL, stderr=DEVNULL, close_fds=True, shell=True)
+    command = "bash -c \"exec -a " + processName + " python " + base_path + "/start.py  -angie_campaign=" + str(
+        id_campaign) + " \""
+
+    logger.info("executing command: %s", command)
+    subprocess.Popen(command)
 
 
 def getBot(id_campaign):
