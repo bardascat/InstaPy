@@ -43,7 +43,7 @@ def getBot(id_campaign):
 
 def getBotLog(id_campaign,date):
     #logger = getLogger()
-    logsPath = "/Users/cbardas/instapy-log/campaign/logs/"+id_campaign+"/"+date+".log"
+    logsPath = "/home/instapy-log/campaign/logs/" + id_campaign + "/" + date + ".log"
     #logger.info("engagement-bot.getBotLog: Searching logs in path: %s", logsPath)
 
     if os.path.isfile(logsPath):
