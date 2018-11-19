@@ -15,7 +15,7 @@ def search(query):
     logger = getLogger()
     logger.info("location.search: Going to search for locations using: %s wildcard" % (location))
 
-    command = "python "+base_path + "/search_location.py -location="+location+" -id_campaign="+SEARCH_LOCATION_ACCOUNT_OP_ART
+    command = "python "+base_path + "/search_location.py -location='"+location+"' -id_campaign="+SEARCH_LOCATION_ACCOUNT_OP_ART
     logger.info("executing command:" + command)
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     result = process.communicate()[0]
