@@ -27,9 +27,9 @@ def bypass_suspicious_login(browser):
         close_button = browser.find_element_by_xpath("[text()='Close']")
 
         (ActionChains(browser)
-            .move_to_element(close_button)
-            .click()
-            .perform())
+         .move_to_element(close_button)
+         .click()
+         .perform())
 
         # update server calls
         update_activity()
@@ -43,9 +43,9 @@ def bypass_suspicious_login(browser):
             "//button[@name='choice'][text()='This Was Me']")
 
         (ActionChains(browser)
-            .move_to_element(this_was_me_button)
-            .click()
-            .perform())
+         .move_to_element(this_was_me_button)
+         .click()
+         .perform())
 
         # update server calls
         update_activity()
@@ -70,16 +70,16 @@ def bypass_suspicious_login(browser):
 
             except:
                 print("Unable to locate email or phone button, maybe "
-                        "bypass_suspicious_login=True isn't needed anymore.")
+                      "bypass_suspicious_login=True isn't needed anymore.")
                 return False
 
     send_security_code_button = browser.find_element_by_xpath(
         "//button[text()='Send Security Code']")
 
     (ActionChains(browser)
-        .move_to_element(send_security_code_button)
-        .click()
-        .perform())
+     .move_to_element(send_security_code_button)
+     .click()
+     .perform())
 
     # update server calls
     update_activity()
@@ -92,22 +92,22 @@ def bypass_suspicious_login(browser):
         "//input[@id='security_code']"))
 
     (ActionChains(browser)
-        .move_to_element(security_code_field)
-        .click()
-        .send_keys(security_code)
-        .perform())
+     .move_to_element(security_code_field)
+     .click()
+     .send_keys(security_code)
+     .perform())
 
     # update server calls for both 'click' and 'send_keys' actions
     for i in range(2):
         update_activity()
 
     submit_security_code_button = browser.find_element_by_xpath(
-                                            "//button[text()='Submit']")
+        "//button[text()='Submit']")
 
     (ActionChains(browser)
-        .move_to_element(submit_security_code_button)
-        .click()
-        .perform())
+     .move_to_element(submit_security_code_button)
+     .click()
+     .perform())
 
     # update server calls
     update_activity()
@@ -126,7 +126,6 @@ def bypass_suspicious_login(browser):
     except NoSuchElementException:
         # correct security code
         pass
-
 
 
 def login_user(browser,
@@ -177,7 +176,7 @@ def login_user(browser,
     # Might cause problems if the OS language is english
     if switch_language:
         language_element_ENG = browser.find_element_by_xpath(
-          "//select[@class='hztqj']/option[text()='English']")
+            "//select[@class='hztqj']/option[text()='English']")
         click_element(browser, language_element_ENG)
 
     # Check if the first div is 'Create an Account' or 'Log In'
@@ -186,9 +185,9 @@ def login_user(browser,
 
     if login_elem is not None:
         (ActionChains(browser)
-            .move_to_element(login_elem)
-            .click()
-            .perform())
+         .move_to_element(login_elem)
+         .click()
+         .perform())
 
         # update server calls
         update_activity()
@@ -208,10 +207,10 @@ def login_user(browser,
     input_username = browser.find_element_by_xpath(input_username_XP)
 
     (ActionChains(browser)
-        .move_to_element(input_username)
-        .click()
-        .send_keys(username)
-        .perform())
+     .move_to_element(input_username)
+     .click()
+     .send_keys(username)
+     .perform())
 
     # update server calls for both 'click' and 'send_keys' actions
     for i in range(2):
@@ -227,10 +226,10 @@ def login_user(browser,
         password = str(password)
 
     (ActionChains(browser)
-        .move_to_element(input_password[0])
-        .click()
-        .send_keys(password)
-        .perform())
+     .move_to_element(input_password[0])
+     .click()
+     .send_keys(password)
+     .perform())
 
     # update server calls for both 'click' and 'send_keys' actions
     for i in range(2):
@@ -240,9 +239,9 @@ def login_user(browser,
         "//button[text()='Log in']")
 
     (ActionChains(browser)
-        .move_to_element(login_button)
-        .click()
-        .perform())
+     .move_to_element(login_button)
+     .click()
+     .perform())
 
     # update server calls
     update_activity()
@@ -265,7 +264,6 @@ def login_user(browser,
         return False
 
 
-
 def dismiss_get_app_offer(browser, logger):
     """ Dismiss 'Get the Instagram App' page after a fresh login """
     offer_elem = "//*[contains(text(), 'Get App')]"
@@ -277,9 +275,6 @@ def dismiss_get_app_offer(browser, logger):
     if offer_loaded:
         dismiss_elem = browser.find_element_by_xpath(dismiss_elem)
         click_element(browser, dismiss_elem)
-
-
-
 
 
 def custom_login_user(browser,
@@ -374,7 +369,6 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
      .click()
      .perform())
 
-
     if bypass_suspicious_attempt is True:
         logger.info("execute_login: Bypass_suspicious_attempt is true...")
         bypass_suspicious_login(browser)
@@ -418,6 +412,9 @@ def find_login_issues(browser, logger, cmp, force_login=False):
     # CHECK INVALID CREDENTIALS
     check_invalid_credentials(browser, logger, cmp, force_login)
 
+    # CHECK INSTAGRAM USERNAME
+    check_invalid_username(browser, logger, cmp, force_login)
+
     # CHECK FOR PHONE VALIDATION
     check_phone_verification(browser, logger, cmp, force_login)
 
@@ -425,6 +422,24 @@ def find_login_issues(browser, logger, cmp, force_login=False):
     check_unusual_login_attempt(browser, logger, cmp, force_login)
 
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
+
+
+def check_invalid_username(browser, logger, campaign, force_login=False):
+    # CHECK FOR INVALID CREDENTIALS
+    invalidCredentials = browser.find_elements_by_xpath("//p[contains(text(), 'Please check your username')]")
+    if len(invalidCredentials) > 0:
+        logger.info("find_login_issues: Invalid username")
+
+        api_db.insert(
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+            campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
+
+        if force_login is not True:
+            logger.info("Going to send an email to the user.")
+            browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id=' + str(campaign['id_user']))
+
+        raise Exception("INVALID_CREDENTIALS")
+    return True
 
 
 def check_invalid_credentials(browser, logger, campaign, force_login=False):
