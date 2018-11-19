@@ -65,6 +65,28 @@ paths:
           description: Returns bot details
         404:
           description: Engagement bot was not found for campaign
+  /engagement-bot/{id_campaign}/log:
+    get:
+      operationId: engagement-bot.getBotLog
+      tags:
+        - GET campaign Log
+      summary: Returns the log for a specific campaign
+      parameters:
+        - name: id_campaign
+          in: path
+          description: campaign id
+          type: string
+          required: True
+        - name: date
+          in: query
+          description: log date
+          type: string
+          required: True
+      responses:
+        200:
+          description: Returns campaign log
+        404:
+          description: Log was not found
   /engagement-bot/scheduler:
     post:
       operationId: engagement-bot.scheduler

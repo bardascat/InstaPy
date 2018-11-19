@@ -3,6 +3,7 @@ import subprocess
 import json
 from flask import abort
 from rest_logger import getLogger
+import os.path
 
 python_path = "python"
 base_path = "/home/ubuntu/projects/InstaPy"
@@ -39,6 +40,20 @@ def getBot(id_campaign):
     if proccount > 0:
         return True
     return abort(404)
+
+def getBotLog(id_campaign,date):
+    logger = getLogger()
+    logsPath = "/Users/cbardas/instapy-log/campaign/logs/"+id_campaign+"/"+date+".log"
+    logger.info("engagement-bot.getBotLog: Searching logs in path: %s", logsPath)
+
+    if os.path.isfile(logsPath):
+        with open(logsPath, 'r') as myfile:
+            data = myfile.read().replace('\n', '')
+            return data
+    else:
+        logger.info("log not found.")
+        abort(404)
+
 
 
 def scheduler(campaigns):
