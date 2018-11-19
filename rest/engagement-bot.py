@@ -47,9 +47,10 @@ def getBotLog(id_campaign,date):
     logger.info("engagement-bot.getBotLog: Searching logs in path: %s", logsPath)
 
     if os.path.isfile(logsPath):
-        with open(logsPath, 'r') as myfile:
-            data = myfile.read().replace('\n', '')
-            return data
+        with open(logsPath) as f:
+            content = f.readlines()
+        content = [x.strip() for x in content]
+        return content
     else:
         logger.info("log not found.")
         abort(404)
