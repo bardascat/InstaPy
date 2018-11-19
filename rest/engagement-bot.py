@@ -42,17 +42,16 @@ def getBot(id_campaign):
     return abort(404)
 
 def getBotLog(id_campaign,date):
-    logger = getLogger()
-    logsPath = "/home/instapy-log/campaign/logs/"+id_campaign+"/"+date+".log"
-    logger.info("engagement-bot.getBotLog: Searching logs in path: %s", logsPath)
+    #logger = getLogger()
+    logsPath = "/Users/cbardas/instapy-log/campaign/logs/"+id_campaign+"/"+date+".log"
+    #logger.info("engagement-bot.getBotLog: Searching logs in path: %s", logsPath)
 
     if os.path.isfile(logsPath):
-        with open(logsPath) as f:
-            content = f.readlines()
-        content = [x.strip() for x in content]
-        return content
+        with open(logsPath, 'r') as myfile:
+            data = myfile.read()
+        return data
     else:
-        logger.info("log not found.")
+        #logger.info("log not found.")
         abort(404)
 
 
