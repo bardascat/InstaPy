@@ -3,9 +3,9 @@ info:
   version: "1.0.0"
   title: Angie Rest API for Python APP
 consumes:
-  - application/json
+- application/json
 produces:
-  - application/jsona
+- application/jsona
 
 basePath: /api
 
@@ -15,7 +15,7 @@ paths:
     get:
       operationId: engagement-bot.readAll
       tags:
-        - Retrieve all active engagement bots
+      - Retrieve all active engagement bots
       summary: Returns all engagement bots
       responses:
         200:
@@ -24,7 +24,7 @@ paths:
     delete:
       operationId: engagement-bot.stopAll
       tags:
-        - Stop all bots
+      - Stop all bots
       summary: Stop all bots
       responses:
         200:
@@ -33,18 +33,18 @@ paths:
     post:
       operationId: engagement-bot.start
       tags:
-        - Start engagement bot
+      - Start engagement bot
       summary: Starts a new engageemnt bot for a specific id_campaign
       consumes:
-        - application/json
+      - application/json
       produces:
-        - application/json
+      - application/json
       parameters:
-        - in: body
-          name: campaign
-          required: true
-          schema:
-            $ref: '#/definitions/campaign'
+      - in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/campaign'
       responses:
         201:
           description: Successfully started engagement bot
@@ -52,14 +52,14 @@ paths:
     get:
       operationId: engagement-bot.getBot
       tags:
-        - GET an engagement bot
+      - GET an engagement bot
       summary: Returns the status of an engagement bot for a specific campaign
       parameters:
-        - name: id_campaign
-          in: path
-          description: Id of the campaign
-          type: string
-          required: True
+      - name: id_campaign
+        in: path
+        description: Id of the campaign
+        type: string
+        required: True
       responses:
         200:
           description: Returns bot details
@@ -69,19 +69,19 @@ paths:
     get:
       operationId: engagement-bot.getBotLog
       tags:
-        - GET campaign Log
+      - GET campaign Log
       summary: Returns the log for a specific campaign
       parameters:
-        - name: id_campaign
-          in: path
-          description: campaign id
-          type: string
-          required: True
-        - name: date
-          in: query
-          description: log date
-          type: string
-          required: True
+      - name: id_campaign
+        in: path
+        description: campaign id
+        type: string
+        required: True
+      - name: date
+        in: query
+        description: log date
+        type: string
+        required: True
       responses:
         200:
           description: Returns campaign log
@@ -91,16 +91,16 @@ paths:
     post:
       operationId: engagement-bot.scheduler
       tags:
-        - Schedule engagment bots
+      - Schedule engagment bots
       summary: Creates a new engagemnt bot scheduler
       parameters:
-        - in: body
-          name: campaigns
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/campaign'
+      - in: body
+        name: campaigns
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/campaign'
       responses:
         201:
           description: Successfully started an engagment bot scheduler
@@ -108,7 +108,7 @@ paths:
     post:
       operationId: l4l-dispatcher.start
       tags:
-        - Start l4l dispatcher
+      - Start l4l dispatcher
       summary: Starts a new instance of like for like dispatcher
       responses:
         201:
@@ -116,7 +116,7 @@ paths:
     get:
       operationId: l4l-dispatcher.getDispatcher
       tags:
-        - Retrieve l4l dispatcher
+      - Retrieve l4l dispatcher
       summary: Retrieves the active l4l dispatcher or 404
       responses:
         200:
@@ -127,24 +127,24 @@ paths:
     get:
       operationId: bot.verify
       tags:
-        - Verify instagram connection
+      - Verify instagram connection
       summary: Verify instagram credentials
       parameters:
-        - name: username
-          in: query
-          description: instagram username
-          type: string
-          required: True
-        - name: password
-          in: query
-          description: instagram password
-          type: string
-          required: True
-        - name: id_campaign
-          in: query
-          description: id_campaign
-          type: string
-          required: True
+      - name: username
+        in: query
+        description: instagram username
+        type: string
+        required: True
+      - name: password
+        in: query
+        description: instagram password
+        type: string
+        required: True
+      - name: id_campaign
+        in: query
+        description: id_campaign
+        type: string
+        required: True
       responses:
         200:
           description: Successfully connected to instagram
@@ -152,17 +152,32 @@ paths:
     get:
       operationId: location.search
       tags:
-        - Search for instagram locations
+      - Search for instagram locations
       summary: Search instagram locations
       parameters:
-        - name: query
-          in: query
-          description: location
-          type: string
-          required: True
+      - name: query
+        in: query
+        description: location
+        type: string
+        required: True
       responses:
         200:
           description: Locations
+  /crawler/feed:
+    post:
+      operationId: crawler.scanFeed
+      tags:
+      - Start feed crawler
+      summary: Start feed crawler
+      parameters:
+      - in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/campaign'
+      responses:
+        201:
+          description: Successfully created the crawler
 definitions:
   campaign:
     type: object
