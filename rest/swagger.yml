@@ -178,6 +178,21 @@ paths:
       responses:
         201:
           description: Successfully created the crawler
+  /crawler/profile:
+    post:
+      operationId: crawler.scanUserProfile
+      tags:
+      - Start profile crawler
+      summary: Start profile crawler
+      parameters:
+      - in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/campaign'
+      responses:
+        201:
+          description: Successfully created the crawler
 definitions:
   campaign:
     type: object
