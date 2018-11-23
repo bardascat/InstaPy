@@ -15,12 +15,19 @@ def scanFeed(campaign):
     logger = getLogger()
     logger.info("crawler.scanFeed: Going to start feed crawler, id_campaign: %s", id_campaign)
 
-    processName = 'angie_scan_user_feed_' + str(id_campaign)
-    command = "bash -c \"exec -a " + processName + " python " + base_path + "/scan_user_feed.py  -angie_campaign=" + str(
-        id_campaign) + " \""
+    process = subprocess.Popen("python " + base_path + "/scan_user_feed.py -angie_campaign='" + str(id_campaign) + "'",
+                               shell=True, stdout=subprocess.PIPE)
+    result = process.communicate()[0]
+    process.wait()
 
-    logger.info("executing command: %s", command)
-    subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
+    logger.info("bot.verify: Result is: %s", result)
+
+    # processName = 'angie_scan_user_feed_' + str(id_campaign)
+    # command = "bash -c \"exec -a " + processName + " python " + base_path + "/scan_user_feed.py  -angie_campaign=" + str(
+    #     id_campaign) + " \""
+
+    #logger.info("executing command: %s", command)
+    #subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
 def scanUserProfile(campaign):
