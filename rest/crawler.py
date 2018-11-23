@@ -14,10 +14,10 @@ def scanFeed(campaign):
 
 
     logger = getLogger()
-    logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s" % (id_campaign, username))
+    logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s" % (1, "asd"))
     settings = {"u": "ad", "p": "213", "id_campaign": "1"}
 
-    process = subprocess.Popen("python "+base_path + "/verify_account.py -settings='"+json.dumps(settings)+"'", shell=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen("python "+base_path + "/verify_account.py", shell=True, stdout=subprocess.PIPE)
     result = process.communicate()[0]
     process.wait()
 
