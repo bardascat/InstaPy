@@ -11,17 +11,30 @@ DEVNULL = open(os.devnull, 'wb')
 
 
 def scanFeed(campaign):
-    id_campaign = campaign['id_campaign']
-    logger = getLogger()
-    logger.info("crawler.scanFeed: Going to start feed crawler, id_campaign: %s", id_campaign)
 
-    command = "python " + base_path + "/verify_accounts.py"
-    logger.info("command:"+command)
-    process = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
+
+    logger = getLogger()
+    logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s" % (id_campaign, username))
+    settings = {"u": "ad", "p": "213", "id_campaign": "1"}
+
+    process = subprocess.Popen("python "+base_path + "/verify_account.py -settings='"+json.dumps(settings)+"'", shell=True, stdout=subprocess.PIPE)
     result = process.communicate()[0]
     process.wait()
 
     logger.info("bot.verify: Result is: %s", result)
+
+
+    # id_campaign = campaign['id_campaign']
+    # logger = getLogger()
+    # logger.info("crawler.scanFeed: Going to start feed crawler, id_campaign: %s", id_campaign)
+    #
+    # command = "python " + base_path + "/verify_accounts.py"
+    # logger.info("command:"+command)
+    # process = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
+    # result = process.communicate()[0]
+    # process.wait()
+    #
+    # logger.info("bot.verify: Result is: %s", result)
     return result
     # processName = 'angie_scan_user_feed_' + str(id_campaign)
     # command = "bash -c \"exec -a " + processName + " python " + base_path + "/scan_user_feed.py  -angie_campaign=" + str(
