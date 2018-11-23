@@ -1,11 +1,19 @@
 import MySQLdb
+from pymongo import MongoClient
+import datetime
 
 
-def getConnection():
-    db = MySQLdb.connect(host="52.36.217.85",  # your host, usually localhost
+def getMongoConnection():
+    client = MongoClient(host='localhost', port=27017)
+    return client
+
+
+def getMysqlConnection():
+    db = MySQLdb.connect(host="localhost",  # your host, usually localhost
                          user="angie_app",  # your username
                          passwd="angiePasswordDB",  # your password
                          db="angie_app")
+
     db.set_character_set('utf8mb4')
     dbc = db.cursor()
     dbc.execute('SET NAMES utf8mb4;')
@@ -17,13 +25,33 @@ def getConnection():
 
 def getCampaign(campaignId):
     if campaignId != False:
-        row = fetchOne("select username,id_user,id_campaign,timestamp,id_account_type from campaign where id_campaign=%s", campaignId)
+        row = fetchOne(
+            "select username,id_user,id_campaign,timestamp,id_account_type from campaign where id_campaign=%s",
+            campaignId)
         return row
     else:
         return None
 
+
+def postWasLikedInThePast(linkCode, id_user):
+    client = getMongoConnection()
+    db = client.angie_app
+
+    row = db.find_one({"post_link": linkCode, "id_user": id_user, "bot_operation": {"$regex": "^like_engagement_"}})
+    client.close()
+
+    if row == None:
+        return False
+
+    return True
+
+
 def userWasFollowedInThePast(user_name, id_user):
-    row = fetchOne("select * from bot_action where username=%s and id_user=%s and bot_operation like %s", user_name, id_user, "follow_"+'%')
+    client = getMongoConnection()
+    db = client.angie_app
+
+    row = db.find_one({"username": user_name, "id_user": id_user, "bot_operation": {"$regex": "^follow"}})
+    client.close()
 
     if row == None:
         return False
@@ -40,7 +68,7 @@ def getWebApplicationUser(id_user):
 
 
 def fetchOne(query, *args):
-    db = getConnection()
+    db = getMysqlConnection()
     cur = db.cursor(MySQLdb.cursors.DictCursor)
     cur.execute(query, args)
     db.close()
@@ -48,7 +76,7 @@ def fetchOne(query, *args):
 
 
 def select(query, *args):
-    db = getConnection()
+    db = getMysqlConnection()
     cur = db.cursor(MySQLdb.cursors.DictCursor)
     cur.execute(query, args)
     rows = cur.fetchall()
@@ -57,7 +85,7 @@ def select(query, *args):
 
 
 def insert(query, *args):
-    db = getConnection()
+    db = getMysqlConnection()
     cur = db.cursor()
     cur.execute(query, args)
     db.commit()
@@ -65,21 +93,89 @@ def insert(query, *args):
     db.close()
     return id
 
-def updateCampaignChekpoint(key, value, id_campaign):
-  query='INSERT INTO campaign_checkpoint (id_campaign, _key, value, timestamp) VALUES(%s, %s, %s, CURDATE()) ON DUPLICATE KEY UPDATE  value=%s'
-  
-  id = insert(query, id_campaign, key, value, value)
-  
-  return id
-  
-  
-def insertBotAction(*args):
-    query = "insert into bot_action (id_campaign, id_user, instagram_id_user, " \
-            "full_name, username, user_image, post_id, post_image, " \
-            "post_link,bot_operation,bot_operation_value,id_log,timestamp) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now())"
 
-    id = insert(query, *args)
+def updateCampaignChekpoint(key, value, id_campaign):
+    query = 'INSERT INTO campaign_checkpoint (id_campaign, _key, value, timestamp) VALUES(%s, %s, %s, CURDATE()) ON DUPLICATE KEY UPDATE  value=%s'
+
+    id = insert(query, id_campaign, key, value, value)
+
     return id
+
+
+def getCampaignWorkingDays(id_campaign):
+    client = getMongoConnection()
+
+    db = client.angie_app
+    pipeline = [{"$match": {"id_campaign": id_campaign}},
+                {"$group": {"_id": {"year": {"$year": "$timestamp"}, "month": {"$month": "$timestamp"},
+                                    "day": {"$dayOfMonth": "$timestamp"}}, "count": {"$sum": 1}}}]
+    return len(list(db.bot_action.aggregate(pipeline=pipeline)))
+
+
+def revertBotFollow(recordToUnfollow, lastBotAction):
+    client = getMongoConnection()
+    db = client.angie_app
+    db.bot_action.update({"_id": recordToUnfollow}, {"$set": {"bot_operation_reverted": lastBotAction}})
+
+
+
+def getAmountOperations(campaign, dateParam, operation):
+    gte = dateParam.replace(minute=0, hour=0, second=0, microsecond=0)
+    lte = dateParam.replace(minute=59, hour=23, second=59, microsecond=59)
+
+    client = getMongoConnection()
+    db = client.angie_app
+
+    result = db.bot_action.find({"id_user": campaign['id_user'], "bot_operation": {"$regex": "^" + operation},
+                                 "timestamp": {"$gte": gte, "$lte": lte}})
+    client.close()
+
+    if result == None:
+        return 0
+
+    return result.count()
+
+def getUserToUnfollow(id_user, olderThan):
+    #TODO: unfollow only users who did not follow back
+    #selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null ORDER BY - follow_back desc, timestamp asc limit %s"
+    #recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
+    #                            self.campaign['id_user'], 1)
+
+    currentDate = datetime.datetime.now()
+    queryDate = currentDate - datetime.timedelta(hours=olderThan)
+
+    client = getMongoConnection()
+    db = client.angie_app
+
+    result = db.bot_action.find_one({"id_user": id_user, "bot_operation_reverted":None, "bot_operation": {"$regex": "^follow"},"timestamp": {"$lte": queryDate}})
+    client.close()
+
+    return result
+
+
+def insertBotAction(*args):
+    client = getMongoConnection()
+    db = client.angie_app
+
+    _id = db.bot_action.insert({
+        "id_campaign": args[0],
+        "id_user": args[1],
+        "instagram_id_user": args[2],
+        "full_name": args[3],
+        "username": args[4],
+        "user_image": args[5],
+        "post_id": args[6],
+        "post_image": args[7],
+        "post_link": args[8],
+        "bot_operation": args[9],
+        "bot_operation_value": args[10],
+        "bot_operation_reverted": None,
+        "id_log": args[11],
+        "timestamp": datetime.datetime.now(),
+    })
+
+    client.close()
+    return _id
 
 
 def insertOwnFollower(*args):
@@ -99,14 +195,13 @@ def insertUserFollower(*args):
 
 
 def getBotIp(bot, id_user, id_campaign, is_bot_account):
-
     query = "select ip,type from  campaign left join ip_bot on campaign.id_ip_bot=ip_bot.id_ip_bot where id_campaign=%s"
 
     result = fetchOne(query, id_campaign)
 
     if result is None or result['ip'] is None:
         bot.logger.warning("getBotIp: Could not find an ip for user %s", id_user)
-        raise Exception("getBotIp: Could not find an ip for user"+str(id_user))
+        raise Exception("getBotIp: Could not find an ip for user" + str(id_user))
 
     bot.logger.info("User %s, has ip: %s" % (id_user, result['ip']))
     return result

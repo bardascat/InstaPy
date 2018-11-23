@@ -1,4 +1,4 @@
-from api_db import fetchOne, select, insert
+import api_db
 from bot_util import getBotOperations
 import datetime
 import json
@@ -17,7 +17,7 @@ def getInitialActionAmount(self, id_campaign):
     result['accountMaturity']['warmingUp'] = False
     result['accountMaturity']['startup'] = False
 
-    actionConfigs = fetchOne(
+    actionConfigs = api_db.fetchOne(
         "select bot_action_settings.* from campaign join user_subscription using (id_user) join plan using (id_plan) join bot_action_settings using (id_action_settings) where campaign.id_campaign=%s",
         id_campaign)
 
@@ -58,7 +58,7 @@ def getInitialActionAmount(self, id_campaign):
     # check maturity of account
     self.logger.info("getInitialActionAmount: Checking if the account is 100% functional...")
     accountIsFullyFunctionalAfter = 10
-    campaign = fetchOne(
+    campaign = api_db.fetchOne(
         "select campaign.timestamp, percentage_amount, month_start,month_end from campaign join instagram_account_type using (id_account_type) where id_campaign=%s",
         id_campaign)
 
@@ -91,25 +91,20 @@ def getInitialActionAmount(self, id_campaign):
 def isAccountWarmingUp(self):
     warmUpDays = 3
     self.logger.info("getInitialActionAmount: Checking if account is warming up...")
-    workedDaysResult = fetchOne(
-        "select count(*) as worked_days from (select distinct date(timestamp) from bot_action where id_campaign=%s order by date(timestamp)) worked_days",
-        self.campaign['id_campaign'])
 
-    if workedDaysResult['worked_days'] < warmUpDays:
-        self.logger.info(
-            "getInitialActionAmount: The bot warmed  up for %s days so far. This means the bot still needs to warm up until reaches %s days." % (
-                workedDaysResult['worked_days'], warmUpDays))
+    workingDays = api_db.getCampaignWorkingDays(self.campaign["id_campaign"])
+
+    if workingDays < warmUpDays:
+        self.logger.info("getInitialActionAmount: The bot warmed  up for %s days so far. This means the bot still needs to warm up until reaches %s days." % (workingDays, warmUpDays))
         return True
     else:
-        self.logger.info(
-            "getInitialActionAmount: The bot worked for %s days so far. This means it is fully warmed up ! Minimum %s days to warmup !" % (
-                workedDaysResult['worked_days'], warmUpDays))
+        self.logger.info("getInitialActionAmount: The bot worked for %s days so far. This means it is fully warmed up ! Minimum %s days to warmup !" % (workingDays, warmUpDays))
         return False
 
 
 def isAccountStartup(self):
     self.logger.info("isAccountStartup: Checking if campaign %s is startup...", self.campaign['id_campaign'])
-    trialStartupAccount = fetchOne(
+    trialStartupAccount = api_db.fetchOne(
         "select id_user from campaign  join user_subscription using (id_user) join plan using(id_plan) join plan_type using (id_plan_type) where id_campaign=%s and name='TRIAL_STARTUP'",
         self.campaign['id_campaign'])
     self.logger.info("IsAccountStartup result: %s", trialStartupAccount)
@@ -137,7 +132,7 @@ def getWarmUpResult(self, initialAmount, percentageAmount):
 # this function is used to retrieve the configuration if it is stoped and restarted
 def resumeOperation(self, id_campaign):
     self.logger.info("resumeOperation: trying to resume")
-    resumeResult = fetchOne(
+    resumeResult = api_db.fetchOne(
         "SELECT * FROM campaign_log WHERE DATE(`timestamp`) = CURDATE() and id_campaign=%s AND event=%s", id_campaign,
         "CALCULATE_AMOUNT_OF_ACTIONS")
 
@@ -166,56 +161,62 @@ def getAmountDistribution(self, id_campaign):
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         return resume
 
-    categories = select("select * from action_amount_distribution")
-
-    foundRightCategory = False
-    securityBreak = 10
-    iteration = 0
-
-    now = datetime.datetime.now()
-    currentMonthNumberOfDays = calendar.monthrange(now.year, now.month)[1]
-
+    foundRightCategory = api_db.fetchOne("select * from action_amount_distribution where type=maximum")
     initialActionAmountResult = getInitialActionAmount(self, id_campaign)
+    daysForThisCategory = None
+    usedDaysForThisCategory = None
+    currentMonthNumberOfDays = None
 
-    # maybe this while can be extracted separately
-    while foundRightCategory == False and iteration < securityBreak and len(categories) > 0:
-        selectedCategoryIndex = randint(0, len(categories) - 1)
-
-        # check if selected category is still available
-        daysForThisCategory = int(
-            round(currentMonthNumberOfDays * categories[selectedCategoryIndex]['percentage_amount'] / 100))
-
-        amountToPerform = None
-        if categories[selectedCategoryIndex]['type'] == "minimum":
-            amountToPerform = "<=" + str(initialActionAmountResult['calculatedAmount']['minimumActionAmount'])
-
-        elif categories[selectedCategoryIndex]['type'] == "maximum":
-            amountToPerform = ">=" + str(initialActionAmountResult['calculatedAmount']['maximumActionAmount'])
-
-        elif categories[selectedCategoryIndex]['type'] == "between":
-            amountToPerform = "between " + str(
-                initialActionAmountResult['calculatedAmount']['minimumActionAmount']) + " and " + str(
-                initialActionAmountResult['calculatedAmount']['maximumActionAmount'])
-
-        query = " select count(*) as total from  (select count(*) as total, date(timestamp) from bot_action " \
-                " WHERE MONTH(timestamp) = MONTH(CURRENT_DATE()) " \
-                " AND YEAR(timestamp) = YEAR(CURRENT_DATE()) and id_campaign=%s " \
-                " group by date(timestamp) having count(*) " + amountToPerform + " " \
-                                                                                 " order by date(timestamp) desc) my_table"
-
-        result = fetchOne(query, id_campaign)
-        # self.logger.info("getAmountDistribution: %s",query)
-        self.logger.info(
-            "getAmountDistribution: Selected category: %s, iteration %s, daysForThisCategory: %s, usedDays: %s" % (
-                categories[selectedCategoryIndex], iteration, daysForThisCategory, result['total']))
-
-        usedDaysForThisCategory = result['total']
-        if result['total'] < daysForThisCategory:
-            foundRightCategory = categories[selectedCategoryIndex]
-            break
-
-        iteration = iteration + 1
-        del categories[selectedCategoryIndex]
+    #
+    # TODO: try to improve this code.
+    # foundRightCategory = False
+    # securityBreak = 10
+    # iteration = 0
+    #
+    # now = datetime.datetime.now()
+    # currentMonthNumberOfDays = calendar.monthrange(now.year, now.month)[1]
+    #
+    # initialActionAmountResult = getInitialActionAmount(self, id_campaign)
+    #
+    # # maybe this while can be extracted separately
+    # while foundRightCategory == False and iteration < securityBreak and len(categories) > 0:
+    #     selectedCategoryIndex = randint(0, len(categories) - 1)
+    #
+    #     # check if selected category is still available
+    #     daysForThisCategory = int(
+    #         round(currentMonthNumberOfDays * categories[selectedCategoryIndex]['percentage_amount'] / 100))
+    #
+    #     amountToPerform = None
+    #     if categories[selectedCategoryIndex]['type'] == "minimum":
+    #         amountToPerform = "<=" + str(initialActionAmountResult['calculatedAmount']['minimumActionAmount'])
+    #
+    #     elif categories[selectedCategoryIndex]['type'] == "maximum":
+    #         amountToPerform = ">=" + str(initialActionAmountResult['calculatedAmount']['maximumActionAmount'])
+    #
+    #     elif categories[selectedCategoryIndex]['type'] == "between":
+    #         amountToPerform = "between " + str(
+    #             initialActionAmountResult['calculatedAmount']['minimumActionAmount']) + " and " + str(
+    #             initialActionAmountResult['calculatedAmount']['maximumActionAmount'])
+    #
+    #     query = " select count(*) as total from  (select count(*) as total, date(timestamp) from bot_action " \
+    #             " WHERE MONTH(timestamp) = MONTH(CURRENT_DATE()) " \
+    #             " AND YEAR(timestamp) = YEAR(CURRENT_DATE()) and id_campaign=%s " \
+    #             " group by date(timestamp) having count(*) " + amountToPerform + " " \
+    #                                                                              " order by date(timestamp) desc) my_table"
+    #
+    #     result = api_db.fetchOne(query, id_campaign)
+    #     # self.logger.info("getAmountDistribution: %s",query)
+    #     self.logger.info(
+    #         "getAmountDistribution: Selected category: %s, iteration %s, daysForThisCategory: %s, usedDays: %s" % (
+    #             categories[selectedCategoryIndex], iteration, daysForThisCategory, result['total']))
+    #
+    #     usedDaysForThisCategory = result['total']
+    #     if result['total'] < daysForThisCategory:
+    #         foundRightCategory = categories[selectedCategoryIndex]
+    #         break
+    #
+    #     iteration = iteration + 1
+    #     del categories[selectedCategoryIndex]
 
     self.logger.info("getAmountDistribution: Choosed category: %s ", foundRightCategory)
 
@@ -255,7 +256,7 @@ def getAmountDistribution(self, id_campaign):
 
     logJson = json.dumps(log)
 
-    id = insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
+    id = api_db.insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
                 id_campaign, logJson, 'CALCULATE_AMOUNT_OF_ACTIONS')
     self.id_log = id
     self.logger.info("getAmountDistribution: Final action amount: %s", finalActionAmount)
@@ -326,15 +327,13 @@ def getActionAmountForEachLoop(noActions, noLoops):
 
 
 def getActionsPerformed(campaign, dateParam, operation, logger):
-    actionsPerformed = fetchOne(
-        'SELECT count(*) as no_op FROM bot_action where bot_operation like %s and date(timestamp)=%s and id_user=%s',
-        operation + "%", str(dateParam), campaign["id_user"])
+    amount = api_db.getAmountOperations(campaign, dateParam, operation)
 
-    if actionsPerformed['no_op'] > 0:
+    if amount > 0:
         logger.info("getActionsPerformed: Campaign id %s has  ALREADY performed %s %s. in day %s" % (
-            campaign['id_campaign'], operation, actionsPerformed['no_op'], dateParam))
+            campaign['id_campaign'], operation, amount, dateParam))
     else:
         logger.info("getActionsPerformed: 0 %s PREVIOUSLY performed for campaign id  %s, in day %s" % (
             operation, campaign['id_campaign'], dateParam))
 
-    return actionsPerformed['no_op']
+    return amount
