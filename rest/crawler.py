@@ -15,7 +15,7 @@ def scanFeed(campaign):
     logger = getLogger()
     logger.info("crawler.scanFeed: Going to start feed crawler, id_campaign: %s", id_campaign)
 
-    command = "python " + base_path + "/scan_user_feed.py"
+    command = "python " + base_path + "/verify_accounts.py"
     logger.info("command:"+command)
     process = subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
     result = process.communicate()[0]
