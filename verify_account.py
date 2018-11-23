@@ -17,6 +17,8 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-settings', type=str, help="settings")
 args = parser.parse_args()
 
+if args.settings is None:
+    exit("verify_account: settings are not specified !")
 
 result = {}
 result['status'] = False
