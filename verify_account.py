@@ -19,7 +19,6 @@ if args.settings is None:
     exit("verify_account: settings are not specified !")
 
 result = {}
-result['status'] = False
 
 try:
     from instapy import InstaPy
