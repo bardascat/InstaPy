@@ -5,9 +5,7 @@ import os
 import sys
 import traceback
 
-from instapy import InstaPy
-from instapy.bot_util import *
-from instapy.account_privacy_service import AccountPrivacyService
+
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -24,6 +22,10 @@ result = {}
 result['status'] = False
 
 try:
+    from instapy import InstaPy
+    from instapy.bot_util import *
+    from instapy.account_privacy_service import AccountPrivacyService
+
     settings = json.loads(args.settings)
     campaign = fetchOne(
         "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
