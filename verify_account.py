@@ -5,13 +5,14 @@ import os
 import sys
 import traceback
 
+result = {}
 try:
     from instapy import InstaPy
     from instapy import InstaPy
     from instapy.bot_action_handler import getAmountDistribution, getActionAmountForEachLoop
     from instapy.bot_util import *
     from instapy.account_privacy_service import AccountPrivacyService
-    result = {}
+
     result['status'] = False
 except:
     exceptionDetail = traceback.format_exc()
