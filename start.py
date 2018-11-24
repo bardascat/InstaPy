@@ -109,7 +109,6 @@ def start(session):
 
 
 try:
-    print("Starting this shit")
     campaign = fetchOne(
         "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
         args.angie_campaign)
