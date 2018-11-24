@@ -161,7 +161,7 @@ def getAmountDistribution(self, id_campaign):
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         return resume
 
-    foundRightCategory = api_db.fetchOne("select * from action_amount_distribution where type=maximum")
+    foundRightCategory = api_db.fetchOne("select * from action_amount_distribution where type='maximum'")
     initialActionAmountResult = getInitialActionAmount(self, id_campaign)
     daysForThisCategory = None
     usedDaysForThisCategory = None
