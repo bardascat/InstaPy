@@ -21,7 +21,7 @@ def start(campaign):
     id_campaign = campaign["id_campaign"]
 
     processName = 'angie_instapy_idc' + str(id_campaign)
-    command = "bash -c \"exec -a " + processName + " python " + base_path + "/start.py  -angie_campaign=" + str(
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/start.py  -angie_campaign=" + str(
         id_campaign) + " \""
 
     logger.info("executing command: %s", command)
@@ -66,7 +66,7 @@ def scheduler(campaigns):
     for campaign in campaigns:
         campaignsList.append(campaign['id_campaign'])
 
-    command = "bash -c \"exec -a " + processName + " python " + base_path + "/schedule.py  -angie_campaigns='" + json.dumps(
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/schedule.py  -angie_campaigns='" + json.dumps(
         campaignsList) + "' \""
 
     logger.info("executing command: %s", command)
@@ -78,6 +78,6 @@ def stopAll():
     logger.info("engagement-bot.stopAll")
     processName = 'angie_stop_bots'
 
-    command = "bash -c \"exec -a " + processName + " python " + base_path + "/stop_bot.py" + " \""
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/stop_bot.py" + " \""
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)

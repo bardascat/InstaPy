@@ -13,7 +13,7 @@ def start():
 
     processName = 'angie_like_for_like_dispatcher'
 
-    command = "bash -c \"exec -a " + processName + " python " + base_path + "/l4l_dispatcher.py \""
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/l4l_dispatcher.py \""
 
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
