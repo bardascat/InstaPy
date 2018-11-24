@@ -4,7 +4,6 @@ import json
 import os
 import sys
 import traceback
-from pymongo import MongoClient
 
 
 stdout = sys.stdout
@@ -21,6 +20,8 @@ if args.settings is None:
 result = {}
 
 try:
+    from pymongo import MongoClient
+
     from instapy import InstaPy
     from instapy.bot_util import *
     from instapy.account_privacy_service import AccountPrivacyService
