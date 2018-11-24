@@ -13,7 +13,7 @@ def verify(username, password, id_campaign):
     logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s" % (id_campaign, username))
     settings = {"u": username, "p": password, "id_campaign": id_campaign}
 
-    process = subprocess.Popen("python "+base_path + "/verify_account.py -settings='"+json.dumps(settings)+"'", shell=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen("/usr/bin/python2.7 "+base_path + "/verify_account.py -settings='"+json.dumps(settings)+"'", shell=True, stdout=subprocess.PIPE)
     result = process.communicate()[0]
     process.wait()
 
