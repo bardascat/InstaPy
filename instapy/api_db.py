@@ -142,7 +142,7 @@ def getUserToUnfollow(id_user, olderThan):
     #                            self.campaign['id_user'], 1)
 
     currentDate = datetime.datetime.now()
-    queryDate = currentDate - datetime.timedelta(hours=olderThan)
+    queryDate = currentDate - datetime.timedelta(hours=int(olderThan))
 
     client = getMongoConnection()
     db = client.angie_app
