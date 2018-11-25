@@ -37,7 +37,7 @@ def postWasLikedInThePast(linkCode, id_user):
     client = getMongoConnection()
     db = client.angie_app
 
-    row = db.find_one({"post_link": linkCode, "id_user": id_user, "bot_operation": {"$regex": "^like_engagement_"}})
+    row = db.bot_action.find_one({"post_link": linkCode, "id_user": id_user, "bot_operation": {"$regex": "^like_engagement_"}})
     client.close()
 
     if row == None:
@@ -50,7 +50,7 @@ def userWasFollowedInThePast(user_name, id_user):
     client = getMongoConnection()
     db = client.angie_app
 
-    row = db.find_one({"username": user_name, "id_user": id_user, "bot_operation": {"$regex": "^follow"}})
+    row = db.bot_action.find_one({"username": user_name, "id_user": id_user, "bot_operation": {"$regex": "^follow"}})
     client.close()
 
     if row == None:
