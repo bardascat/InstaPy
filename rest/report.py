@@ -27,8 +27,11 @@ def getActionsGroupByOperation(id_campaign, start, end):
         {"$project": {"_id": 0, "bot_operation": "$_id", "total_action": 1}}
     ]
 
+
     result = db.bot_action.aggregate(pipeline=pipeline)
-    logger.info("report: Retrieved %s rows", len(list(result)))
+    result = list(result)
+
+    logger.info("report: Retrieved %s rows", len(result))
     logger.info("report: result: %s", result)
     client.close()
 
