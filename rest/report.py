@@ -23,6 +23,7 @@ def getActionsGroupByOperation(id_campaign, start, end):
     client = getMongoConnection()
     db = client.angie_app
     pipeline = [
+        {"$match": {"id_campaign": id_campaign}},
         {"$group": {"_id": "$bot_operation", "total_action": {"$sum": 1}}},
         {"$project": {"_id": 0, "bot_operation": "$_id", "total_action": 1}}
     ]
