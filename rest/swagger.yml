@@ -193,6 +193,31 @@ paths:
       responses:
         201:
           description: Successfully created the crawler
+  /report/grouped:
+    get:
+      operationId: report.getActionsGroupByOperation
+      tags:
+      - Bot actions group by operations
+      summary: Bot actions group by operations
+      parameters:
+      - name: id_campaign
+        in: query
+        description: id_campaign
+        type: string
+        required: True
+      - name: start
+        in: query
+        description: start
+        type: string
+        required: True
+      - name: end
+        in: query
+        description: end
+        type: string
+        required: True
+      responses:
+        200:
+          description: Locations
 definitions:
   campaign:
     type: object

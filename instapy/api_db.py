@@ -109,6 +109,8 @@ def getCampaignWorkingDays(id_campaign):
     pipeline = [{"$match": {"id_campaign": id_campaign}},
                 {"$group": {"_id": {"year": {"$year": "$timestamp"}, "month": {"$month": "$timestamp"},
                                     "day": {"$dayOfMonth": "$timestamp"}}, "count": {"$sum": 1}}}]
+
+    client.close()
     return len(list(db.bot_action.aggregate(pipeline=pipeline)))
 
 
@@ -116,7 +118,7 @@ def revertBotFollow(recordToUnfollow, lastBotAction):
     client = getMongoConnection()
     db = client.angie_app
     db.bot_action.update({"_id": recordToUnfollow}, {"$set": {"bot_operation_reverted": lastBotAction}})
-
+    client.close()
 
 
 def getAmountOperations(campaign, dateParam, operation):
