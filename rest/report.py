@@ -32,5 +32,6 @@ def getActionsGroupByOperation(id_campaign, start, end):
 
     client.close()
 
+    logger.info("report: Retrieved %s rows", len(list(result)))
     logger.info("report: result: %s", result)
     return list(result)
