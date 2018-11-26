@@ -195,7 +195,7 @@ paths:
           description: Successfully created the crawler
   /report/grouped:
     get:
-      operationId: report.getActionsGroupByOperation
+      operationId: report.summary
       tags:
       - Bot actions group by operations
       summary: Bot actions group by operations
@@ -211,6 +211,11 @@ paths:
         type: string
         required: True
       - name: end
+        in: query
+        description: end
+        type: string
+        required: True
+      - name: group
         in: query
         description: end
         type: string

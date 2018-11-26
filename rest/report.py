@@ -8,7 +8,7 @@ def getMongoConnection():
     return client
 
 
-def getActionsGroupByOperation(id_campaign, start, end):
+def summary(id_campaign, start, end, groupBy):
     logger = getLogger()
     format_str = '%Y-%m-%d'  # The format
 
@@ -23,11 +23,19 @@ def getActionsGroupByOperation(id_campaign, start, end):
 
     client = getMongoConnection()
     db = client.angie_app
-    pipeline = [
-        {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
-        {"$group": {"_id": "$bot_operation", "total_action": {"$sum": 1}}},
-        {"$project": {"_id": 0, "bot_operation": "$_id", "total_action": 1}}
-    ]
+
+    if groupBy == "operation":
+        pipeline = [
+            {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
+            {"$group": {"_id": {"bot_operation": "$bot_operation_value"},"total_action": {"$sum": 1}}},
+            {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
+        ]
+    elif groupBy == "operationAndValue":
+        pipeline = [
+            {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
+            {"$group": {"_id": {"bot_operation": "$bot_operation", "bot_operation_value": "$bot_operation_value"},"total_action": {"$sum": 1}}},
+            {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
+        ]
 
     result = db.bot_action.aggregate(pipeline=pipeline)
     result = list(result)
