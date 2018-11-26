@@ -215,7 +215,7 @@ paths:
         description: end
         type: string
         required: True
-      - name: group
+      - name: groupBy
         in: query
         description: end
         type: string
