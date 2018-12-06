@@ -156,7 +156,7 @@ paths:
       summary: Get instagram user info
       parameters:
       - name: username
-        in: query
+        in: path
         description: instagram username
         type: string
         required: True
