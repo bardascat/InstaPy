@@ -329,9 +329,8 @@ class Engagements:
 
                 self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
 
-                revertBotFollow(recordToUnfollow['id'], lastBotAction)
-                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
-                lastBotAction, recordToUnfollow['id']))
+                revertBotFollow(recordToUnfollow['_id'], lastBotAction)
+                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (lastBotAction, recordToUnfollow['_id']))
                 self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
                 time.sleep(3)
                 return True
