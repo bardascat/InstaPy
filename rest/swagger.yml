@@ -148,7 +148,7 @@ paths:
       responses:
         200:
           description: Successfully connected to instagram
-    /bot/user:
+  /bot/user:
     get:
       operationId: bot.user
       tags:
