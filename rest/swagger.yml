@@ -148,6 +148,21 @@ paths:
       responses:
         200:
           description: Successfully connected to instagram
+    /bot/user:
+    get:
+      operationId: bot.user
+      tags:
+      - Get instagram user info
+      summary: Get instagram user info
+      parameters:
+      - name: username
+        in: query
+        description: instagram username
+        type: string
+        required: True
+      responses:
+        200:
+          description: Successfully
   /location:
     get:
       operationId: location.search
