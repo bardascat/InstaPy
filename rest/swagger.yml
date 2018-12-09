@@ -208,6 +208,77 @@ paths:
       responses:
         201:
           description: Successfully created the crawler
+  /crawler/post/location:
+    get:
+      operationId: crawler.getPostsByLocation
+      tags:
+      - Start posts by location crawler
+      summary: Start posts by location crawler
+      parameters:
+      parameters:
+      - name: id_campaign
+        in: query
+        description: id_campaign
+        type: string
+        required: True
+      - name: amount
+        in: query
+        description: amount
+        type: number
+        required: True
+      - name: location
+        in: query
+        description: location
+        type: string
+        required: True
+      - name: removeLikedPosts
+        in: query
+        description: removeLikedPosts( true/false)
+        type: string
+        required: True
+      - name: removeFollowedUsers
+        in: query
+        description: removeFollowedUsers( true/false)
+        type: string
+        required: True
+      responses:
+        201:
+          description: Successfully created the crawler
+  /crawler/post/hashtag:
+    get:
+      operationId: crawler.getPostsByHashtag
+      tags:
+      - Start posts by hashtag crawler
+      summary: Start posts by hashtag crawler
+      parameters:
+      - name: id_campaign
+        in: query
+        description: id_campaign
+        type: string
+        required: True
+      - name: amount
+        in: query
+        description: amount
+        type: number
+        required: True
+      - name: hashtag
+        in: query
+        description: hashtag
+        type: string
+        required: True
+      - name: removeLikedPosts
+        in: query
+        description: removeLikedPosts( true/false)
+        type: string
+        required: True
+      - name: removeFollowedUsers
+        in: query
+        description: removeFollowedUsers( true/false)
+        type: string
+        required: True
+      responses:
+        201:
+          description: Successfully created the crawler
   /report/grouped:
     get:
       operationId: report.summary
