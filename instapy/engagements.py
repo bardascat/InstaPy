@@ -139,32 +139,28 @@ class Engagements:
 
         self.logger.info("engage: Received %s link, going to iterate through them", len(links))
 
-        for i, link in enumerate(links):
+        for i, post in enumerate(links):
             self.logger.info(
-                'engage: **************** START PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(link,
-                                                                                                                  engagementValue,
-                                                                                                                  i + 1,
-                                                                                                                  len(
-                                                                                                                      links)))
+                'engage: **************** START PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(post['link'],engagementValue,i + 1,len(links)))
 
             try:
 
-                self.logger.info("engage: Navigating to link: %s", link)
-                linkValidationDetails = self.canInteractWithLink(link)
+                self.logger.info("engage: Navigating to link: %s", post['link'])
+                linkValidationDetails = self.canInteractWithLink(post['link'])
 
                 if linkValidationDetails is not False:
 
-                    self.logger.info("engage: Going to like the link: %s", link)
+                    self.logger.info("engage: Going to like the link: %s", post['link'])
                     if self.performLike(user_name=linkValidationDetails['user_name'],
                                         operation=operation,
-                                        link=link,
+                                        link=post['link'],
                                         engagementValue=engagementValue) is True:
                         result['likePerformed'] += 1
 
                     self.logger.info("engage: Trying to follow user: %s", linkValidationDetails['user_name'])
                     if self.performFollow(numberOfPostsToInteract=numberOfPostsToExtract,
                                           followAmount=followAmountToPerform,
-                                          operation=operation, link=link,
+                                          operation=operation, link=post['link'],
                                           user_name=linkValidationDetails['user_name'],
                                           tag=engagementValue) is True:
                         result['followPerformed'] += 1
@@ -182,12 +178,7 @@ class Engagements:
                 self.logger.error('engage: Invalid Page: {}'.format(err))
                 continue
 
-            self.logger.info(
-                'engage: **************** DONE PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(link,
-                                                                                                                 engagementValue,
-                                                                                                                 i + 1,
-                                                                                                                 len(
-                                                                                                                     links)))
+            self.logger.info('engage: **************** DONE PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(post['link'],engagementValue,i + 1,len(links)))
 
         return result
 
@@ -375,26 +366,18 @@ class Engagements:
         return amount // divideAmountTo
 
     def get_links(self, numberOfPostsToExtract, engagementBy, engagementByValue):
+
+
+        #todo: test this
+
         if engagementBy == "engagement_by_hashtag":
-            try:
-                links = get_links_for_tag(browser=self.browser, amount=numberOfPostsToExtract, tag=engagementByValue,
-                                          skip_top_posts=True, media=None, logger=self.logger, randomize=True)
-            except NoSuchElementException:
-                self.logger.info('get_links: Too few images, skipping this tag: %s', engagementByValue)
-                return []
+            self.logger.info("get_links: Getting %s links for hashtag: %s" % (numberOfPostsToExtract, engagementByValue))
+            return self.instapy.instabotRestClient.getPostsByHashtag(hashtag=engagementByValue,amount=numberOfPostsToExtract)
 
         elif engagementBy == "engagement_by_location":
-            try:
-                links = get_links_for_location(self.browser,
-                                               amount=numberOfPostsToExtract,
-                                               location=engagementByValue,
-                                               logger=self.logger)
+            self.logger.info("get_links: Getting %s links for location: %s" % (numberOfPostsToExtract, engagementByValue))
+            return self.instapy.instabotRestClient.getPostsByLocation(location=engagementByValue,amount=numberOfPostsToExtract)
 
-            except NoSuchElementException:
-                self.logger.warning('get_links: Too few images, skipping this location: %s' % (engagementByValue))
-                return []
-
-        return links
 
     def getItemToProcess(self, operation, engagement_by):
 

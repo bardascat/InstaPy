@@ -70,6 +70,7 @@ from selenium.common.exceptions import NoSuchElementException, WebDriverExceptio
 
 from engagements import Engagements
 from likeforlike import LikeForLike
+from instabot_rest_client import InstabotRestClient
 import signal
 import traceback
 from random import randint
@@ -252,6 +253,7 @@ class InstaPy:
         self.engagementService = Engagements(campaign=self.campaign,instapy=self)
 
         self.likeForLikeService = LikeForLike(campaign=self.campaign, instapy=self)
+        self.instabotRestClient = InstabotRestClient(campaign=self.campaign, instapy=self)
 
     def get_instapy_logger(self, show_logs):
         """
