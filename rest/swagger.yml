@@ -224,7 +224,7 @@ paths:
       - name: amount
         in: query
         description: amount
-        type: number
+        type: string
         required: True
       - name: location
         in: query
@@ -259,7 +259,7 @@ paths:
       - name: amount
         in: query
         description: amount
-        type: number
+        type: string
         required: True
       - name: hashtag
         in: query
