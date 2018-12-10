@@ -43,7 +43,7 @@ class InstabotRestClient:
         parameters['removeFollowedUsers'] = str(removeFollowedUsers).lower()
 
         urlValues = urllib.urlencode(parameters)
-        url = url + urlValues
+        url = url + "?" + urlValues
 
         self.logger.info("getPostsByHashtag: API URL: %s:", url)
 
@@ -61,7 +61,7 @@ class InstabotRestClient:
         if len(result) < amount:
             self.instapy.logger.error(
                 "instabot_rest_client.getPostsByHashtag: Not enough links received for tag: %s. Expected: %s, received: %s" % (
-                hashtag, amount, len(result)))
+                    hashtag, amount, len(result)))
 
         return result
 
@@ -79,8 +79,7 @@ class InstabotRestClient:
         parameters['removeFollowedUsers'] = str(removeFollowedUsers).lower()
 
         urlValues = urllib.urlencode(parameters)
-        url = url + urlValues
-
+        url = url + "?" + urlValues
 
         self.logger.info("getPostsByLocation: API URL: %s:", url)
         req = urllib2.Request(url)
@@ -99,6 +98,6 @@ class InstabotRestClient:
         if len(result) < amount:
             self.instapy.logger.error(
                 "instabot_rest_client.getPostsByHashtag: Not enough links received for tag: %s. Expected: %s, received: %s" % (
-                hashtag, amount, len(result)))
+                    hashtag, amount, len(result)))
 
         return result
