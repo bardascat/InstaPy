@@ -15,7 +15,7 @@ import urllib2
 import urllib
 import requests
 import json
-
+import traceback
 
 class InstabotRestClient:
     def __init__(self,
@@ -49,7 +49,15 @@ class InstabotRestClient:
 
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
-        result = json.loads(response.read())
+
+        body = response.read()
+        try:
+            result = json.loads(body)
+        except Exception as exc:
+            exceptionDetail = traceback.format_exc()
+            self.logger.info("There was an error parsing the json: json: %s, error: %s" % (body, exceptionDetail))
+            raise Exception("Cannot parse json: error:" + exceptionDetail)
+
 
         if "error" in result:
             # maybe send an email with the error
@@ -84,9 +92,14 @@ class InstabotRestClient:
         self.logger.info("getPostsByLocation: API URL: %s:", url)
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
-        result = json.loads(response.read())
 
-        self.logger.info(result)
+        body = response.read()
+        try:
+            result = json.loads(body)
+        except Exception as exc:
+            exceptionDetail = traceback.format_exc()
+            self.logger.info("There was an error parsing the json: json: %s, error: %s" % (body, exceptionDetail))
+            raise Exception("Cannot parse json: error:" + exceptionDetail)
 
         if "error" in result:
             # maybe send an email with the error
