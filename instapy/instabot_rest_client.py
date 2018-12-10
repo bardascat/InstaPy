@@ -27,10 +27,14 @@ class InstabotRestClient:
 
     def getPostsByHashtag(self, hashtag, amount):
 
+        #todo: if not enough posts are retrieve from instabot try to move the difference to other tags
+
         removeFollowedUsers= True #todo set the right value for this
         removeLikedPosts = True  #todo set the right value for this
 
         url="http://35.166.100.155:5000/api/crawler/post/hashtag?id_campaign="+str(self.campaign['id_campaign'])+"&amount="+str(amount)+"&hashtag="+hashtag+"&removeLikedPosts="+str(removeLikedPosts).lower()+"&removeFollowedUsers="+str(removeFollowedUsers).lower()
+
+        self.logger.info("getPostsByHashtag: API URL: %s:", url)
 
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
@@ -53,6 +57,7 @@ class InstabotRestClient:
 
         url = "http://35.166.100.155:5000/api/crawler/post/hashtag?id_campaign=" + str(self.campaign['id_campaign']) + "&amount=" + str(amount) + "&location=" + location + "&removeLikedPosts=" + str(removeLikedPosts).lower() + "&removeFollowedUsers=" + str(removeFollowedUsers).lower()
 
+        self.logger.info("getPostsByLocation: API URL: %s:", url)
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
         result = json.loads(response.read())
