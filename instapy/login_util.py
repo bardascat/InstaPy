@@ -389,7 +389,7 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
 def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_issues=True):
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
-    edit_profile_button = browser.find_elements_by_xpath("//a[text()='Profile']")
+    edit_profile_button =browser.find_elements_by_xpath("//a[contains(@href,'"+username+"')]")
 
     logger.info("is_user_logged_in: Done searching for  Profile button !")
 
