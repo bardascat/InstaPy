@@ -110,7 +110,6 @@ class InstabotRestClient:
 
         if len(result) < amount:
             self.instapy.logger.error(
-                "instabot_rest_client.getPostsByHashtag: Not enough links received for tag: %s. Expected: %s, received: %s" % (
-                    hashtag, amount, len(result)))
+                "instabot_rest_client.getPostsByHashtag: Not enough links received for tag: %s. Expected: %s, received: %s" % (len(result), amount, len(result)))
 
         return result
