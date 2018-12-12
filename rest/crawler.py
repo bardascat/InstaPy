@@ -33,4 +33,3 @@ def scanUserProfile(campaign):
 
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
-t
