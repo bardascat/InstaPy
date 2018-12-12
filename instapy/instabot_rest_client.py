@@ -34,7 +34,7 @@ class InstabotRestClient:
         removeFollowedUsers = True  # todo set the right value for this
         removeLikedPosts = True  # todo set the right value for this
 
-        url = "http://35.166.100.155:50001/api/crawler/post/hashtag"
+        url = "http://35.166.100.155:50001/api/posts/hashtag"
         parameters = {}
         parameters['id_campaign'] = self.campaign['id_campaign']
         parameters['amount'] = amount
@@ -77,7 +77,7 @@ class InstabotRestClient:
         removeFollowedUsers = True  # todo set the right value for this
         removeLikedPosts = True  # todo set the right value for this
 
-        url = "http://35.166.100.155:5000/api/crawler/post/hashtag"
+        url = "http://35.166.100.155:50001/api/posts/location"
 
         parameters = {}
         parameters['id_campaign'] = self.campaign['id_campaign']
