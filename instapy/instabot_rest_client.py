@@ -16,7 +16,7 @@ import urllib
 import requests
 import json
 import traceback
-
+from bot_util import *
 class InstabotRestClient:
     def __init__(self,
                  campaign,
@@ -31,8 +31,8 @@ class InstabotRestClient:
 
         # todo: if not enough posts are retrieve from instabot try to move the difference to other tags
 
-        removeFollowedUsers = True  # todo set the right value for this
-        removeLikedPosts = True  # todo set the right value for this
+        removeFollowedUsers = bot_util.isFollowEnabled(self.campaign['id_campaign'], self.logger)
+        removeLikedPosts = True
 
         url = "http://35.166.100.155:50001/api/posts/hashtag"
         parameters = {}

@@ -29,14 +29,17 @@ class Engagements:
         self.browser = instapy.browser
         self.logger = instapy.logger
 
-        self.totalLikePerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.now(), "like",self.logger)
-        self.totalFollowPerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.now(),"follow", self.logger)
-        self.totalUnfollowPerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.now(),"unfollow", self.logger)
+        self.totalLikePerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.now(), "like",
+                                                                         self.logger)
+        self.totalFollowPerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.now(), "follow",
+                                                                           self.logger)
+        self.totalUnfollowPerformed = bot_action_handler.getActionsPerformed(self.campaign, datetime.now(), "unfollow",
+                                                                             self.logger)
 
     def perform_engagement(self, operation, likeAmount, followAmount, unfollowAmount):
         self.logger.info(
             "start perform engagement: ----------------- STARTED operation: %s, Going to perform %s likes, %s follow, %s Unfollow. -------------------" % (
-            operation['configName'], likeAmount, followAmount, unfollowAmount))
+                operation['configName'], likeAmount, followAmount, unfollowAmount))
 
         iteration = 0
         likePerformed = 0
@@ -62,9 +65,9 @@ class Engagements:
 
             self.logger.info(
                 "------------ perform_engagement start iteration: %s, TAG: %s. Going to perform likes: %s, follow: %s, unfollow: %s for tag: %s --------------" % (
-                iteration + 1, engagementValue,
-                likeAmountForeachRandomized, followAmountForeachRandomized, unfollowAmountForEachRandomized,
-                engagementValue))
+                    iteration + 1, engagementValue,
+                    likeAmountForeachRandomized, followAmountForeachRandomized, unfollowAmountForEachRandomized,
+                    engagementValue))
 
             numberOfPostsToExtract = max(likeAmountForeachRandomized, followAmountForeachRandomized,
                                          unfollowAmountForEachRandomized)
@@ -95,16 +98,16 @@ class Engagements:
 
             self.logger.info(
                 "-------------- perform_engagement end iteration: %s, TAG: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (
-                iteration + 1, engagementValue, result['likePerformed'], likeAmountForeachRandomized,
-                result['followPerformed'], followAmountForeachRandomized, result['unfollowPerformed'],
-                unfollowAmountForEachRandomized))
+                    iteration + 1, engagementValue, result['likePerformed'], likeAmountForeachRandomized,
+                    result['followPerformed'], followAmountForeachRandomized, result['unfollowPerformed'],
+                    unfollowAmountForEachRandomized))
 
             iteration = iteration + 1
 
         self.logger.info(
             "-------------- END PERFORM_ENGAGEMENT: END operation: %s. LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (
-            operation['configName'], likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed,
-            unfollowAmount))
+                operation['configName'], likePerformed, likeAmount, followPerformed, followAmount, unfollowPerformed,
+                unfollowAmount))
 
         return {"totalLikePerformed": likePerformed, "totalFollowPerformed": followPerformed,
                 "totalUnfollowPerformed": unfollowPerformed}
@@ -127,8 +130,9 @@ class Engagements:
         if self.totalLikePerformed >= self.totalLikeExpected and self.totalFollowPerformed >= self.totalFollowExpected and self.totalUnfollowPerformed >= self.totalUnfollowExpected:
             self.logger.info(
                 "shouldContinueLooping: Loop should stop. Total actions reached: LP: %s, FP: %s, UP: %s,  LE: %s, FE: %s, UE: %s" % (
-                self.totalLikePerformed, self.totalFollowPerformed, self.totalUnfollowPerformed, self.totalLikeExpected,
-                self.totalFollowExpected, self.totalUnfollowExpected))
+                    self.totalLikePerformed, self.totalFollowPerformed, self.totalUnfollowPerformed,
+                    self.totalLikeExpected,
+                    self.totalFollowExpected, self.totalUnfollowExpected))
             return False
 
         return True
@@ -141,7 +145,8 @@ class Engagements:
 
         for i, post in enumerate(links):
             self.logger.info(
-                'engage: **************** START PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(post['link'],engagementValue,i + 1,len(links)))
+                'engage: **************** START PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(
+                    post['link'], engagementValue, i + 1, len(links)))
 
             try:
 
@@ -178,7 +183,9 @@ class Engagements:
                 self.logger.error('engage: Invalid Page: {}'.format(err))
                 continue
 
-            self.logger.info('engage: **************** DONE PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(post['link'],engagementValue,i + 1,len(links)))
+            self.logger.info(
+                'engage: **************** DONE PROCESSING LINK: {}, TAG {}, [{}/{}] ********************'.format(
+                    post['link'], engagementValue, i + 1, len(links)))
 
         return result
 
@@ -187,15 +194,6 @@ class Engagements:
         if self.totalLikePerformed >= self.totalLikeExpected:
             self.logger.error("performLike: ERROR - The like amount is reached. Expected %s, performed %s " % (
                 self.totalLikeExpected, self.totalLikePerformed))
-            return False
-
-        try:
-            linkCode = link.split("https://www.instagram.com/p/")[1].split("/")[0]
-        except:
-            linkCode = link
-
-        if postWasLikedInThePast(linkCode, self.campaign['id_user']) is True:
-            self.logger.info("performLike: Post %s was liked in the past, skipping...", link)
             return False
 
         liked, msg = like_image(self.browser,
@@ -207,6 +205,10 @@ class Engagements:
         if liked:
             self.logger.info("performLike: Link %s was liked. User %s" % (link, user_name))
 
+        if msg == "already_liked":
+            self.logger.info("performLike: Link %s was already liked, going to store it in db.", link)
+
+        if liked is True or msg == "already_liked":
             insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                             None, None, user_name,
                             None, None, None,
@@ -246,11 +248,12 @@ class Engagements:
                 # try to folllow
                 self.logger.info("performFollow: Trying to follow user %s", user_name)
 
-                # check if user was followed in the past
-                if userWasFollowedInThePast(user_name, self.campaign['id_user']):
-                    self.logger.error("performFollow: Warning: User %s was followed in the past, going to skip it !",
-                                      user_name)
-                    return False
+                # this is not necessary since the posts are prefiltered
+                # # check if user was followed in the past
+                # if userWasFollowedInThePast(user_name, self.campaign['id_user']):
+                #     self.logger.error("performFollow: Warning: User %s was followed in the past, going to skip it !",
+                #                       user_name)
+                #     return False
 
                 # todo: follow_user method is overengineered , try to simplify it
                 followed, msg = follow_user(self.browser,
@@ -263,7 +266,10 @@ class Engagements:
                                             self.instapy.logfolder,
                                             self.instapy)
 
-                if followed:
+                if msg == "already_followed":
+                    self.logger.info("performFollow: User %s was already followed, going to store it in DB", user_name)
+
+                if followed is True or msg == "already_followed":
                     insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                     None, None, user_name,
                                     None, None, None,
@@ -321,7 +327,8 @@ class Engagements:
                 self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
 
                 revertBotFollow(recordToUnfollow['_id'], lastBotAction)
-                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (lastBotAction, recordToUnfollow['_id']))
+                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
+                    lastBotAction, recordToUnfollow['_id']))
                 self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
                 time.sleep(3)
                 return True
@@ -367,17 +374,19 @@ class Engagements:
 
     def get_links(self, numberOfPostsToExtract, engagementBy, engagementByValue):
 
-
-        #todo: test this
+        # todo: test this
 
         if engagementBy == "engagement_by_hashtag":
-            self.logger.info("get_links: Getting %s links for hashtag: %s" % (numberOfPostsToExtract, engagementByValue))
-            return self.instapy.instabotRestClient.getPostsByHashtag(hashtag=engagementByValue,amount=numberOfPostsToExtract)
+            self.logger.info(
+                "get_links: Getting %s links for hashtag: %s" % (numberOfPostsToExtract, engagementByValue))
+            return self.instapy.instabotRestClient.getPostsByHashtag(hashtag=engagementByValue,
+                                                                     amount=numberOfPostsToExtract)
 
         elif engagementBy == "engagement_by_location":
-            self.logger.info("get_links: Getting %s links for location: %s" % (numberOfPostsToExtract, engagementByValue))
-            return self.instapy.instabotRestClient.getPostsByLocation(location=engagementByValue,amount=numberOfPostsToExtract)
-
+            self.logger.info(
+                "get_links: Getting %s links for location: %s" % (numberOfPostsToExtract, engagementByValue))
+            return self.instapy.instabotRestClient.getPostsByLocation(location=engagementByValue,
+                                                                      amount=numberOfPostsToExtract)
 
     def getItemToProcess(self, operation, engagement_by):
 

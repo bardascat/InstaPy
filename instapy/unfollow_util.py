@@ -583,7 +583,7 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
             logger.info("--> '{}' is already followed".format(user_name))
             sleep(1)
 
-            return False, "already followed"
+            return False, "already_followed"
 
         except StaleElementReferenceException:
             # https://stackoverflow.com/questions/16166261/selenium-webdriver-how-to-resolve-stale-element-reference-exception

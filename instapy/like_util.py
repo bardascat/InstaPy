@@ -601,7 +601,7 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
         if len(liked_elem) == 1:
             logger.info('like_image: --> Image already liked!')
-            return False, "already liked"
+            return False, "already_liked"
 
     logger.info('like_image: --> Invalid Like Element!, element is : %s', like_elem)
 

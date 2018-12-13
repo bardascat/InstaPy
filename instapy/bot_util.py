@@ -9,11 +9,12 @@ from random import randint
 
 from api_db import *
 
-#dumb function
+
+# dumb function
 def randomizeValue(value, randomizePercent, direction="random"):
     originalValue = value
 
-    if value==0:
+    if value == 0:
         return 0
 
     randomizeValue = randomizePercent * value // 100
@@ -21,20 +22,20 @@ def randomizeValue(value, randomizePercent, direction="random"):
     if direction == "up":
         value = value + randomizeValue
         if value == originalValue:
-            value = value + randint(1,3)
+            value = value + randint(1, 3)
 
 
     elif direction == "down":
         value = value - randomizeValue
         if value == originalValue:
-            value = value - randint(1,3)
+            value = value - randint(1, 3)
 
     else:
         randomDirection = randint(1, 100)
         if randomDirection >= 50:
             value = value + randomizeValue
             if value == originalValue:
-                value = value + randint(1,3)
+                value = value + randint(1, 3)
         else:
             value = value - randomizeValue
             if value == originalValue:
@@ -54,6 +55,18 @@ def getIfUserWantsToUnfollow(id_campaign):
         return False
 
     return result
+
+
+def isFollowEnabled(id_campaign, logger):
+    operations = getBotOperations(id_campaign, logger)
+
+    enabled = False
+    for o in operations:
+        if o['enabled']==1 and o['follow_user'] == 1 and len(o['list']) > 0:
+            enabled = True
+            return enabled
+
+    return enabled
 
 
 def isOperationEnabled(operationName, id_campaign, logger):
@@ -78,16 +91,16 @@ def getOperationByName(operations, name):
 
     return False
 
+
 def getOperationsNumber(operations):
-    ops=0
+    ops = 0
     for o in operations:
         if o['configName'] == 'engagement_by_location' and o['list'] > 0:
-            ops+=1
+            ops += 1
         if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0:
-            ops+=1
+            ops += 1
 
     return ops
-
 
 
 def getBotOperations(id_campaign, logger):
@@ -96,7 +109,7 @@ def getBotOperations(id_campaign, logger):
     totalLikeOperations = 0
     totalFollowOperations = 0
 
-    #todo: why unfollow is not loaded?
+    # todo: why unfollow is not loaded?
     operations = select(
         "SELECT configName, id_config, enabled, like_post, follow_user, percentageAmount FROM campaign_config where id_campaign=%s and enabled=1",
         id_campaign)
@@ -107,9 +120,9 @@ def getBotOperations(id_campaign, logger):
             operation['list'] = tags
 
         if 'engagement_by_location' in operation['configName']:
-            locations = select("select * from instagram_locations where id_config=%s and enabled=1", operation['id_config'])
+            locations = select("select * from instagram_locations where id_config=%s and enabled=1",
+                               operation['id_config'])
             operation['list'] = locations
-
 
     # apply percentage
     # if totalLikePercentage<100 and totalLikePercentage>0:
@@ -141,6 +154,7 @@ def getBotOperations(id_campaign, logger):
     logger.info("getBotOperations: Found %s operations", len(operations))
     return operations
 
+
 def how_many_seconds_until_midnight():
     tomorrow = date.today() + timedelta(1)
     midnight = datetime.combine(tomorrow, time())
@@ -154,7 +168,7 @@ def get_like_delay(self, likeAmount):
         self.like_delay = self.like_delay + int(round(self.like_delay * percentageIncrease / 100))
         self.logger.info(
             "get_like_delay: Account is warming up/startup, going to increase the like delay by %s percentage. Final delay %s seconds" % (
-            percentageIncrease, self.like_delay))
+                percentageIncrease, self.like_delay))
         return self.like_delay
     else:
         self.logger.info("get_like_delay: The like delay is ~ %s seconds", self.like_delay)
@@ -177,7 +191,7 @@ def get_like_delay(self, likeAmount):
             likeDelay = 100
         self.like_delay = likeDelay
         self.logger.info("get_like_delay: seconds until midnight:%s, like amount: %s, delay: %s" % (
-        secondsUntilMidnight, likeAmount, likeDelay))
+            secondsUntilMidnight, likeAmount, likeDelay))
         return likeDelay
 
 
@@ -187,7 +201,7 @@ def get_follow_delay(self, followAmount):
         self.follow_delay = self.follow_delay + int(round(self.follow_delay * percentageIncrease / 100))
         self.logger.info(
             "get_follow_delay: Account is warming up/startup going to increase the follow delay by %s percentage. Final delay ~ %s seconds" % (
-            percentageIncrease, self.follow_delay))
+                percentageIncrease, self.follow_delay))
         return self.follow_delay
     else:
         self.logger.info("get_follow_delay: The follow delay is ~ %s seconds", self.follow_delay)
@@ -207,5 +221,5 @@ def get_follow_delay(self, followAmount):
     else:
         self.follow_delay = followDelay
         self.logger.info("get_follow_delay: seconds until midnight:%s, follow amount: %s, delay: %s" % (
-        secondsUntilMidnight, followAmount, followDelay))
+            secondsUntilMidnight, followAmount, followDelay))
         return followDelay
