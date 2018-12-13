@@ -389,7 +389,7 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
 def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_issues=True):
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
-    edit_profile_button =browser.find_elements_by_xpath("//a[contains(@href,'"+username+"')]")
+    edit_profile_button = browser.find_elements_by_xpath("//a[contains(@href,'" + username + "')]")
 
     logger.info("is_user_logged_in: Done searching for  Profile button !")
 
@@ -421,7 +421,27 @@ def find_login_issues(browser, logger, cmp, force_login=False):
     # CHECK IF INSTAGRAM DETECTED UNSUAL LOGIN ATTEMPT
     check_unusual_login_attempt(browser, logger, cmp, force_login)
 
+    check_phone_code_verification(browser, logger, cmp, force_login)
+
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
+
+
+def check_phone_code_verification(browser, logger, campaign, force_login=False):
+    # CHECK FOR INVALID CREDENTIALS
+    phoneCodeVerification = browser.find_elements_by_xpath("//div[contains(text(), 'Enter the code we sent')]")
+    if len(phoneCodeVerification) > 0:
+        logger.info("find_login_issues: Instagram requires phone code verification")
+
+        api_db.insert(
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+            campaign['id_campaign'], "PHONE_CODE_VERIFICATION", "login_error")
+
+        if force_login is not True:
+            logger.info("Going to send an email to the user.")
+            browser.get('https://rest.angie.one/email/notifyUserPhoneCodeVerification?id=' + str(campaign['id_user']))
+
+        raise Exception("PHONE_CODE_VERIFICATION")
+    return True
 
 
 def check_invalid_username(browser, logger, campaign, force_login=False):
