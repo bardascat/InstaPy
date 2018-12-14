@@ -387,6 +387,7 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
 
 
 def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_issues=True):
+    check_it_was_me_popup(browser, logger, cmp)
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
     edit_profile_button = browser.find_elements_by_xpath("//a[contains(@href,'" + username + "')]")
@@ -405,6 +406,16 @@ def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_
         logger.info("is_user_logged_in: Profile button was found... user succesffully LOGGED IN")
         return True
 
+#this is not actually an error. Instagram shows a popup asking about a previous login. Just click this was me and continue with the normal flow.
+def check_it_was_me_popup(browser, logger, cmp):
+    buttons = browser.find_elements_by_xpath("//button[contains(text(), 'This Was Me')]")
+    if len(buttons)>0:
+        logger.info("check_it_was_me_popup: It was me popup is true, going to click 'This was me' to hide it !")
+        buttons[0].click()
+
+    return True
+
+
 
 def find_login_issues(browser, logger, cmp, force_login=False):
     logger.info("find_login_issues: Starting to detect login issues...")
@@ -421,12 +432,12 @@ def find_login_issues(browser, logger, cmp, force_login=False):
     # CHECK IF INSTAGRAM DETECTED UNSUAL LOGIN ATTEMPT
     check_unusual_login_attempt(browser, logger, cmp, force_login)
 
-    check_phone_code_verification(browser, logger, cmp, force_login)
+    check_phone_code_verification_2auth(browser, logger, cmp, force_login)
 
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
 
 
-def check_phone_code_verification(browser, logger, campaign, force_login=False):
+def check_phone_code_verification_2auth(browser, logger, campaign, force_login=False):
     # CHECK FOR INVALID CREDENTIALS
     phoneCodeVerification = browser.find_elements_by_xpath("//div[contains(text(), 'Enter the code we sent')]")
     if len(phoneCodeVerification) > 0:
@@ -434,7 +445,7 @@ def check_phone_code_verification(browser, logger, campaign, force_login=False):
 
         api_db.insert(
             "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-            campaign['id_campaign'], "PHONE_CODE_VERIFICATION", "login_error")
+            campaign['id_campaign'], "2AUTH_PHONE_CODE_VERIFICATION", "login_error")
 
         if force_login is not True:
             logger.info("Going to send an email to the user.")
@@ -479,7 +490,7 @@ def check_invalid_credentials(browser, logger, campaign, force_login=False):
         raise Exception("INVALID_CREDENTIALS")
     return True
 
-
+#instagram asking for user phone number
 def check_phone_verification(browser, logger, campaign, force_login=False):
     instagramWantsToConfirmPhoneNumber = browser.find_elements_by_xpath("//h2[contains(text(), 'Phone')]")
 
@@ -494,23 +505,32 @@ def check_phone_verification(browser, logger, campaign, force_login=False):
             browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
         raise Exception("ADD_PHONE_NUMBER")
 
-
+#todo: implement this code properly
+# In order to validate this login instagram is asking for a verification code sent by email. Find a way to ask the user about that code.
+#todo: After the cookie is created it should go back to normal
+#todo: a complex scenario is when instagram asks for verification code and then asks for oauth code. -> after first is inserted nothing happens(logged out)
 def check_unusual_login_attempt(browser, logger, campaign, force_login=False):
     unusualAttempt = browser.find_elements_by_xpath("//h2[contains(text(), 'We Detected An Unusual Login Attempt')]")
 
     if len(unusualAttempt) > 0:
-        logger.info("find_login_issues: Instagram detected an unsual login attempt. Going to notify user by email")
+        logger.info("find_login_issues: Instagram detected an unsual login attempt. Going to notify user by email to activate his account using email code verification.")
         api_db.insert(
             "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
             campaign['id_campaign'], "UNUSUAL_LOGIN_ATTEMPT", "login_error")
 
+        sendCodeButtonList = browser.find_elements_by_xpath("//button[contains(text(), 'Send Security')]")
+        #if len(sendCodeButtonList) > 0:
+            #sendCodeButtonList[0].click()
+        #else:
+        #    raise Exception("UNUSUAL_LOGIN_ATTEMPT: Send Security Code Button was not found !")
+
         if force_login is not True:
             logger.info("Going to send an email to the user.")
-            browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
+            #browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
         raise Exception("UNUSUAL_LOGIN_ATTEMPT")
 
 
-# TODO UPDATE THIS METHOD ? for what?
+
 def isLogginAllowed(campaign, force_login, logger):
     if force_login == True:
         return True
