@@ -451,7 +451,7 @@ def check_phone_code_verification_2auth(browser, logger, campaign, force_login=F
             logger.info("Going to send an email to the user.")
             browser.get('https://rest.angie.one/email/notifyUserPhoneCodeVerification?id=' + str(campaign['id_user']))
 
-        raise Exception("PHONE_CODE_VERIFICATION")
+        raise Exception("2AUTH_PHONE_CODE_VERIFICATION")
     return True
 
 
