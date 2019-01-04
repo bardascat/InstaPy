@@ -430,7 +430,7 @@ class InstaPy:
         #    return False
 
         if self.proxy_address:
-            self.logger.info("check_internet_connection: Checking proxy address")
+            self.logger.info("check_internet_connection: Checking proxy address. Proxy is: %s", self.proxy_address)
             self.browser.get("https://api.ipify.org/?format=text")
             try:
                 element = self.browser.find_element_by_tag_name("pre")
