@@ -145,6 +145,12 @@ paths:
         description: id_campaign
         type: string
         required: True
+      - name: twoFactorRecoveryCode
+        in: query
+        description: twoFactorRecoveryCode
+        type: string
+        required: false
+
       responses:
         200:
           description: Successfully connected to instagram

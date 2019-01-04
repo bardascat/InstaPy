@@ -45,7 +45,7 @@ class AccountPrivacyService:
         return True
 
     def extractInstagramUsername(self):
-        edit_profile_buttons = self.instapy.browser.find_elements_by_xpath("//a[text()='Profile']")
+        edit_profile_buttons = self.instapy.browser.find_elements_by_xpath("//span[@aria-label='Profile']")
         button = edit_profile_buttons[0]
         button.click()
         instagramUsername = self.instapy.browser.find_elements_by_xpath("//h1")[0].text

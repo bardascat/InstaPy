@@ -17,14 +17,14 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-settings', type=str, help="settings")
 args = parser.parse_args()
 
-if args.settings is None:
-    exit("verify_account: settings are not specified !")
+#if args.settings is None:
+#    exit("verify_account: settings are not specified !")
 
 result = {}
 result['status'] = False
-
 try:
-    settings = json.loads(args.settings)
+    #settings = json.loads(args.settings)
+    settings = {"u": "catalinbardas", "p": "atitudinE22c", "twoFactorRecoveryCode": 1, "unusual_login_token": "701852","id_campaign": 1}
     campaign = fetchOne(
         "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
         settings['id_campaign'])
@@ -33,16 +33,16 @@ try:
 
     session = InstaPy(username=settings['u'],
                       password=settings['p'],
-                      headless_browser=True,
+                      headless_browser=False,
                       bypass_suspicious_attempt=False,
-                      proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
+                      proxy_address="104.192.201.89",
                       campaign=campaign,
-                      proxy_port="80",
+                      proxy_port=56136,
                       multi_logs=True,
-                      show_logs=False,
+                      show_logs=True,
                       force_login=True)
 
-    status = session.login()
+    status = session.connectWithInstagram(two_factor_auth_token=settings['twoFactorRecoveryCode'], unusual_login_token=settings['unusual_login_token'])
     if status is True:
         result['status'] = True
 
@@ -54,8 +54,8 @@ try:
     session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
-    # print(exceptionDetail)
-    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    print(exceptionDetail)
+    #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception'] = exceptionDetail
 finally:
     print(json.dumps(result))

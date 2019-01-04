@@ -15,6 +15,7 @@ from .util import update_activity
 import pickle
 import time
 import api_db
+import login_issues
 
 
 def bypass_suspicious_login(browser):
@@ -276,6 +277,71 @@ def dismiss_get_app_offer(browser, logger):
         dismiss_elem = browser.find_element_by_xpath(dismiss_elem)
         click_element(browser, dismiss_elem)
 
+def connect_with_instagram(browser,
+                      username,
+                      password,
+                      logfolder,
+                      switch_language=True,
+                      bypass_suspicious_attempt=False, logger=None, cmp=None, unusual_login_token=None, two_factor_auth_token=None):
+
+    logger.info("connect_with_instagram: Trying to connect with instagram ...")
+
+    status = execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder,cmp)
+
+    if status is True:
+        # create cookie
+        logger.info("connect_with_instagram: Login was successfully. Going to create the cookie")
+        pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+        return True
+    else:
+        logger.info("connect_with_instagram: Failed, going to detect login issues")
+        login_issue = find_login_issues(browser, logger, cmp)
+
+        if login_issue == login_issues.UNUSUAL_LOGIN_ATTEMPT:
+            return handle_unusual_login_attempt(browser, username, logger, logfolder, cmp, unusual_login_token)
+
+        elif login_issue == login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION:
+            #todo: implement this method
+            x=1
+        else:
+            raise Exception(login_issue)
+
+
+#TODO: RUN SOME MORE TESTS. INTEGRATE IT WITH FRONTEND. DO THE SAME WITH 2_FACTOR_AUTH
+def handle_unusual_login_attempt(browser, username, logger, logfolder, cmp, unusual_login_token=None):
+    logger.info("handle_unusual_login_attempt: Going to generate a new security token for unusual login.")
+    sendCodeButtonList = browser.find_elements_by_xpath("//button[contains(text(), 'Send Security Code')]")
+
+    sendCodeButtonList[0].click()
+    time.sleep(2)
+
+    if unusual_login_token is None:
+        logger.info("handle_unusual_login_attempt: token is not provided, going to return...")
+        raise Exception(login_issues.UNUSUAL_LOGIN_ATTEMPT)
+
+    logger.info("Going to fill in the unusual_login_token: %s", unusual_login_token)
+    tokenInput = browser.find_elements_by_xpath("//input")[0]
+    tokenInput.click()
+    tokenInput.send_keys(unusual_login_token)
+    browser.find_elements_by_xpath("//button[contains(text(), 'Submit')]")[0].click()
+    time.sleep(3)
+
+    errorMessageList = browser.find_elements_by_xpath("//p[contains(text(), 'Please check the code we sent')]")
+    if len(errorMessageList) > 0:
+        logger.info("handle_unusual_login_attempt: Unusual token is invalid: %s", unusual_login_token)
+        raise Exception(login_issues.INVALID_UNUSUAL_LOGIN_TOKEN)
+
+    else:
+        logger.info("handle_unusual_login_attempt: check if user is logged in")
+        loggedIn = is_user_logged_in(username, browser, logger, cmp)
+        if loggedIn is True:
+            # create cookie
+            logger.info("handle_unusual_login_attempt: Login was successfully. Going to create the cookie")
+            pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+            return True
+        else:
+            logger.info("handle_unusual_login_attempt: User is still not logged in after inserting the unusual login token: %s", unusual_login_token)
+            raise Exception(login_issues.UNKNOWN_LOGIN_ISSUE)
 
 def custom_login_user(browser,
                       username,
@@ -314,21 +380,31 @@ def custom_login_user(browser,
         logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
         browser.get("https://www.instagram.com/")
         sleep(1)
-        if is_user_logged_in(username, browser, logger, cmp, force_login, detect_issues=False) == True:
+
+        # check if user was automatically logged in after cookie was loaded
+        if is_user_logged_in(username, browser, logger, cmp) == True:
             logger.info("custom_login_user: The user was successfully logged in...")
             return True
         else:
             logger.info(
                 "custom_login_user: The user was not automatically logged in. Maybe error with the cookie ?. Going to manually login...")
-            return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger,
-                                 logfolder, cmp, force_login)
 
-    return execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder,
-                         cmp, force_login)
+    status = execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder,cmp)
+
+    if status is True:
+        # create cookie
+        logger.info("custom_login_user: Login was successfully. Going to create the cookie")
+        pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+        return True
+    else:
+        logger.info("custom_login_user: Failed, going to detect login issues")
+        issue = find_login_issues(browser, logger, cmp)
+        handle_login_issue(browser, cmp, issue, logger)
+
+    return False
 
 
-def execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp,
-                  force_login=False):
+def execute_login(username, password, browser, switch_language, bypass_suspicious_attempt, logger, logfolder, cmp):
     # Changes instagram language to english, to ensure no errors ensue from
     # having the site on a different language
     # Might cause problems if the OS language is english
@@ -369,24 +445,15 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
      .click()
      .perform())
 
-    if bypass_suspicious_attempt is True:
-        logger.info("execute_login: Bypass_suspicious_attempt is true...")
-        bypass_suspicious_login(browser)
-
-    if force_login is not True:
-        logger.info("execute_login: Sleeping 1 second")
-        sleep(1)
-
-    if is_user_logged_in(username, browser, logger, cmp, force_login) == True:
-        # create cookie for username
-        logger.info("execute_login: Login was successfully. Going to create the cookie")
-        pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
-        return True
-
-    return False
+    return is_user_logged_in(username, browser, logger, cmp)
 
 
-def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_issues=True):
+def bypass_two_auth(browser, twoFactorRecoveryCode, logger):
+    logger.info("Going to bypass two factor auth using code: %s", twoFactorRecoveryCode)
+    # todo: enter the code into instagram input and click OK.
+
+
+def is_user_logged_in(username, browser, logger, cmp):
     check_it_was_me_popup(browser, logger, cmp)
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
@@ -396,138 +463,146 @@ def is_user_logged_in(username, browser, logger, cmp, force_login=False, detect_
 
     if len(edit_profile_button) == 0:
         logger.info("is_user_logged_in: Profile button was NOT found, going to assume user is not logged in")
-
-        if detect_issues == True:
-            logger.info("is_user_logged_in: Going to check for log in issues...")
-            find_login_issues(browser, logger, cmp, force_login)
-
         return False
     else:
         logger.info("is_user_logged_in: Profile button was found... user succesffully LOGGED IN")
         return True
 
-#this is not actually an error. Instagram shows a popup asking about a previous login. Just click this was me and continue with the normal flow.
+
+# this is not actually an error. Instagram shows a popup asking about a previous login. Just click this was me and continue with the normal flow.
 def check_it_was_me_popup(browser, logger, cmp):
     buttons = browser.find_elements_by_xpath("//button[contains(text(), 'This Was Me')]")
-    if len(buttons)>0:
+    if len(buttons) > 0:
         logger.info("check_it_was_me_popup: It was me popup is true, going to click 'This was me' to hide it !")
         buttons[0].click()
 
     return True
 
 
+def handle_login_issue(browser, campaign, login_issue, logger):
+    logger.info("handle_login_issue: Going to handle login issue: %s", login_issue)
 
-def find_login_issues(browser, logger, cmp, force_login=False):
+    if login_issue == login_issues.INVALID_CREDENTIALS:
+        logger.info("Going to send an email to the user.")
+        browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id=' + str(campaign['id_user']))
+        raise Exception(login_issue)
+
+    elif login_issue == login_issues.ADD_PHONE_NUMBER:
+        logger.info("Going to send an email to the user.")
+        browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
+        raise Exception(login_issue)
+
+    elif login_issue == login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION:
+        logger.info("Going to send an email to the user.")
+        browser.get('https://rest.angie.one/email/notifyUserPhoneCodeVerification?id=' + str(campaign['id_user']))
+        raise Exception(login_issue)
+
+    elif login_issue == login_issues.UNUSUAL_LOGIN_ATTEMPT:
+        logger.info("Going to send an email to the user.")
+        browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
+        raise Exception(login_issue)
+
+    else:
+        logger.info("handle_login_issue: Could not handle/detect login issue with value: %s", login_issue)
+        api_db.insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "UNSUCCESSFUL_LOGIN_NO_REASON", "login_error")
+        raise Exception(login_issues.UNKNOWN_LOGIN_ISSUE)
+
+
+
+
+
+def find_login_issues(browser, logger, cmp):
     logger.info("find_login_issues: Starting to detect login issues...")
 
     # CHECK INVALID CREDENTIALS
-    check_invalid_credentials(browser, logger, cmp, force_login)
-
-    # CHECK INSTAGRAM USERNAME
-    check_invalid_username(browser, logger, cmp, force_login)
-
-    # CHECK FOR PHONE VALIDATION
-    check_phone_verification(browser, logger, cmp, force_login)
+    status = check_invalid_credentials(browser, logger, cmp)
+    if status is not False:
+        return status
 
     # CHECK IF INSTAGRAM DETECTED UNSUAL LOGIN ATTEMPT
-    check_unusual_login_attempt(browser, logger, cmp, force_login)
+    status = check_unusual_login_attempt(browser, logger, cmp)
+    if status is not False:
+        return status
 
-    check_phone_code_verification_2auth(browser, logger, cmp, force_login)
+    # CHECK INSTAGRAM USERNAME
+    status = check_invalid_username(browser, logger, cmp)
+    if status is not False:
+        return status
+
+    # INSTAGRAM ASKINF FOR USER'S PHOEN NUMBER
+    status = check_phone_verification(browser, logger, cmp)
+    if status is not False:
+        return status
+
+    status = check_phone_code_verification_2auth(browser, logger, cmp)
+    if status is not False:
+        return status
 
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
 
+    return False
 
-def check_phone_code_verification_2auth(browser, logger, campaign, force_login=False):
-    # CHECK FOR INVALID CREDENTIALS
+
+
+
+def check_phone_code_verification_2auth(browser, logger, campaign):
+    #maybe the selector for 2factor auth is not that good
     phoneCodeVerification = browser.find_elements_by_xpath("//div[contains(text(), 'Enter the code we sent')]")
     if len(phoneCodeVerification) > 0:
         logger.info("find_login_issues: Instagram requires phone code verification")
 
-        api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-            campaign['id_campaign'], "2AUTH_PHONE_CODE_VERIFICATION", "login_error")
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION, "login_error")
+        return login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION
 
-        if force_login is not True:
-            logger.info("Going to send an email to the user.")
-            browser.get('https://rest.angie.one/email/notifyUserPhoneCodeVerification?id=' + str(campaign['id_user']))
-
-        raise Exception("2AUTH_PHONE_CODE_VERIFICATION")
-    return True
+    return False
 
 
-def check_invalid_username(browser, logger, campaign, force_login=False):
+def check_invalid_username(browser, logger, campaign):
     # CHECK FOR INVALID CREDENTIALS
     invalidCredentials = browser.find_elements_by_xpath("//p[contains(text(), 'Please check your username')]")
     if len(invalidCredentials) > 0:
         logger.info("find_login_issues: Invalid username")
 
-        api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-            campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
+        return login_issues.INVALID_CREDENTIALS
 
-        if force_login is not True:
-            logger.info("Going to send an email to the user.")
-            browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id=' + str(campaign['id_user']))
-
-        raise Exception("INVALID_CREDENTIALS")
-    return True
+    return False
 
 
-def check_invalid_credentials(browser, logger, campaign, force_login=False):
+def check_invalid_credentials(browser, logger, campaign):
     # CHECK FOR INVALID CREDENTIALS
     invalidCredentials = browser.find_elements_by_xpath("//p[contains(text(), 'password was incorrect')]")
     if len(invalidCredentials) > 0:
         logger.info("find_login_issues: Invalid credentials")
 
-        api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-            campaign['id_campaign'], "INVALID_CREDENTIALS", "login_error")
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], login_issues.INVALID_CREDENTIALS, "login_error")
+        return login_issues.INVALID_CREDENTIALS
 
-        if force_login is not True:
-            logger.info("Going to send an email to the user.")
-            browser.get('https://rest.angie.one/email/notifyUserInvalidCredentials?id=' + str(campaign['id_user']))
+    return False
 
-        raise Exception("INVALID_CREDENTIALS")
-    return True
 
-#instagram asking for user phone number
-def check_phone_verification(browser, logger, campaign, force_login=False):
+# instagram asking for user phone number
+def check_phone_verification(browser, logger, campaign):
     instagramWantsToConfirmPhoneNumber = browser.find_elements_by_xpath("//h2[contains(text(), 'Phone')]")
-
     if len(instagramWantsToConfirmPhoneNumber) > 0:
         logger.info("find_login_issues: Instagram wants to verify the phone number, ask user for input")
-        api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-            campaign['id_campaign'], "ADD_PHONE_NUMBER", "login_error")
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], login_issues.ADD_PHONE_NUMBER, "login_error")
+        return login_issues.ADD_PHONE_NUMBER
 
-        if force_login is not True:
-            logger.info("Going to send an email to the user.")
-            browser.get('https://rest.angie.one/email/notifyUserConfirmPhoneNumber?id=' + str(campaign['id_user']))
-        raise Exception("ADD_PHONE_NUMBER")
+    return False
 
-#todo: implement this code properly
-# In order to validate this login instagram is asking for a verification code sent by email. Find a way to ask the user about that code.
-#todo: After the cookie is created it should go back to normal
-#todo: a complex scenario is when instagram asks for verification code and then asks for oauth code. -> after first is inserted nothing happens(logged out)
-def check_unusual_login_attempt(browser, logger, campaign, force_login=False):
+# todo: a complex scenario is when instagram asks for verification code and then asks for oauth code. -> after first is inserted nothing happens(logged out)
+def check_unusual_login_attempt(browser, logger, campaign):
     unusualAttempt = browser.find_elements_by_xpath("//h2[contains(text(), 'We Detected An Unusual Login Attempt')]")
 
     if len(unusualAttempt) > 0:
-        logger.info("find_login_issues: Instagram detected an unsual login attempt. Going to notify user by email to activate his account using email code verification.")
-        api_db.insert(
-            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-            campaign['id_campaign'], "UNUSUAL_LOGIN_ATTEMPT", "login_error")
+        logger.info(
+            "find_login_issues: Instagram detected an unsual login attempt.")
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], login_issues.UNUSUAL_LOGIN_ATTEMPT, "login_error")
 
-        sendCodeButtonList = browser.find_elements_by_xpath("//button[contains(text(), 'Send Security')]")
-        #if len(sendCodeButtonList) > 0:
-            #sendCodeButtonList[0].click()
-        #else:
-        #    raise Exception("UNUSUAL_LOGIN_ATTEMPT: Send Security Code Button was not found !")
+        return login_issues.UNUSUAL_LOGIN_ATTEMPT
 
-        if force_login is not True:
-            logger.info("Going to send an email to the user.")
-            #browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
-        raise Exception("UNUSUAL_LOGIN_ATTEMPT")
+    return False
 
 
 

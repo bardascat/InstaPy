@@ -8,10 +8,10 @@ base_path = "/home/ubuntu/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
 
 
-def verify(username, password, id_campaign):
+def verify(username, password, id_campaign, twoFactorRecoveryCode):
     logger = getLogger()
-    logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s" % (id_campaign, username))
-    settings = {"u": username, "p": password, "id_campaign": id_campaign}
+    logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s, twoFactorRecoveryCode: %s" % (id_campaign, username, twoFactorRecoveryCode))
+    settings = {"u": username, "p": password, "id_campaign": id_campaign, "twoFactorRecoveryCode": twoFactorRecoveryCode}
 
     process = subprocess.Popen(
         "sudo /usr/bin/python2.7 " + base_path + "/verify_account.py -settings='" + json.dumps(settings) + "'",
