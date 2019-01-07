@@ -16,7 +16,6 @@ import pickle
 import time
 import api_db
 import login_issues
-from selenium import webdriver
 
 
 def bypass_suspicious_login(browser):
@@ -485,7 +484,7 @@ def handle_login_issue(browser, campaign, login_issue, logger):
     logger.info("handle_login_issue: Going to handle login issue: %s", login_issue)
 
     path="/home/instapy-log/campaign/logs/" + str(campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
-    webdriver.get_screenshot_as_file(path)
+    browser.get_screenshot_as_file(path)
     logger.info("handle_login_issue: Done saving a print screen with the issue. location: %s", path)
 
     if login_issue == login_issues.INVALID_CREDENTIALS:
