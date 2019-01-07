@@ -9,6 +9,9 @@ DEVNULL = open(os.devnull, 'wb')
 
 
 def verify(username, password, id_campaign, twoFactorRecoveryCode=None, unusualLoginToken=None):
+    twoFactorRecoveryCode = None if (not twoFactorRecoveryCode) else twoFactorRecoveryCode
+    unusualLoginToken = None if (not unusualLoginToken) else unusualLoginToken
+
     logger = getLogger()
     logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s, twoFactorRecoveryCode: %s, unusualLoginToken: %s" % (id_campaign, username, twoFactorRecoveryCode, unusualLoginToken))
     settings = {"u": username, "p": password, "id_campaign": id_campaign, "twoFactorRecoveryCode": twoFactorRecoveryCode, "unusualLoginToken": unusualLoginToken}

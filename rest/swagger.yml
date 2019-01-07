@@ -149,12 +149,14 @@ paths:
         in: query
         description: twoFactorRecoveryCode
         type: string
-        required: False
+        required: false,
+        default: ''
       - name: unusualLoginToken
         in: query
         description: unusualLoginToken
         type: string
-        required: False
+        required: false
+        default: ''
 
       responses:
         200:
