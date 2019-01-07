@@ -150,6 +150,11 @@ paths:
         description: twoFactorRecoveryCode
         type: string
         required: false
+      - name: unusualLoginToken
+        in: query
+        description: unusualLoginToken
+        type: string
+        required: false
 
       responses:
         200:

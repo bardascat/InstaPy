@@ -38,10 +38,10 @@ try:
                       campaign=campaign,
                       proxy_port=56136,
                       multi_logs=True,
-                      show_logs=True,
+                      show_logs=False,
                       force_login=True)
-
-    status = session.connectWithInstagram(two_factor_auth_token=settings['twoFactorRecoveryCode'], unusual_login_token=settings['unusual_login_token'])
+    session.logger.info("settings: %s", settings)
+    status = session.connectWithInstagram(two_factor_auth_token=settings['twoFactorRecoveryCode'], unusual_login_token=settings['unusualLoginToken'])
     if status is True:
         result['status'] = True
 
