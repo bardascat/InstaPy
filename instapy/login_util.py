@@ -16,6 +16,7 @@ import pickle
 import time
 import api_db
 import login_issues
+from selenium import webdriver
 
 
 def bypass_suspicious_login(browser):
@@ -478,9 +479,14 @@ def check_it_was_me_popup(browser, logger, cmp):
 
     return True
 
-
+#todo: change the email message for unusual login attempt
+#todo: add mail message for 2factor auth
 def handle_login_issue(browser, campaign, login_issue, logger):
     logger.info("handle_login_issue: Going to handle login issue: %s", login_issue)
+
+    path="/home/instapy-log/campaign/logs/" + campaign['id_campaign'] + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+    webdriver.get_screenshot_as_file(path)
+    logger.info("handle_login_issue: Done saving a print screen with the issue. location: %s", path)
 
     if login_issue == login_issues.INVALID_CREDENTIALS:
         logger.info("Going to send an email to the user.")
@@ -537,8 +543,9 @@ def find_login_issues(browser, logger, cmp):
     status = check_phone_code_verification_2auth(browser, logger, cmp)
     if status is not False:
         return status
-
+    #todo: maybe save a print screen with what's displayed on the browser?
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
+
 
     return False
 
