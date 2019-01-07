@@ -17,11 +17,12 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-settings', type=str, help="settings")
 args = parser.parse_args()
 
-#if args.settings is None:
-#    exit("verify_account: settings are not specified !")
+if args.settings is None:
+    exit("verify_account: settings are not specified !")
 
 result = {}
 result['status'] = False
+
 try:
     settings = json.loads(args.settings)
     campaign = fetchOne(
@@ -40,7 +41,7 @@ try:
                       multi_logs=True,
                       show_logs=False,
                       force_login=True)
-    session.logger.info("settings: %s", settings)
+
     status = session.connectWithInstagram(two_factor_auth_token=settings['twoFactorRecoveryCode'], unusual_login_token=settings['unusualLoginToken'])
     if status is True:
         result['status'] = True
@@ -53,8 +54,8 @@ try:
     session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
-    #print(exceptionDetail)
-    #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
+    # print(exceptionDetail)
+    session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception'] = exceptionDetail
 finally:
     print(json.dumps(result))
