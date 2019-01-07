@@ -484,7 +484,7 @@ def check_it_was_me_popup(browser, logger, cmp):
 def handle_login_issue(browser, campaign, login_issue, logger):
     logger.info("handle_login_issue: Going to handle login issue: %s", login_issue)
 
-    path="/home/instapy-log/campaign/logs/" + campaign['id_campaign'] + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+    path="/home/instapy-log/campaign/logs/" + str(campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
     webdriver.get_screenshot_as_file(path)
     logger.info("handle_login_issue: Done saving a print screen with the issue. location: %s", path)
 
