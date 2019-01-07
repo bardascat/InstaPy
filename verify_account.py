@@ -32,7 +32,7 @@ try:
 
     session = InstaPy(username=settings['u'],
                       password=settings['p'],
-                      headless_browser=False,
+                      headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address="104.192.201.89",
                       campaign=campaign,
@@ -53,7 +53,7 @@ try:
     session.logger.info("start: ALL DONE, CLOSING APP")
 except:
     exceptionDetail = traceback.format_exc()
-    print(exceptionDetail)
+    #print(exceptionDetail)
     #session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception'] = exceptionDetail
 finally:
