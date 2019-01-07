@@ -23,8 +23,7 @@ args = parser.parse_args()
 result = {}
 result['status'] = False
 try:
-    #settings = json.loads(args.settings)
-    settings = {"u": "catalinbardas", "p": "atitudinE22c", "twoFactorRecoveryCode": 1, "unusual_login_token": "701852","id_campaign": 1}
+    settings = json.loads(args.settings)
     campaign = fetchOne(
         "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
         settings['id_campaign'])
