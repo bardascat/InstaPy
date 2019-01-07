@@ -35,9 +35,9 @@ try:
                       password=settings['p'],
                       headless_browser=True,
                       bypass_suspicious_attempt=False,
-                      proxy_address="104.192.201.89",
+                      proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
-                      proxy_port=56136,
+                      proxy_port="80",
                       multi_logs=True,
                       show_logs=False,
                       force_login=True)
