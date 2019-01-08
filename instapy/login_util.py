@@ -417,6 +417,7 @@ def custom_login_user(browser,
     # time.sleep(1)
 
     if cookie_loaded == True:
+        browser.get('https://www.instagram.com')
         logger.info("custom_login_user: Cookie was loaded, going to check if user is automatically logged in...")
         logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
 
