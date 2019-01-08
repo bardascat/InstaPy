@@ -306,8 +306,6 @@ def connect_with_instagram(browser,
         else:
             raise Exception(login_issue)
 
-
-#TODO: RUN SOME MORE TESTS. INTEGRATE IT WITH FRONTEND. DO THE SAME WITH 2_FACTOR_AUTH
 def handle_unusual_login_attempt(browser, username, logger, logfolder, cmp, unusual_login_token=None):
     logger.info("handle_unusual_login_attempt: Going to generate a new security token for unusual login.")
     sendCodeButtonList = browser.find_elements_by_xpath("//button[contains(text(), 'Send Security Code')]")
@@ -478,8 +476,8 @@ def check_it_was_me_popup(browser, logger, cmp):
 
     return True
 
-#todo: change the email message for unusual login attempt
-#todo: add mail message for 2factor auth
+
+
 def handle_login_issue(browser, campaign, login_issue, logger):
     logger.info("handle_login_issue: Going to handle login issue: %s", login_issue)
 
@@ -495,7 +493,7 @@ def handle_login_issue(browser, campaign, login_issue, logger):
 
     elif login_issue == login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION:
         logger.info("Going to send an email to the user.")
-        browser.get('https://rest.angie.one/email/notifyUserPhoneCodeVerification?id=' + str(campaign['id_user']))
+        browser.get('https://rest.angie.one/email/notifyUserTwoFactorAuthentication?id=' + str(campaign['id_user']))
         raise Exception(login_issue)
 
     elif login_issue == login_issues.UNUSUAL_LOGIN_ATTEMPT:
