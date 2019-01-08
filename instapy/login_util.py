@@ -402,6 +402,8 @@ def custom_login_user(browser,
             # browser.get('https://www.google.com')
             cookieLocation = '{0}{1}_cookie.pkl'.format(logfolder, username)
             for cookie in pickle.load(open(cookieLocation, 'rb')):
+                logger.info("custom_login_user: Cookie file was found, going to load it...")
+                browser.get("https://www.instagram.com/")
                 browser.add_cookie(cookie)
                 cookie_loaded = True
         except (WebDriverException, OSError, IOError):
@@ -415,8 +417,6 @@ def custom_login_user(browser,
     if cookie_loaded == True:
         logger.info("custom_login_user: Cookie was loaded, going to check if user is automatically logged in...")
         logger.info("custom_login_user: Accessing https://www.instagram.com/ too  see if user is logged in.")
-        browser.get("https://www.instagram.com/")
-        sleep(1)
 
         # check if user was automatically logged in after cookie was loaded
         if is_user_logged_in(username, browser, logger, cmp) == True:
