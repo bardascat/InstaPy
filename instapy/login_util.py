@@ -301,10 +301,48 @@ def connect_with_instagram(browser,
             return handle_unusual_login_attempt(browser, username, logger, logfolder, cmp, unusual_login_token)
 
         elif login_issue == login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION:
-            #todo: implement this method
-            x=1
+            return handle_two_factor_login_attempt(browser, username, logger, logfolder, cmp, two_factor_auth_token)
         else:
             raise Exception(login_issue)
+
+def handle_two_factor_login_attempt(browser, username, logger, logfolder, cmp, two_factor_auth_token=None):
+
+    logger.info("handle_two_factor_login_attempt: Going to handle two factor login...")
+
+
+    if two_factor_auth_token is None:
+        logger.info("handle_two_factor_login_attempt: Token is missing, going to raise the exception.")
+
+        raise Exception(login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION)
+
+    logger.info("handle_two_factor_login_attempt: Going to test the token provided by user: %s", two_factor_auth_token)
+
+    input = browser.find_elements_by_xpath("//input")[0]
+    input.click()
+    input.send_keys(two_factor_auth_token)
+    browser.find_elements_by_xpath("//button[contains(text(), 'Confirm')]")[0].click()
+    logger.info("handle_two_factor_login_attempt: Sleeping 2 seconds for instagram response.")
+    time.sleep(2)
+
+    errorMessageList = browser.find_elements_by_xpath("//p[contains(text(), 'Please check the security code')]")
+
+    if len(errorMessageList) > 0:
+        logger.info("handle_two_factor_login_attempt: 2Factor token is invalid: %s", two_factor_auth_token)
+        raise Exception(login_issues.INVALID_2FACTOR_LOGIN_TOKEN)
+    else:
+        logger.info("handle_two_factor_login_attempt: check if user is logged in")
+        loggedIn = is_user_logged_in(username, browser, logger, cmp)
+        if loggedIn is True:
+            # create cookie
+            logger.info("handle_two_factor_login_attempt: Login was successfully. Going to create the cookie")
+            pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+            return True
+        else:
+            logger.info("handle_two_factor_login_attempt: User is still not logged in after inserting the 2factor login token: %s", two_factor_auth_token)
+            raise Exception(login_issues.UNKNOWN_LOGIN_ISSUE)
+
+
+
 
 def handle_unusual_login_attempt(browser, username, logger, logfolder, cmp, unusual_login_token=None):
     logger.info("handle_unusual_login_attempt: Going to generate a new security token for unusual login.")
@@ -508,15 +546,15 @@ def handle_login_issue(browser, campaign, login_issue, logger):
 
 
 
-
-
 def find_login_issues(browser, logger, cmp):
     logger.info("find_login_issues: Starting to detect login issues...")
 
     path = "/home/instapy-log/campaign/logs/" + str(cmp['id_campaign']) + "/" + time.strftime(
         "%d.%m.%Y.%H.%M.%S") + ".png"
     browser.get_screenshot_as_file(path)
-    logger.info("handle_login_issue: Done saving a print screen with the issue. location: %s", path)
+    logger.info("find_login_issues: Done saving a print screen with the issue. location: %s", path)
+
+    logger.info("find_login_issues: Going to detect the loggin issue...")
 
     # CHECK INVALID CREDENTIALS
     status = check_invalid_credentials(browser, logger, cmp)
@@ -554,7 +592,7 @@ def check_phone_code_verification_2auth(browser, logger, campaign):
     #maybe the selector for 2factor auth is not that good
     phoneCodeVerification = browser.find_elements_by_xpath("//div[contains(text(), 'Enter the code we sent')]")
     if len(phoneCodeVerification) > 0:
-        logger.info("find_login_issues: Instagram requires phone code verification")
+        logger.info("check_phone_code_verification_2auth: Instagram requires phone code verification for 2 factor login")
 
         api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION, "login_error")
         return login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION
