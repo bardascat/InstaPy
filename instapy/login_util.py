@@ -16,7 +16,7 @@ import pickle
 import time
 import api_db
 import login_issues
-
+import traceback
 
 def bypass_suspicious_login(browser):
     """Bypass suspicious loggin attempt verification. This should be only enabled
@@ -405,8 +405,8 @@ def custom_login_user(browser,
                 browser.add_cookie(cookie)
                 cookie_loaded = True
         except (WebDriverException, OSError, IOError):
-            logger.info("custom_login_user: Cookie file not found on location: %s. Going to manually login...", cookieLocation)
-            logger.info("custom_login_user: Cookie error: %s, %s" % (OSError, IOError))
+            exceptionDetail = traceback.format_exc()
+            logger.info("custom_login_user: Cookie file not found on location: %s. Going to manually login.... Exception: %s" % ( cookieLocation, exceptionDetail))
 
     # logger.info("SLeeping 1 second to prevent getting stuck on google.com")
     # include time.sleep(1) to prevent getting stuck on google.com
