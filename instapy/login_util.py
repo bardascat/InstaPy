@@ -17,7 +17,7 @@ import time
 import api_db
 import login_issues
 import traceback
-
+import os
 def bypass_suspicious_login(browser):
     """Bypass suspicious loggin attempt verification. This should be only enabled
     when there isn't available cookie for the username, otherwise it will and
@@ -398,17 +398,17 @@ def custom_login_user(browser,
     if force_login is not True:
         # try to load cookie from username
         try:
-            # logger.info("login_user: Accesing google to get the cookie...")
-            # browser.get('https://www.google.com')
             cookieLocation = '{0}{1}_cookie.pkl'.format(logfolder, username)
-            for cookie in pickle.load(open(cookieLocation, 'rb')):
-                logger.info("custom_login_user: Cookie file was found, going to load it...")
-                browser.get("https://www.instagram.com/")
-                browser.add_cookie(cookie)
-                cookie_loaded = True
+            logger.info("custom_login_user: Searching for cookie file: %s", cookieLocation)
+            if os.path.isfile(cookieLocation):
+                for cookie in pickle.load(open(cookieLocation, 'rb')):
+                    browser.add_cookie(cookie)
+                    cookie_loaded = True
+            else:
+                logger.info("custom_login_user: Cookie file not found on location: %s. Going to manually login" % (cookieLocation))
         except (WebDriverException, OSError, IOError):
             exceptionDetail = traceback.format_exc()
-            logger.info("custom_login_user: Cookie file not found on location: %s. Going to manually login.... Exception: %s" % ( cookieLocation, exceptionDetail))
+            logger.info("custom_login_user: Loading the cookie throws an exception: %s" % (exceptionDetail))
 
     # logger.info("SLeeping 1 second to prevent getting stuck on google.com")
     # include time.sleep(1) to prevent getting stuck on google.com
