@@ -401,6 +401,8 @@ def custom_login_user(browser,
             cookieLocation = '{0}{1}_cookie.pkl'.format(logfolder, username)
             logger.info("custom_login_user: Searching for cookie file: %s", cookieLocation)
             if os.path.isfile(cookieLocation):
+                logger.info("custom_login_user: Cookie file was found, going to load it")
+                browser.get('https://www.instagram.com')
                 for cookie in pickle.load(open(cookieLocation, 'rb')):
                     browser.add_cookie(cookie)
                     cookie_loaded = True
