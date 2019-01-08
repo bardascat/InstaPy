@@ -400,12 +400,13 @@ def custom_login_user(browser,
         try:
             # logger.info("login_user: Accesing google to get the cookie...")
             # browser.get('https://www.google.com')
-            for cookie in pickle.load(open('{0}{1}_cookie.pkl'
-                                                   .format(logfolder, username), 'rb')):
+            cookieLocation = '{0}{1}_cookie.pkl'.format(logfolder, username)
+            for cookie in pickle.load(open(cookieLocation, 'rb')):
                 browser.add_cookie(cookie)
                 cookie_loaded = True
         except (WebDriverException, OSError, IOError):
-            logger.info("custom_login_user: Cookie file not found. Going to manually login...")
+            logger.info("custom_login_user: Cookie file not found on location: %s. Going to manually login...", cookieLocation)
+            logger.info("custom_login_user: Cookie error: %s, %s" % (OSError, IOError))
 
     # logger.info("SLeeping 1 second to prevent getting stuck on google.com")
     # include time.sleep(1) to prevent getting stuck on google.com
