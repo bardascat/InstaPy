@@ -221,6 +221,30 @@ paths:
       responses:
         201:
           description: Successfully created the crawler
+  /crawler/user-followers:
+    post:
+      operationId: crawler.scanUserFollowers
+      tags:
+      - Start followers crawler
+      summary: Start followers crawler
+      parameters:
+      - in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/campaign'
+      responses:
+        201:
+          description: Successfully created the followers crawler
+  /crawler/process-user-followers:
+    post:
+      operationId: crawler.processUserFollowers
+      tags:
+      - Start process user followers crawler
+      summary: Start process user follosers crawler
+      responses:
+        201:
+          description: Successfully created the followers crawler
   /report/grouped:
     get:
       operationId: report.summary
