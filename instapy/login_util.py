@@ -328,6 +328,7 @@ def handle_two_factor_login_attempt(browser, username, logger, logfolder, cmp, t
 
     if len(errorMessageList) > 0:
         logger.info("handle_two_factor_login_attempt: 2Factor token is invalid: %s", two_factor_auth_token)
+        api_db.insert("INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",cmp['id_campaign'], login_issues.INVALID_2FACTOR_LOGIN_TOKEN, "login_error")
         raise Exception(login_issues.INVALID_2FACTOR_LOGIN_TOKEN)
     else:
         logger.info("handle_two_factor_login_attempt: check if user is logged in")
