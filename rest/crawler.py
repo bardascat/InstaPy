@@ -39,7 +39,7 @@ def scanUserFollowers(campaign):
     logger = getLogger()
     logger.info("crawler.scanUserFollowers: Going to start followers crawler, id_campaign: %s", id_campaign)
 
-    processName = 'angie_sscan_user_followers_' + str(id_campaign)
+    processName = 'angie_scan_user_followers_' + str(id_campaign)
     command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/scan_user_followers.py  -angie_campaign=" + str(id_campaign) + " \""
 
     logger.info("executing command: %s", command)
