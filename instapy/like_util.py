@@ -410,7 +410,7 @@ def get_links_for_username(browser,
     return links[:amount]
 
 
-
+#THIS IS NOT NECESARRY !
 def check_link(browser, post_link, dont_like, mandatory_words, ignore_if_contains, logger):
     """
     Check the given link if it is appropriate
