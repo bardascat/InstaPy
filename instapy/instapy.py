@@ -435,7 +435,10 @@ class InstaPy:
             try:
                 element = self.browser.find_element_by_tag_name("pre")
             except NoSuchElementException as err:
-                self.logger.error("check_internet_connection: Could not detect ip using api.ipify.org")
+
+                path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/proxy_" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+                self.browser.get_screenshot_as_file(path)
+                self.logger.error("check_internet_connection: Could not detect ip using api.ipify.org, saved screenshot at: %s", path)
                 return False
 
             if element.text != self.proxy_address:
@@ -511,7 +514,7 @@ class InstaPy:
         insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
                self.campaign['id_campaign'], "TRYING_TO_LOGIN", None)
 
-        self.logger.info("custom_login_user: Setting implicit wait to 3 seconds")
+        self.logger.info("login: Setting implicit wait to 3 seconds")
         self.browser.implicitly_wait(5)
 
         if not self.check_internet_connection():
