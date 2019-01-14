@@ -543,7 +543,8 @@ def handle_login_issue(browser, campaign, login_issue, logger):
         logger.info("Going to send an email to the user.")
         browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
         raise Exception(login_issue)
-
+    elif login_issue == login_issues.INSTAGRAM_LOGGIN_PROBLEM:
+        raise Exception(login_issue)
     else:
         logger.info("handle_login_issue: Could not handle/detect login issue with value: %s", login_issue)
         api_db.insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "UNSUCCESSFUL_LOGIN_NO_REASON", "login_error")
@@ -585,6 +586,10 @@ def find_login_issues(browser, logger, cmp):
     if status is not False:
         return status
 
+    status = check_instagram_login_problem(browser, logger, cmp)
+    if status is not False:
+        return status
+
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
 
 
@@ -592,6 +597,18 @@ def find_login_issues(browser, logger, cmp):
 
 
 
+def check_instagram_login_problem(browser, logger, campaign):
+    # maybe the selector for 2factor auth is not that good
+    problem = browser.find_elements_by_xpath("//p[contains(text(), 'There was a problem logging')]")
+    if len(problem) > 0:
+        logger.info("check_instagram_login_problem: Instagram loggin problem, try again later !")
+
+        api_db.insert(
+            "INSERT INTO `campaign_log` (`id_campaign`, `event`, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+            campaign['id_campaign'], login_issues.INSTAGRAM_LOGGIN_PROBLEM, "login_error")
+        return login_issues.INSTAGRAM_LOGGIN_PROBLEM
+
+    return False
 
 def check_phone_code_verification_2auth(browser, logger, campaign):
     #maybe the selector for 2factor auth is not that good
