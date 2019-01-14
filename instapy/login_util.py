@@ -18,6 +18,8 @@ import api_db
 import login_issues
 import traceback
 import os
+import urllib2
+
 def bypass_suspicious_login(browser):
     """Bypass suspicious loggin attempt verification. This should be only enabled
     when there isn't available cookie for the username, otherwise it will and
@@ -544,6 +546,8 @@ def handle_login_issue(browser, campaign, login_issue, logger):
         browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
         raise Exception(login_issue)
     elif login_issue == login_issues.INSTAGRAM_LOGGIN_PROBLEM:
+        logger.info("handle_login_issue: %s -> going to change the ip, this usually fixes the problem.", login_issue)
+        urllib2.urlopen("https://rest.angie.one/api/bot/assignIp?id_campaign=" + str(campaign['id_campaign'])).read()
         raise Exception(login_issue)
     else:
         logger.info("handle_login_issue: Could not handle/detect login issue with value: %s", login_issue)
