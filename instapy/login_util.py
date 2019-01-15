@@ -465,8 +465,14 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
     # Sometimes the element name isn't 'Username' and 'Password'
     # (valid for placeholder too)
     # sleep(2)
-    input_username = browser.find_elements_by_xpath(
-        "//input[@name='username']")
+    input_username = browser.find_elements_by_xpath("//input[@name='username']")
+
+    if len(input_username)==0:
+        path = "/home/instapy-log/campaign/logs/" + str(cmp['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+        logger.info("execute_login: The username input could not be found, a screenshot was saved here: %s", path)
+        browser.get_screenshot_as_file(path)
+        raise Exception("execute_login: The username input could not be found.")
+
 
     ActionChains(browser).move_to_element(input_username[0]). \
         click().send_keys(username).perform()
@@ -559,8 +565,7 @@ def handle_login_issue(browser, campaign, login_issue, logger):
 def find_login_issues(browser, logger, cmp):
     logger.info("find_login_issues: Starting to detect login issues...")
 
-    path = "/home/instapy-log/campaign/logs/" + str(cmp['id_campaign']) + "/" + time.strftime(
-        "%d.%m.%Y.%H.%M.%S") + ".png"
+    path = "/home/instapy-log/campaign/logs/" + str(cmp['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
     browser.get_screenshot_as_file(path)
     logger.info("find_login_issues: Done saving a print screen with the issue. location: %s", path)
 
