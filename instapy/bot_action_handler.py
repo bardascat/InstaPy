@@ -296,13 +296,16 @@ def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
     if userWantsToUnfollow == False:
         result['unfollow_amount'] = 0
 
-    if enableFollows == False and userWantsToUnfollow is not False:
+    #if only unfollow is enabled
+    if enableFollows is False and userWantsToUnfollow is True:
         result['unfollow_amount'] = defaultFollowAmount
 
-    if userWantsToUnfollow == False and enableFollows == True:
+    #if only follow is enabled
+    if userWantsToUnfollow is False and enableFollows == True:
         result['follow_amount'] = defaultFollowAmount
 
-    if userWantsToUnfollow is not True and enableFollows == True:
+    #if both of them is enabled
+    if userWantsToUnfollow is True and enableFollows is True:
         result["unfollow_amount"] = int(defaultFollowAmount - (defaultFollowAmount * follow_unfollow_ratio))
         result["follow_amount"] = int(defaultFollowAmount - result["unfollow_amount"])
 
