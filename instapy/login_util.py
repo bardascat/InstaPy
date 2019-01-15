@@ -304,6 +304,11 @@ def connect_with_instagram(browser,
 
         elif login_issue == login_issues.TWOFACTOR_PHONE_CODE_VERIFICATION:
             return handle_two_factor_login_attempt(browser, username, logger, logfolder, cmp, two_factor_auth_token)
+        elif login_issue == login_issues.INSTAGRAM_ASKING_TO_REVIEW_AND_AGREE:
+            if handle_instagram_review_popup(browser,logger,cmp):
+                pickle.dump(browser.get_cookies(), open('{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+            else:
+                raise Exception(login_issue)
         else:
             raise Exception(login_issue)
 
@@ -346,6 +351,15 @@ def handle_two_factor_login_attempt(browser, username, logger, logfolder, cmp, t
 
 
 
+def handle_instagram_review_popup(browser,logger,cmp):
+    logger.info("handle_instagram_review_popup: Going to bypass the popup")
+    browser.find_elements_by_xpath("//button[text()='Next']")[0].click()
+
+    #check age and click agree
+    browser.find_elements_by_xpath("//input[@name='ageRadio']")[0].click()
+    browser.find_elements_by_xpath("//button[contains(text(),'Agree to')]")[0].click()
+
+    return True
 
 def handle_unusual_login_attempt(browser, username, logger, logfolder, cmp, unusual_login_token=None):
     logger.info("handle_unusual_login_attempt: Going to generate a new security token for unusual login.")
@@ -442,7 +456,8 @@ def custom_login_user(browser,
     else:
         logger.info("custom_login_user: Failed, going to detect login issues")
         issue = find_login_issues(browser, logger, cmp)
-        handle_login_issue(browser, cmp, issue, logger)
+        couldBeHandled = handle_login_issue(browser, cmp, issue, logger)
+        return couldBeHandled
 
     return False
 
@@ -551,10 +566,18 @@ def handle_login_issue(browser, campaign, login_issue, logger):
         logger.info("Going to send an email to the user.")
         browser.get('https://rest.angie.one/email/notifyUserUnusualLoginAttempt?id=' + str(campaign['id_user']))
         raise Exception(login_issue)
+
     elif login_issue == login_issues.INSTAGRAM_LOGGIN_PROBLEM:
         logger.info("handle_login_issue: %s -> going to change the ip, this usually fixes the problem.", login_issue)
         urllib2.urlopen("https://rest.angie.one/api/bot/assignIp?id_campaign=" + str(campaign['id_campaign'])).read()
         raise Exception(login_issue)
+    elif login_issue == login_issues.INSTAGRAM_ASKING_TO_REVIEW_AND_AGREE:
+         logger.info("handle_login_issue: %s -> Going to bypass instagram login and review popup.", login_issue)
+         status = handle_instagram_review_popup(browser, logger, cmp)
+         if status is not True:
+             raise Exception(login_issues.INSTAGRAM_ASKING_TO_REVIEW_AND_AGREE)
+         else:
+             return True
     else:
         logger.info("handle_login_issue: Could not handle/detect login issue with value: %s", login_issue)
         api_db.insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",campaign['id_campaign'], "UNSUCCESSFUL_LOGIN_NO_REASON", "login_error")
@@ -599,11 +622,23 @@ def find_login_issues(browser, logger, cmp):
     if status is not False:
         return status
 
+    status = check_review_ang_agree(browser, logger, cmp)
+    if status is not False:
+        return status
+
     logger.info("find_login_issues: I couldn't detect why you can't login... :(")
 
 
     return False
 
+
+def check_review_ang_agree(browser, logger, campaign):
+    reviewList = browser.find_elements_by_xpath("//h1[contains(text(), 'Review and Agree')]")
+    if len(reviewList) > 0:
+        logger.info("check_review_ang_agree: Instagram is displaying a popup asking to review ang agree")
+        return login_issues.INSTAGRAM_ASKING_TO_REVIEW_AND_AGREE
+
+    return False
 
 
 def check_instagram_login_problem(browser, logger, campaign):
