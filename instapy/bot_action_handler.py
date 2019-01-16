@@ -268,6 +268,7 @@ def getAmountDistribution(self, id_campaign):
 def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
     enableLikes = False
     enableFollows = False
+    #this method returns False or an Object
     userWantsToUnfollow = bot_util.getIfUserWantsToUnfollow(id_campaign)
 
     for o in operations:
@@ -297,15 +298,15 @@ def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
         result['unfollow_amount'] = 0
 
     #if only unfollow is enabled
-    if enableFollows is False and userWantsToUnfollow is True:
+    if enableFollows is False and userWantsToUnfollow is not False:
         result['unfollow_amount'] = defaultFollowAmount
 
     #if only follow is enabled
-    if userWantsToUnfollow is False and enableFollows == True:
+    if userWantsToUnfollow is False and enableFollows is True:
         result['follow_amount'] = defaultFollowAmount
 
     #if both of them is enabled
-    if userWantsToUnfollow is True and enableFollows is True:
+    if userWantsToUnfollow is not False and enableFollows is True:
         result["unfollow_amount"] = int(defaultFollowAmount - (defaultFollowAmount * follow_unfollow_ratio))
         result["follow_amount"] = int(defaultFollowAmount - result["unfollow_amount"])
 
