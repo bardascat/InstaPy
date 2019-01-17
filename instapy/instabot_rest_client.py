@@ -29,12 +29,12 @@ class InstabotRestClient:
 
     def getPostsByHashtag(self, hashtag, amount):
 
-        # todo: if not enough posts are retrieve from instabot try to move the difference to other tags
+        # todo: if not enough posts are retrieve from instabot try to get the difference using other tags
 
         removeFollowedUsers = bot_util.isFollowEnabled(self.campaign['id_campaign'], self.logger)
         removeLikedPosts = True
 
-        url = "http://35.166.100.155:5002/api/posts/hashtag"
+        url = "http://35.166.100.155:5005/api/posts/hashtag"
         parameters = {}
         parameters['id_campaign'] = self.campaign['id_campaign']
         parameters['amount'] = amount
@@ -47,16 +47,15 @@ class InstabotRestClient:
 
         self.logger.info("getPostsByHashtag: API URL: %s:", url)
 
-        req = urllib2.Request(url)
-        response = urllib2.urlopen(req)
-
-        body = response.read()
         try:
+            req = urllib2.Request(url)
+            response = urllib2.urlopen(req)
+            body = response.read()
             result = json.loads(body)
         except Exception as exc:
             exceptionDetail = traceback.format_exc()
-            self.logger.info("There was an error parsing the json: json: %s, error: %s" % (body, exceptionDetail))
-            raise Exception("Cannot parse json: error:" + exceptionDetail)
+            self.logger.info("ERROR: There was an error executing and parsing the response. Going to return empty array. Error details: %s" % (exceptionDetail))
+            return []
 
 
         if "error" in result:
