@@ -34,7 +34,7 @@ class InstabotRestClient:
         removeFollowedUsers = bot_util.isFollowEnabled(self.campaign['id_campaign'], self.logger)
         removeLikedPosts = True
 
-        url = "http://35.166.100.155:5005/api/posts/hashtag"
+        url = "http://35.166.100.155:5002/api/posts/hashtag"
         parameters = {}
         parameters['id_campaign'] = self.campaign['id_campaign']
         parameters['amount'] = amount
