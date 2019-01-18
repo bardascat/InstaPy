@@ -48,7 +48,7 @@ def user(username):
     return result
 
 
-def process(name):
+def getProcess(name):
     logger = getLogger()
     logger.info("bot.process: Going to search for process with name: %s" % name)
 
