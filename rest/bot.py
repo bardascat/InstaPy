@@ -48,14 +48,15 @@ def user(username):
     return result
 
 
-def getProcess(processname):
+def getProcess(query):
+    processName = query
     logger = getLogger()
-    logger.info("bot.process: Going to search for process with name: %s" % processname)
+    logger.info("bot.process: Going to search for process with name: %s" % processName)
 
     tmp = os.popen("ps -Af").read()
-    proccount = tmp.count(processname)
+    proccount = tmp.count(processName)
 
-    logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (proccount, processname))
+    logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (proccount, processName))
     if proccount > 0:
         return True
     return abort(404)
