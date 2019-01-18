@@ -16,7 +16,7 @@ def verify(username, password, id_campaign, twoFactorRecoveryCode=None, unusualL
     logger = getLogger()
     logger.info(
         "bot.verify: Going to verify instagram account of id_campaign: %s. u:%s, twoFactorRecoveryCode: %s, unusualLoginToken: %s" % (
-        id_campaign, username, twoFactorRecoveryCode, unusualLoginToken))
+            id_campaign, username, twoFactorRecoveryCode, unusualLoginToken))
     settings = {"u": username, "p": password, "id_campaign": id_campaign,
                 "twoFactorRecoveryCode": twoFactorRecoveryCode, "unusualLoginToken": unusualLoginToken}
 
@@ -48,11 +48,10 @@ def user(username):
     return result
 
 
-def getProcess(name):
+def getProcess(processname):
     logger = getLogger()
-    logger.info("bot.process: Going to search for process with name: %s" % name)
+    logger.info("bot.process: Going to search for process with name: %s" % processname)
 
-    processname = 'name'
     tmp = os.popen("ps -Af").read()
     proccount = tmp.count(processname)
 
