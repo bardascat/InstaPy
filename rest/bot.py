@@ -2,6 +2,7 @@ import subprocess
 import os
 from rest_logger import getLogger
 import json
+from flask import abort
 
 python_path = "python"
 base_path = "/home/ubuntu/projects/InstaPy"
@@ -13,8 +14,11 @@ def verify(username, password, id_campaign, twoFactorRecoveryCode=None, unusualL
     unusualLoginToken = None if (not unusualLoginToken) else unusualLoginToken
 
     logger = getLogger()
-    logger.info("bot.verify: Going to verify instagram account of id_campaign: %s. u:%s, twoFactorRecoveryCode: %s, unusualLoginToken: %s" % (id_campaign, username, twoFactorRecoveryCode, unusualLoginToken))
-    settings = {"u": username, "p": password, "id_campaign": id_campaign, "twoFactorRecoveryCode": twoFactorRecoveryCode, "unusualLoginToken": unusualLoginToken}
+    logger.info(
+        "bot.verify: Going to verify instagram account of id_campaign: %s. u:%s, twoFactorRecoveryCode: %s, unusualLoginToken: %s" % (
+        id_campaign, username, twoFactorRecoveryCode, unusualLoginToken))
+    settings = {"u": username, "p": password, "id_campaign": id_campaign,
+                "twoFactorRecoveryCode": twoFactorRecoveryCode, "unusualLoginToken": unusualLoginToken}
 
     process = subprocess.Popen(
         "sudo /usr/bin/python2.7 " + base_path + "/verify_account.py -settings='" + json.dumps(settings) + "'",
@@ -42,3 +46,17 @@ def user(username):
 
     logger.info("bot.user: Result is: %s", result)
     return result
+
+
+def process(name):
+    logger = getLogger()
+    logger.info("bot.process: Going to search for process with name: %s" % name)
+
+    processname = 'name'
+    tmp = os.popen("ps -Af").read()
+    proccount = tmp.count(processname)
+
+    logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (proccount, processname))
+    if proccount > 0:
+        return True
+    return abort(404)

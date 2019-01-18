@@ -176,6 +176,21 @@ paths:
       responses:
         200:
           description: Successfully
+  /bot/process:
+    get:
+      operationId: bot.getProcess
+      tags:
+      - Get process by name
+      summary: Get process by name
+      parameters:
+      - name: name
+        in: query
+        description: process name
+        type: string
+        required: True
+      responses:
+        200:
+          description: Successfully
   /location:
     get:
       operationId: location.search
