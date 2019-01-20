@@ -1288,4 +1288,231 @@ def smart_run(session):
         session.end()
 
 
+def reload_webpage(browser):
+    """ Reload the current webpage """
+    browser.execute_script("location.reload()")
+    update_activity()
+    sleep(2)
 
+    return True
+
+
+def get_page_title(browser, logger):
+    """ Get the title of the webpage """
+    # wait for the current page fully load to get the correct page's title
+    explicit_wait(browser, "PFL", [], logger, 10)
+
+    try:
+        page_title = browser.title
+
+    except WebDriverException:
+        try:
+            page_title = browser.execute_script("return document.title")
+
+        except WebDriverException:
+            try:
+                page_title = browser.execute_script(
+                    "return document.getElementsByTagName('title')[0].text")
+
+            except WebDriverException:
+                logger.info("Unable to find the title of the page :(")
+                return None
+
+    return page_title
+
+
+def click_visibly(browser, element):
+    """ Click as the element become visible """
+    if element.is_displayed():
+        click_element(browser, element)
+
+    else:
+        browser.execute_script("arguments[0].style.visibility = 'visible'; "
+                               "arguments[0].style.height = '10px'; "
+                               "arguments[0].style.width = '10px'; "
+                               "arguments[0].style.opacity = 1",
+                               element)
+        # update server calls
+        #update_activity()
+
+        click_element(browser, element)
+
+    return True
+
+
+def get_action_delay(action):
+    """ Get the delay time to sleep after doing actions """
+    defaults = {"like": 2,
+                "comment": 2,
+                "follow": 3,
+                "unfollow": 10}
+    config = Settings.action_delays
+
+    if (not config or
+            config["enabled"] is not True or
+            config[action] is None or
+            type(config[action]) not in [int, float]):
+        return defaults[action]
+
+    else:
+        custom_delay = config[action]
+
+    # randomize the custom delay in user-defined range
+    if (config["randomize"] is True and
+            type(config["random_range"]) == tuple and
+            len(config["random_range"]) == 2 and
+            all((type(i) in [type(None), int, float] for i in
+                 config["random_range"])) and
+            any(type(i) is not None for i in config["random_range"])):
+        min_range = config["random_range"][0]
+        max_range = config["random_range"][1]
+
+        if not min_range or min_range < 0:
+            min_range = 100
+
+        if not max_range or max_range < 0:
+            max_range = 100
+
+        if min_range > max_range:
+            a = min_range
+            min_range = max_range
+            max_range = a
+
+        custom_delay = random.uniform(custom_delay * min_range / 100,
+                                      custom_delay * max_range / 100)
+
+    if (custom_delay < defaults[action] and
+            config["safety_match"] is not False):
+        return defaults[action]
+
+    return custom_delay
+
+
+def deform_emojis(text):
+    """ Convert unicode emojis into their text form """
+    new_text = ''
+    emojiless_text = ''
+    data = regex.findall(r'\X', text)
+    emojis_in_text = []
+
+    for word in data:
+        if any(char in UNICODE_EMOJI for char in word):
+            word_emoji = (emoji.demojize(word)
+                          .replace(':', '')
+                          .replace('_', ' '))
+            if word_emoji not in emojis_in_text:  # do not add an emoji if
+                # already exists in text
+                emojiless_text += ' '
+                new_text += " ({}) ".format(word_emoji)
+                emojis_in_text.append(word_emoji)
+            else:
+                emojiless_text += ' '
+                new_text += ' '  # add a space [instead of an emoji to be
+                # duplicated]
+
+        else:
+            new_text += word
+            emojiless_text += word
+
+    emojiless_text = remove_extra_spaces(emojiless_text)
+    new_text = remove_extra_spaces(new_text)
+
+    return new_text, emojiless_text
+
+
+def extract_text_from_element(elem):
+    """ As an element is valid and contains text, extract it and return """
+    if elem and hasattr(elem, 'text') and elem.text:
+        text = elem.text
+    else:
+        text = None
+
+    return text
+
+
+def truncate_float(number, precision, round=False):
+    """ Truncate (shorten) a floating point value at given precision """
+
+    # don't allow a negative precision [by mistake?]
+    precision = abs(precision)
+
+    if round:
+        # python 2.7+ supported method [recommended]
+        short_float = round(number, precision)
+
+        # python 2.6+ supported method
+        """short_float = float("{0:.{1}f}".format(number, precision))
+        """
+
+    else:
+        operate_on = 1  # returns the absolute number (e.g. 11.0 from 11.456)
+
+        for i in range(precision):
+            operate_on *= 10
+
+        short_float = float(int(number * operate_on)) / operate_on
+
+    return short_float
+
+
+def get_time_until_next_month():
+    """ Get total seconds remaining until the next month """
+    now = datetime.datetime.now()
+    next_month = now.month + 1 if now.month < 12 else 1
+    year = now.year if now.month < 12 else now.year + 1
+    date_of_next_month = datetime.datetime(year, next_month, 1)
+
+    remaining_seconds = (date_of_next_month - now).total_seconds()
+
+    return remaining_seconds
+
+
+def remove_extra_spaces(text):
+    """ Find and remove redundant spaces more than 1 in text """
+    new_text = re.sub(
+        r" {2,}", ' ', text
+    )
+
+    return new_text
+
+
+def has_any_letters(text):
+    """ Check if the text has any letters in it """
+    # result = re.search("[A-Za-z]", text)   # works only with english letters
+    result = any(c.isalpha() for c in
+                 text)  # works with any letters - english or non-english
+
+    return result
+
+
+def save_account_progress(browser, username, logger):
+    """
+    Check account current progress and update database
+
+    Args:
+        :browser: web driver
+        :username: Account to be updated
+        :logger: library to log actions
+    """
+    logger.info('Saving account progress...')
+    followers, following = get_relationship_counts(browser, username, logger)
+
+    # save profile total posts
+    posts = getUserData("graphql.user.edge_owner_to_timeline_media.count",
+                        browser)
+
+    try:
+        # DB instance
+        db, id = get_database()
+        conn = sqlite3.connect(db)
+        with conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            sql = ("INSERT INTO accountsProgress (profile_id, followers, "
+                   "following, total_posts, created, modified) "
+                   "VALUES (?, ?, ?, ?, strftime('%Y-%m-%d %H:%M:%S'), "
+                   "strftime('%Y-%m-%d %H:%M:%S'))")
+            cur.execute(sql, (id, followers, following, posts))
+            conn.commit()
+    except Exception:
+        logger.exception('message')
