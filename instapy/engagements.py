@@ -258,7 +258,7 @@ class Engagements:
                 # todo: follow_user method is overengineered , try to simplify it
 
                 followed, msg = follow_user(self.browser,
-                                                "profile",
+                                                "post",
                                                 self.campaign['username'],
                                                 user_name,
                                                 None,
@@ -286,7 +286,7 @@ class Engagements:
                     return False
             else:
                 self.logger.info(
-                    "performFollow: Going go skip follow. Actual Probability: %s, random probability: %s" % (
+                    "performFollow: Going to skip follow. Actual Probability: %s, random probability: %s" % (
                         probabilityPercentage, randomProbability))
 
             return False
@@ -319,20 +319,25 @@ class Engagements:
 
             if recordToUnfollow:
                 status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
-                lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                                                None, None, recordToUnfollow['username'],
-                                                None, None, None, None, 'unfollow_' + operation['configName'],
-                                                None,
-                                                self.instapy.id_log)
+                if status is True:
+                    lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                                                    None, None, recordToUnfollow['username'],
+                                                    None, None, None, None, 'unfollow_' + operation['configName'],
+                                                    None,
+                                                    self.instapy.id_log)
 
-                self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
+                    self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
 
-                revertBotFollow(recordToUnfollow['_id'], lastBotAction)
-                self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
-                    lastBotAction, recordToUnfollow['_id']))
-                self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
-                time.sleep(3)
-                return True
+                    revertBotFollow(recordToUnfollow['_id'], lastBotAction)
+                    self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
+                        lastBotAction, recordToUnfollow['_id']))
+                    self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
+                    time.sleep(3)
+                    return True
+                else:
+                    self.logger.info("performFollow: Could not unfollow user...")
+                    return False
+
             else:
                 self.logger.info("performUnfollow: No user found in database to unfollow...")
 

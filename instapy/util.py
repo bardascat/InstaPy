@@ -561,7 +561,7 @@ def click_element(browser, element, tryNum=0):
             return
 
         # update server calls after the scroll(s) in 0, 1 and 2 attempts
-        update_activity()
+        #update_activity()
 
         # sleep for 1 second to allow window to adjust (may or may not be needed)
         sleep_actual(1)

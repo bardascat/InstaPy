@@ -558,22 +558,16 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
                                                                logfolder)
         if following_status in ["Follow", "Follow Back"]:
             click_visibly(browser, follow_button)  # click to follow
-            follow_state, msg = verify_action(browser, "follow", track, login,
-                                              user_name, None, logger,
-                                              logfolder)
-            if follow_state is not True:
-                return False, msg
 
         elif following_status in ["Following", "Requested"]:
             if following_status == "Following":
-                logger.info("--> Already following '{}'!\n".format(user_name))
+                logger.info("follow_user: Already following '{}'!\n".format(user_name))
 
             elif following_status == "Requested":
-                logger.info("--> Already requested '{}' to follow!\n".format(
-                    user_name))
+                logger.info("follow_user: Already requested '{}' to follow!\n".format(user_name))
 
             sleep(1)
-            return False, "already followed"
+            return False, "already_followed"
 
         elif following_status in ["Unblock", "UNAVAILABLE"]:
             if following_status == "Unblock":
@@ -582,28 +576,20 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
             elif following_status == "UNAVAILABLE":
                 failure_msg = "user is inaccessible"
 
-            logger.warning(
-                "--> Couldn't follow '{}'!\t~{}".format(user_name,
-                                                        failure_msg))
+            logger.warning("follow_user:Couldn't follow '{}'!\t~{}".format(user_name,failure_msg))
             return False, following_status
 
         elif following_status is None:
-            sirens_wailing, emergency_state = emergency_exit(browser, login,
-                                                             logger)
-            if sirens_wailing is True:
-                return False, emergency_state
+            logger.warning("follow_user:Couldn't unfollow '{}'!\t~unexpected failure".format(user_name))
+            return False, "unexpected failure"
 
-            else:
-                logger.warning(
-                    "--> Couldn't unfollow '{}'!\t~unexpected failure".format(
-                        user_name))
-                return False, "unexpected failure"
-    elif track == "dialog":
-        click_element(browser, button)
-        sleep(3)
 
-    # general tasks after a successful follow
-    logger.info("--> Followed '{}'!".format(user_name.encode("utf-8")))
+    status, button = get_following_status(browser, track, login, user_name, None, logger, logfolder)
+
+    if status == 'Following':
+        return False, "Error: The user could not be followed I don'' know why... debug it. "
+
+    logger.info("follow_user: Followed '{}'!".format(user_name.encode("utf-8")))
 
     action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
     return True, "success"
@@ -1194,10 +1180,11 @@ def confirm_unfollow(browser):
     """ Deal with the confirmation dialog boxes during an unfollow """
     attempt = 0
 
-    while attempt<3:
+    while attempt < 3:
         try:
             attempt += 1
-            button_xp = "//button[text()='Unfollow']"   # "//button[contains(text(), 'Unfollow')]"
+            button_xp = "//button[text()='Unfollow']"  # "//button[contains(
+            # text(), 'Unfollow')]"
             unfollow_button = browser.find_element_by_xpath(button_xp)
 
             if unfollow_button.is_displayed():
@@ -1365,7 +1352,7 @@ def verify_action(browser, action, track, username, person, person_id, logger,
 
 
 def custom_unfollow(browser, username, logger, instapy):
-
+    logger.info("custom_unfollow: Going to unfollow user: %s", username)
     sleepSeconds = action_delay_util.get_unfollow_delay(instapy=instapy)
     logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)
     sleep(sleepSeconds)
@@ -1376,49 +1363,39 @@ def custom_unfollow(browser, username, logger, instapy):
     # Check URL of the webpage, if it already is the one to be navigated, then do not navigate to it again
     web_address_navigator(browser, user_link)
 
-    following = False
-    try:
-        try:
-            follow_button = browser.find_element_by_xpath(
-                "//*[contains(text(), 'Follow')]")
-        except NoSuchElementException:
-            follow_button = browser.find_element_by_xpath(
-                '''//*[@id="react-root"]/section/main/article/header/section/div[1]/span/span[1]/button''')
-        if follow_button.text == 'Following':
-            following = "Following"
-        else:
-            if follow_button.text in ['Follow', 'Follow Back']:
-                following = False
-            else:
-                follow_button = browser.find_element_by_xpath(
-                    "//*[contains(text(), 'Requested')]")
-                if follow_button.text == "Requested":
-                    following = "Requested"
-    except:
-        logger.error("Unfollow error, user: %s might be blocked or deleted" % username)
-        return False
+    following_status, follow_button = get_following_status(browser,
+                                                           'post',
+                                                           instapy.campaign['username'],
+                                                           username,
+                                                           None,
+                                                           logger,
+                                                           instapy.logfolder)
 
-    if following:
-        # click the button
-        click_element(browser, follow_button)  # follow_button.click()
-        sleep(randint(3,4))
 
-        try:
-            browser.find_element_by_xpath("//button[contains(text(), 'Unfollow')]").click()
-            sleep(randint(2, 4))
-        except Exception:
-            logger.info("custom_unfollow: Could not unfollow, reason: second unfollow button not found. Find out what this error means.")
-            return False
+    if following_status in ["Following", "Requested"]:
+        logger.info("custom_unfollow: You are  following user: %s. Going to unfollow it.", username)
+        follow_button.click()
+        sleep(4)  # TODO: use explicit wait here
+        confirm_unfollow(browser)
 
-        # double check not following
-        follow_button = browser.find_element_by_xpath(
-            "//*[contains(text(), 'Follow')]")
-
-        if follow_button.text in ['Follow', 'Follow Back']:
-            logger.info("custom_unfollow: Unfollowed user: %s", username)
-            action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
+        following_status, follow_button = get_following_status(browser,
+                                                               'post',
+                                                               instapy.campaign['username'],
+                                                               username,
+                                                               None,
+                                                               logger,
+                                                               instapy.logfolder)
+        if following_status in ["Follow", "Follow Back"]:
+            logger.info("custom_unfollow: successfully unfollowed user: %s ", username)
             return True
         else:
-            logger.error("Unfollow error, COULD NOT PRESS THE LAST UNFOLLOW BUTTON -> user: %s might be blocked or deleted" %  username)
+            logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
+            return False
+    else:
+        logger.info("custom_unfollow: you are not following user: %s, following status is: %s, still going to save it as successfully unfollowed." % (username, following_status))
+        return True
+
+
+
 
     return False
