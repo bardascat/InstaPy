@@ -256,15 +256,16 @@ class Engagements:
                 #     return False
 
                 # todo: follow_user method is overengineered , try to simplify it
+
                 followed, msg = follow_user(self.browser,
-                                            ['profile', 'post'],
-                                            None,
-                                            user_name,
-                                            None,
-                                            self.instapy.blacklist,
-                                            self.logger,
-                                            self.instapy.logfolder,
-                                            self.instapy)
+                                                "profile",
+                                                self.campaign['username'],
+                                                user_name,
+                                                None,
+                                                self.instapy.blacklist,
+                                                self.logger,
+                                                self.instapy.logfolder,
+                                                self.instapy)
 
                 if msg == "already_followed":
                     self.logger.info("performFollow: User %s was already followed, going to store it in DB", user_name)
