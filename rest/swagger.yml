@@ -251,6 +251,31 @@ paths:
       responses:
         201:
           description: Successfully created the followers crawler
+  /crawler/user-followers/breakdown:
+    get:
+      operationId: crawler.getUserFollowersBreakdown
+      tags:
+      - User followers history
+      summary: - User followers history
+      parameters:
+      - name: instagram_username
+        in: query
+        description: instagram_username
+        type: string
+        required: True
+      - name: since
+        in: query
+        description: since
+        type: string
+        required: True
+      - name: until
+        in: query
+        description: until
+        type: string
+        required: True
+      responses:
+        201:
+          description: Successfully created the followers crawler
   /crawler/process-user-followers:
     post:
       operationId: crawler.processUserFollowers
