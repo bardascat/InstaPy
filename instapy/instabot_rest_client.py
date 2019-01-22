@@ -89,16 +89,15 @@ class InstabotRestClient:
         url = url + "?" + urlValues
 
         self.logger.info("getPostsByLocation: API URL: %s:", url)
-        req = urllib2.Request(url)
-        response = urllib2.urlopen(req)
-
-        body = response.read()
         try:
+            req = urllib2.Request(url)
+            response = urllib2.urlopen(req)
+            body = response.read()
             result = json.loads(body)
         except Exception as exc:
             exceptionDetail = traceback.format_exc()
-            self.logger.info("There was an error parsing the json: json: %s, error: %s" % (body, exceptionDetail))
-            raise Exception("Cannot parse json: error:" + exceptionDetail)
+            self.logger.info("ERROR: There was an error executing and parsing the response. Going to return empty array. Error details: %s" % (exceptionDetail))
+            return []
 
         if "error" in result:
             # maybe send an email with the error
