@@ -60,3 +60,9 @@ def getProcess(query):
     if proccount > 0:
         return True
     return abort(404)
+
+def getUserFollowers(username):
+    logger = getLogger()
+    logger.info("crawler.isFollower: Going to return user %s followers, order by follow back" % (username))
+    #todo: retrieve user follower order by follow back
+

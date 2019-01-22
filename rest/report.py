@@ -74,8 +74,3 @@ def getUserFollowersBreakdown(instagram_username, since, until):
     client.close()
 
     return result
-
-def isFollower(account_username, follower_username):
-    logger = getLogger()
-    logger.info("crawler.isFollower: Instagram username: %s, follower_name: %s" % (account_username, follower_username))
-

@@ -176,6 +176,21 @@ paths:
       responses:
         200:
           description: Successfully
+  /bot/user/{username}/followers:
+    get:
+      operationId: bot.getUserFollowers
+      tags:
+      - user followers
+      summary: Get User Followers
+      parameters:
+      - name: username
+        in: path
+        description: instagram username
+        type: string
+        required: True
+      responses:
+        200:
+          description: Successfully returned user followers
   /bot/process:
     get:
       operationId: bot.getProcess
@@ -310,26 +325,6 @@ paths:
       - name: until
         in: query
         description: until
-        type: string
-        required: True
-      responses:
-        201:
-          description: Successfully created the followers crawler
-  /report/follower:
-    get:
-      operationId: report.isFollower
-      tags:
-      - follower
-      summary: Is follower
-      parameters:
-      - name: account_username
-        in: query
-        description: account_username
-        type: string
-        required: True
-      - name: follower_username
-        in: query
-        description: follower_username
         type: string
         required: True
       responses:
