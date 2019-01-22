@@ -254,7 +254,8 @@ paths:
   /crawler/user-followers/breakdown:
     get:
       operationId: crawler.getUserFollowersBreakdown
-      tags: User followers history
+      tags:
+      - followers
       summary: User followers history
       parameters:
       - name: instagram_username
