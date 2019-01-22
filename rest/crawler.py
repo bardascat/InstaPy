@@ -60,3 +60,8 @@ def processUserFollowers():
 
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
+
+
+def userFollowersCralwerStatus(date):
+    logger = getLogger()
+    logger.info("crawler.userFollowersStatus: Going to return crawler status for date: %s", date)

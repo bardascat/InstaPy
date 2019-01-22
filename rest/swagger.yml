@@ -266,6 +266,21 @@ paths:
       responses:
         201:
           description: Successfully created the followers crawler
+  /crawler/user-followers/status:
+    get:
+      operationId: crawler.userFollowersCralwerStatus
+      tags:
+      - get user followers status
+      summary: Get User Followers Cralwer status
+      parameters:
+      - name: date
+        in: query
+        description: status for date
+        type: string
+        required: True
+      responses:
+        200:
+          description: Successfully retrieved the status
   /crawler/process-user-followers:
     post:
       operationId: crawler.processUserFollowers
