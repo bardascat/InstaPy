@@ -64,7 +64,8 @@ def processUserFollowers():
 
 def getUserFollowersBreakdown(instagram_username, since, until):
     logger = getLogger()
-    logger.info("crawler.getUserFollowersBreakdown: instagram_username: %s, since: %s, until: %s" % (instagram_username, since, until))
+    logger.info("crawler.getUserFollowersBreakdown: instagram_username: %s, since: %s, until: %s" % (
+        instagram_username, since, until))
 
     format_str = '%Y-%m-%d'  # The format
 
@@ -76,4 +77,13 @@ def getUserFollowersBreakdown(instagram_username, since, until):
 
     logger.info("crawler.getUserFollowersBreakdown: start: %s, end: %s" % (gte, lte))
 
-    #client = MongoClient(host='localhost', port=27017)
+    client = MongoClient(host='localhost', port=27017)
+    db = client.angie_app
+
+    result = db.processed_user_followers.find({"owner_instagram_username": instagram_username, "start_date": {'$gt': gte, '$lt': lte}}, sort=[("start_date", -1)])
+
+    logger.info("getUserFollowersBreakdown: Retrieved %s lines", len(result))
+
+    client.close()
+
+    return result
