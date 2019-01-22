@@ -81,6 +81,7 @@ def getUserFollowersBreakdown(instagram_username, since, until):
     db = client.angie_app
 
     result = db.processed_user_followers.find({"owner_instagram_username": instagram_username, "start_date": {'$gt': gte, '$lt': lte}}, sort=[("start_date", -1)])
+    result = list(result)
 
     logger.info("getUserFollowersBreakdown: Retrieved %s lines", len(result))
 
