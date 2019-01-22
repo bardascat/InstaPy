@@ -44,3 +44,38 @@ def summary(id_campaign, start, end, groupBy):
     client.close()
 
     return result
+
+
+def getUserFollowersBreakdown(instagram_username, since, until):
+    logger = getLogger()
+    logger.info("crawler.getUserFollowersBreakdown: instagram_username: %s, since: %s, until: %s" % (
+        instagram_username, since, until))
+
+    format_str = '%Y-%m-%d'  # The format
+
+    gte = datetime.datetime.strptime(since, format_str)
+    lte = datetime.datetime.strptime(until, format_str)
+
+    gte = gte.replace(minute=0, hour=0, second=0, microsecond=0)
+    lte = lte.replace(minute=59, hour=23, second=59, microsecond=999)
+
+    logger.info("crawler.getUserFollowersBreakdown: start: %s, end: %s" % (gte, lte))
+
+    client = MongoClient(host='localhost', port=27017)
+    db = client.angie_app
+
+    result = db.processed_user_followers.find(
+        {"owner_instagram_username": instagram_username, "start_date": {'$gt': gte, '$lt': lte}}, {"_id": 0},
+        sort=[("start_date", -1)])
+    result = list(result)
+
+    logger.info("getUserFollowersBreakdown: Retrieved %s lines", len(result))
+
+    client.close()
+
+    return result
+
+def isFollower(account_username, follower_username):
+    logger = getLogger()
+    logger.info("crawler.isFollower: Instagram username: %s, follower_name: %s" % (account_username, follower_username))
+

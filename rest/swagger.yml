@@ -251,31 +251,6 @@ paths:
       responses:
         201:
           description: Successfully created the followers crawler
-  /crawler/user-followers/breakdown:
-    get:
-      operationId: crawler.getUserFollowersBreakdown
-      tags:
-      - followers
-      summary: User followers history
-      parameters:
-      - name: instagram_username
-        in: query
-        description: instagram_username
-        type: string
-        required: True
-      - name: since
-        in: query
-        description: since
-        type: string
-        required: True
-      - name: until
-        in: query
-        description: until
-        type: string
-        required: True
-      responses:
-        201:
-          description: Successfully created the followers crawler
   /crawler/process-user-followers:
     post:
       operationId: crawler.processUserFollowers
@@ -315,6 +290,51 @@ paths:
       responses:
         200:
           description: Locations
+  /report/followers/breakdown:
+    get:
+      operationId: report.getUserFollowersBreakdown
+      tags:
+      - followers
+      summary: User followers history
+      parameters:
+      - name: instagram_username
+        in: query
+        description: instagram_username
+        type: string
+        required: True
+      - name: since
+        in: query
+        description: since
+        type: string
+        required: True
+      - name: until
+        in: query
+        description: until
+        type: string
+        required: True
+      responses:
+        201:
+          description: Successfully created the followers crawler
+  /report/follower:
+    get:
+      operationId: report.isFollower
+      tags:
+      - follower
+      summary: Is follower
+      parameters:
+      - name: account_username
+        in: query
+        description: account_username
+        type: string
+        required: True
+      - name: follower_username
+        in: query
+        description: follower_username
+        type: string
+        required: True
+      responses:
+        201:
+          description: Successfully created the followers crawler
 definitions:
   campaign:
     type: object
