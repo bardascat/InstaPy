@@ -277,9 +277,7 @@ paths:
         name: body
         required: true
         schema:
-          type: array
-          items:
-            $ref: '#/definitions/campaign'
+            $ref: '#/definitions/scan_followers_cralwer_status_request'
       responses:
         201:
           description: Successfully started an engagment bot scheduler
@@ -354,3 +352,15 @@ definitions:
       id_campaign:
         type: number
     title: campaign
+  scan_followers_cralwer_status_request:
+    type: "object"
+    properties:
+      date:
+        type: "string"
+      campaigns:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id_campaign:
+              type: "integer"

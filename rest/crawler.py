@@ -62,7 +62,10 @@ def processUserFollowers():
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
-def userFollowersCralwerStatus(date, campaigns):
+def userFollowersCralwerStatus(body):
+    campaigns = body['campaigns']
+    date = body['date']
+
     # todo: implement this
     logger = getLogger()
     logger.info("crawler.userFollowersStatus: Going to return crawler status for date: %s, users: %s" % (date, campaigns))
