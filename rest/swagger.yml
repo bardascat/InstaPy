@@ -280,9 +280,6 @@ paths:
           type: array
           items:
             $ref: '#/definitions/campaign'
-      - name: date
-        in: query
-        description: date
       responses:
         201:
           description: Successfully started an engagment bot scheduler
