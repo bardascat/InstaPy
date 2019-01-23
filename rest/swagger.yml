@@ -273,14 +273,19 @@ paths:
       - get user followers status
       summary: Get User Followers Cralwer status
       parameters:
+      - in: body
+        name: campaigns
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/campaign'
       - name: date
         in: query
-        description: status for date
-        type: string
-        required: True
+        description: date
       responses:
-        200:
-          description: Successfully retrieved the status
+        201:
+          description: Successfully started an engagment bot scheduler
   /crawler/process-user-followers:
     post:
       operationId: crawler.processUserFollowers

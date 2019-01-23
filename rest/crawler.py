@@ -62,7 +62,32 @@ def processUserFollowers():
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
-def userFollowersCralwerStatus(date):
-    #todo: implement this
+def userFollowersCralwerStatus(date, campaigns):
+    # todo: implement this
     logger = getLogger()
-    logger.info("crawler.userFollowersStatus: Going to return crawler status for date: %s", date)
+    logger.info("crawler.userFollowersStatus: Going to return crawler status for date: %s, users: %s" % (date, campaigns))
+
+    client = MongoClient(host='localhost', port=27017)
+    db = client.angie_app
+    format_str = '%Y-%m-%d'  # The format
+    gte = datetime.datetime.strptime(date, format_str)
+    lte = datetime.datetime.strptime(date, format_str)
+
+    gte = gte.replace(minute=0, hour=0, second=0, microsecond=0)
+    lte = lte.replace(minute=59, hour=23, second=59, microsecond=999)
+
+    output = []
+    for campaign in campaigns:
+        user = campaign['username']
+
+    result = db.user_followers.find({"owner_instagram_username": user, "crawled_at": {'$gt': gte, '$lt': lte}},
+                                    {"followers": 0})
+
+    result = list(result)
+
+    if len(result) > 0:
+        output.append({"instagram_username": user, "scanned": True})
+    else:
+        output.append({"instagram_username": user, "scanned": False})
+
+    return output
