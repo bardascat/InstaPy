@@ -267,7 +267,7 @@ paths:
         201:
           description: Successfully created the followers crawler
   /crawler/user-followers/status:
-    get:
+    post:
       operationId: crawler.userFollowersCralwerStatus
       tags:
       - get user followers status
