@@ -91,6 +91,10 @@ def getInitialActionAmount(self, id_campaign):
 def isAccountWarmingUp(self):
     warmUpDays = 3
     self.logger.info("getInitialActionAmount: Checking if account is warming up...")
+    self.logger.info("getInitialActionAmount: Warming up is DISABLED, going to return False")
+
+    return False
+
 
     workingDays = api_db.getCampaignWorkingDays(self.campaign["id_campaign"])
 
