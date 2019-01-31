@@ -78,20 +78,21 @@ def userFollowersCralwerStatus(body):
     gte = gte.replace(minute=0, hour=0, second=0, microsecond=0)
     lte = lte.replace(minute=59, hour=23, second=59, microsecond=999)
 
-    logger.info("crawler.userFollowersStatus: Going to return crawler status between: %s - %s, users: %s" % (gte, lte, campaigns))
+    logger.info("crawler.userFollowersStatus: Going to return crawler status between: %s - %s, users: %s" % (
+    gte, lte, campaigns))
 
     output = []
     for campaign in campaigns:
-        user = campaign['username']
+        user = campaign['instagram_username']
 
-    result = db.user_followers.find({"owner_instagram_username": user, "crawled_at": {'$gt': gte, '$lt': lte}},
-                                    {"followers": 0})
+        result = db.user_followers.find({"owner_instagram_username": user, "crawled_at": {'$gt': gte, '$lt': lte}},
+                                        {"followers": 0})
 
-    result = list(result)
+        result = list(result)
 
-    if len(result) > 0:
-        output.append({"instagram_username": user, "scanned": True})
-    else:
-        output.append({"instagram_username": user, "scanned": False})
+        if len(result) > 0:
+            output.append({"instagram_username": user, "scanned": True, "record": result[0]})
+        else:
+            output.append({"instagram_username": user, "scanned": False})
 
     return output
