@@ -68,7 +68,6 @@ def userFollowersCralwerStatus(body):
 
     # todo: implement this
     logger = getLogger()
-    logger.info("crawler.userFollowersStatus: Going to return crawler status for date: %s, users: %s" % (date, campaigns))
 
     client = MongoClient(host='localhost', port=27017)
     db = client.angie_app
@@ -78,6 +77,8 @@ def userFollowersCralwerStatus(body):
 
     gte = gte.replace(minute=0, hour=0, second=0, microsecond=0)
     lte = lte.replace(minute=59, hour=23, second=59, microsecond=999)
+
+    logger.info("crawler.userFollowersStatus: Going to return crawler status between: %s - %s, users: %s" % (gte, lte, campaigns))
 
     output = []
     for campaign in campaigns:

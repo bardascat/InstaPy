@@ -364,3 +364,5 @@ definitions:
           properties:
             id_campaign:
               type: "integer"
+            username:
+              type: "string"
