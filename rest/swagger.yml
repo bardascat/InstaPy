@@ -364,5 +364,3 @@ definitions:
           properties:
             id_campaign:
               type: "integer"
-            instagram_user:
-              type: "string"
