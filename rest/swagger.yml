@@ -344,7 +344,7 @@ paths:
         required: True
       responses:
         201:
-          description: Successfully created the followers crawler
+          description: Successfully created the follower crawler
 definitions:
   campaign:
     type: object
