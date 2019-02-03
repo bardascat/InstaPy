@@ -11,6 +11,15 @@ basePath: /api
 
 # Paths supported by the server application
 paths:
+  /status:
+    get:
+      operationId: status.getStatus
+      tags:
+      - Service status
+      summary: Service status
+      responses:
+        200:
+          description: Service is up
   /engagement-bots:
     get:
       operationId: engagement-bot.readAll
