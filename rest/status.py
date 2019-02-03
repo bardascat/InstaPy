@@ -10,4 +10,5 @@ base_path = "/home/ubuntu/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
 
 def getStatus():
-    return "ok"
+    status={"status":"up"}
+    return status
