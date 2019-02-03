@@ -62,6 +62,7 @@ def getProcess(query):
     return abort(404)
 
 def getUserFollowers(username):
+    # todo: implement this
     logger = getLogger()
     logger.info("crawler.isFollower: Going to return user %s followers, order by follow back" % (username))
     #todo: retrieve user follower order by follow back
