@@ -67,6 +67,7 @@ from .database_engine import get_database
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 
 from engagements import Engagements
+from actions_service import ActionsService
 from likeforlike import LikeForLike
 from instabot_rest_client import InstabotRestClient
 import signal
@@ -251,6 +252,7 @@ class InstaPy:
             self.set_selenium_local_session()
 
         self.engagementService = Engagements(campaign=self.campaign, instapy=self)
+        self.actionService = ActionsService(campaign=self.campaign, instapy=self)
 
         self.likeForLikeService = LikeForLike(campaign=self.campaign, instapy=self)
         self.instabotRestClient = InstabotRestClient(campaign=self.campaign, instapy=self)
@@ -436,9 +438,11 @@ class InstaPy:
                 element = self.browser.find_element_by_tag_name("pre")
             except NoSuchElementException as err:
 
-                path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/proxy_" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+                path = "/home/instapy-log/campaign/logs/" + str(
+                    self.campaign['id_campaign']) + "/proxy_" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
                 self.browser.get_screenshot_as_file(path)
-                self.logger.error("check_internet_connection: Could not detect ip using api.ipify.org, saved screenshot at: %s", path)
+                self.logger.error(
+                    "check_internet_connection: Could not detect ip using api.ipify.org, saved screenshot at: %s", path)
                 return False
 
             if element.text != self.proxy_address:
@@ -460,7 +464,7 @@ class InstaPy:
         # this is not working properly on localhost
         if proccount > 1:
             self.logger.info("canBotStart: ERROR: another bot instance with name %s is running for campaign %s" % (
-            prefix, id_campaign))
+                prefix, id_campaign))
             exit("canBotStart: ERROR: another bot instance is running for this campaign")
 
         self.logger.info("canBotStart: All Good, no other bot instance is running for this campaign")
@@ -471,41 +475,40 @@ class InstaPy:
         self.logger.info("connectWithInstagram: Trying go connect with instagram...")
         self.browser.implicitly_wait(5)
 
-        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], "TRYING_TO_CONNECT_WITH_INSTAGRAM", None)
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+               self.campaign['id_campaign'], "TRYING_TO_CONNECT_WITH_INSTAGRAM", None)
 
         if not self.check_internet_connection():
             self.handle_invalid_proxy()
             return False
 
-
         if not connect_with_instagram(self.browser,
-                                 self.username,
-                                 self.password,
-                                 self.logfolder,
-                                 self.switch_language,
-                                 self.bypass_suspicious_attempt,
-                                 self.logger, self.campaign, unusual_login_token, two_factor_auth_token):
+                                      self.username,
+                                      self.password,
+                                      self.logfolder,
+                                      self.switch_language,
+                                      self.bypass_suspicious_attempt,
+                                      self.logger, self.campaign, unusual_login_token, two_factor_auth_token):
 
             self.aborting = True
             return False
         else:
-            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], "SUCCESSFULLY_LOGGED_IN", None)
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+                   self.campaign['id_campaign'], "SUCCESSFULLY_LOGGED_IN", None)
             return True
-
-
-
-
-
 
     def handle_invalid_proxy(self):
         self.logger.critical("login: ERROR: Could not verify internet connection/proxy settings")
         self.aborting = True
-        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], "UNSUCCESSFUL_PROXY_CHECK", "proxy_error")
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+               self.campaign['id_campaign'], "UNSUCCESSFUL_PROXY_CHECK", "proxy_error")
 
         # reset the ip using rest api
-        urllib2.urlopen("https://rest.angie.one/api/bot/assignIp?id_campaign=" + str(self.campaign['id_campaign'])).read()
+        urllib2.urlopen(
+            "https://rest.angie.one/api/bot/assignIp?id_campaign=" + str(self.campaign['id_campaign'])).read()
 
-        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], "NEW_IP_ASSIGNED", "proxy_error")
+        insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
+               self.campaign['id_campaign'], "NEW_IP_ASSIGNED", "proxy_error")
         self.logger.info("Done resetting the ip...")
 
     def login(self):
@@ -3981,7 +3984,7 @@ class InstaPy:
                 hasError = True
                 self.logger.error(
                     "likeForLikeHandler: Error: l4l new tab attempt: %s, There was an error opening a new tab...: %s" % (
-                    spamCheck, exc))
+                        spamCheck, exc))
             finally:
                 spamCheck = spamCheck + 1
 
@@ -4027,7 +4030,7 @@ class InstaPy:
 
     def executeAngieActions(self, operations, likeAmount, followAmount, unfollowAmount):
         self.logger.info("executeAngieLoop: Going to execute %s likes, %s follow, %s unfollow" % (
-        likeAmount, followAmount, unfollowAmount))
+            likeAmount, followAmount, unfollowAmount))
 
         # todo: a bug too many ops. also if the number of actions is low don t divide it to 4 hashtags
         noOperations = getOperationsNumber(operations)
