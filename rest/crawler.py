@@ -91,8 +91,9 @@ def userFollowersCralwerStatus(body):
         result = list(result)
 
         if len(result) > 0:
-            output.append({"instagram_username": user, "scanned": True, "record": result[0]})
+            output.append({"instagram_username": user, "scanned": True})
         else:
             output.append({"instagram_username": user, "scanned": False})
-
+    
+    logger.info("Result is : %s", output)
     return output
