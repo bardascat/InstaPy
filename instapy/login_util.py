@@ -521,7 +521,7 @@ def is_user_logged_in(username, browser, logger, cmp):
     check_it_was_me_popup(browser, logger, cmp)
     logger.info("is_user_logged_in: Checking if user %s is logged in by searching for Profile Button...", username)
 
-    edit_profile_button = browser.find_elements_by_xpath("//a[contains(@href,'" + username + "')]")
+    edit_profile_button = browser.find_elements_by_xpath("//a[contains(@href,'" + username.lower() + "')]")
 
     logger.info("is_user_logged_in: Done searching for  Profile button !")
 
