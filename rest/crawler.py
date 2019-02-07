@@ -1,11 +1,10 @@
-import os
-import subprocess
-import json
-from flask import abort
 import datetime
-from rest_logger import getLogger
 import os.path
+import subprocess
+
 from pymongo import MongoClient
+
+from rest_logger import getLogger
 
 python_path = "python"
 base_path = "/home/ubuntu/projects/instabot/run"
@@ -37,6 +36,18 @@ def scanUserProfile(campaign):
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
+
+def scanUserActions(campaign):
+    id_campaign = campaign['id_campaign']
+    logger = getLogger()
+    logger.info("crawler.scanUserActions: Going to start user action crawler, id_campaign: %s", id_campaign)
+
+    processName = 'angie_scan_user_actions_' + str(id_campaign)
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/scan_user_actions.py  -angie_campaign=" + str(
+        id_campaign) + " \""
+
+    logger.info("executing command: %s", command)
+    subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 def scanUserFollowers(campaign):
     id_campaign = campaign['id_campaign']
