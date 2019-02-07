@@ -21,7 +21,7 @@ def start(campaign):
     id_campaign = campaign["id_campaign"]
 
     processName = 'angie_instapy_idc' + str(id_campaign)
-    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/start.py  -angie_campaign=" + str(
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/start_v2.py  -angie_campaign=" + str(
         id_campaign) + " \""
 
     logger.info("executing command: %s", command)

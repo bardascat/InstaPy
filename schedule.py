@@ -43,7 +43,7 @@ for campaign in campaigns:
     logger.info("schedule_bot: Starting bot for campaign %s", campaign)
     processName = "angie_instapy_idc" + str(campaign)
     subprocess.Popen(
-        "bash -c \"exec -a " + processName + " /usr/bin/python /home/ubuntu/projects/InstaPy/start.py -angie_campaign=" + str(
+        "bash -c \"exec -a " + processName + " /usr/bin/python /home/ubuntu/projects/InstaPy/start_v2.py -angie_campaign=" + str(
             campaign) + "\"",shell=True)
 
     logger.info("schedule_bot: Done staring campaign for %s", campaign)
