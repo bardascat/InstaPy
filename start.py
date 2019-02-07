@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-angie_campaign', type=str, help="angie_campaign")
 args = parser.parse_args()
 
-#args.angie_campaign='1'
+args.angie_campaign='433'
 
 if args.angie_campaign is None:
     exit("dispatcher: Error: Campaign id it is not specified !")
@@ -48,6 +48,10 @@ def start(session):
         return False
 
     operations = getBotOperations(campaign['id_campaign'], session.logger)
+    if getOperationsNumber(operations)==0:
+        session.logger.info("No operations of type engagement by hashtag/location enabled for this user.")
+        return False
+
     session.set_max_actions(totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount)
 
     session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (
@@ -69,9 +73,12 @@ def start(session):
             "-------------- start.py START ITERATION %s, going to perform: likeAmount: %s, followAmount:%s, unfollowAmount %s" % (
                 loopNumber, likeAmountForEachLoop, followAmountForEachLoop, unFollowAmountForEachLoop))
 
-        iterationResults = session.executeAngieActions(operations, likeAmount=likeAmountForEachLoop,
+        iterationResults = session.executeAngieActions(likeAmount=likeAmountForEachLoop,
                                                        followAmount=followAmountForEachLoop,
                                                        unfollowAmount=unFollowAmountForEachLoop)
+
+        if iterationResults is False:
+            break
 
         session.logger.info(
             "-------------- start.py END ITERATION %s : LIKE PERFORMED/EXPECTED %s/%s, FOLLOW PERFORMED/EXPECTED: %s/%s, UNFOLLOW PERFORMED/EXPECTED: %s/%s ------------------" % (
@@ -91,7 +98,7 @@ def start(session):
 
         sleepMinutes = randint(20, 35)
         session.logger.info("start.py: GOING TO SLEEP FOR %s MINUTES, LOOP NO %s" % (sleepMinutes, loopNumber))
-        sleep(sleepMinutes * 60)
+        #sleep(sleepMinutes * 60)
         session.logger.info("start.py: Done sleeping going to continue looping...")
 
     session.logger.info("start.py: Angie loop completed , going to exit...")
