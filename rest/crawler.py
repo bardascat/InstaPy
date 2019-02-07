@@ -43,7 +43,7 @@ def scanUserActions(campaign):
     logger.info("crawler.scanUserActions: Going to start user action crawler, id_campaign: %s", id_campaign)
 
     processName = 'angie_scan_user_actions_' + str(id_campaign)
-    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/scan_user_actions.py  -angie_campaign=" + str(
+    command = "bash -c \"exec -a " + processName + " sudo /usr/bin/python2.7 " + base_path + "/scan_user_actions.py  -id_campaign=" + str(
         id_campaign) + " \""
 
     logger.info("executing command: %s", command)
