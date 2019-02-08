@@ -251,7 +251,7 @@ class InstaPy:
         if self.selenium_local_session == True:
             self.set_selenium_local_session()
 
-        self.engagementService = Engagements(campaign=self.campaign, instapy=self)
+        #self.engagementService = Engagements(campaign=self.campaign, instapy=self)
         self.actionService = ActionsService(campaign=self.campaign, instapy=self)
 
         self.likeForLikeService = LikeForLike(campaign=self.campaign, instapy=self)

@@ -15,7 +15,7 @@ app.add_api('swagger.yml')
 # create a URL route in our application for "/"
 @app.route('/')
 def home():
-    return "ANGIE PYTHON REST API"
+    return "ANGIE INSTAPY REST API"
 
 
 if __name__ == '__main__':
