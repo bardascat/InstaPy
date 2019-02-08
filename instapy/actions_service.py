@@ -78,7 +78,7 @@ class ActionsService:
         client = getMongoConnection()
         db = client.angie_app
         db.user_actions_queue.update({"_id": post["_id"]}, {"$set": {"processed": 1}})
-        client.close()
+        #client.close()
 
     def getPosts(self, noPosts):
 
@@ -87,7 +87,7 @@ class ActionsService:
         # sort them asc
         result = db.user_actions_queue.find({"id_campaign": self.campaign['id_campaign'], "processed": 0},
                                             sort=[("timestamp", 1)]).limit(noPosts)
-        client.close()
+        #client.close()
 
         if result is None:
             self.logger.error("getPosts: Could not find any posts to engage with, going to return")

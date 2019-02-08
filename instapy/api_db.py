@@ -2,11 +2,14 @@ import MySQLdb
 from pymongo import MongoClient
 import datetime
 
+client = None
+
 
 def getMongoConnection():
-    #client = MongoClient(host='localhost', port=27017)
-    #return client
-    x=1
+    global client
+    if client is None:
+        client = MongoClient(host='localhost', port=27017)
+    return client
 
 
 def getMysqlConnection():
@@ -38,8 +41,9 @@ def postWasLikedInThePast(linkCode, id_user):
     client = getMongoConnection()
     db = client.angie_app
 
-    row = db.bot_action.find_one({"post_link": linkCode, "id_user": id_user, "bot_operation": {"$regex": "^like_engagement_"}})
-    client.close()
+    row = db.bot_action.find_one(
+        {"post_link": linkCode, "id_user": id_user, "bot_operation": {"$regex": "^like_engagement_"}})
+    #client.close()
 
     if row == None:
         return False
@@ -52,7 +56,7 @@ def userWasFollowedInThePast(user_name, id_user):
     db = client.angie_app
 
     row = db.bot_action.find_one({"username": user_name, "id_user": id_user, "bot_operation": {"$regex": "^follow"}})
-    client.close()
+    #client.close()
 
     if row == None:
         return False
@@ -111,7 +115,7 @@ def getCampaignWorkingDays(id_campaign):
                 {"$group": {"_id": {"year": {"$year": "$timestamp"}, "month": {"$month": "$timestamp"},
                                     "day": {"$dayOfMonth": "$timestamp"}}, "count": {"$sum": 1}}}]
 
-    client.close()
+    #client.close()
     return len(list(db.bot_action.aggregate(pipeline=pipeline)))
 
 
@@ -119,7 +123,7 @@ def revertBotFollow(recordToUnfollow, lastBotAction):
     client = getMongoConnection()
     db = client.angie_app
     db.bot_action.update({"_id": recordToUnfollow}, {"$set": {"bot_operation_reverted": lastBotAction}})
-    client.close()
+    #client.close()
 
 
 def getAmountOperations(campaign, dateParam, operation):
@@ -131,18 +135,19 @@ def getAmountOperations(campaign, dateParam, operation):
 
     result = db.bot_action.find({"id_user": campaign['id_user'], "bot_operation": {"$regex": "^" + operation},
                                  "timestamp": {"$gte": gte, "$lte": lte}})
-    client.close()
+    #client.close()
 
     if result == None:
         return 0
 
     return result.count()
 
+
 def getUserToUnfollow(id_user, olderThan):
     return True
-    #TODO: unfollow only users who did not follow back
-    #selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null ORDER BY - follow_back desc, timestamp asc limit %s"
-    #recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
+    # TODO: unfollow only users who did not follow back
+    # selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null ORDER BY - follow_back desc, timestamp asc limit %s"
+    # recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
     #                            self.campaign['id_user'], 1)
 
     currentDate = datetime.datetime.now()
@@ -151,8 +156,10 @@ def getUserToUnfollow(id_user, olderThan):
     client = getMongoConnection()
     db = client.angie_app
 
-    result = db.bot_action.find_one({"id_user": id_user, "bot_operation_reverted":None, "bot_operation": {"$regex": "^follow"},"timestamp": {"$lte": queryDate}})
-    client.close()
+    result = db.bot_action.find_one(
+        {"id_user": id_user, "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},
+         "timestamp": {"$lte": queryDate}})
+    #client.close()
 
     return result
 
@@ -178,7 +185,7 @@ def insertBotAction(*args):
         "timestamp": datetime.datetime.now(),
     })
 
-    client.close()
+    #client.close()
     return _id
 
 

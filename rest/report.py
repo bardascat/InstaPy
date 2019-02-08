@@ -41,7 +41,7 @@ def summary(id_campaign, start, end, groupBy):
     result = list(result)
 
     logger.info("report: Retrieved %s rows", len(result))
-    client.close()
+    #client.close()
 
     return result
 
@@ -71,6 +71,6 @@ def getUserFollowersBreakdown(instagram_username, since, until):
 
     logger.info("getUserFollowersBreakdown: Retrieved %s lines", len(result))
 
-    client.close()
+    #client.close()
 
     return result

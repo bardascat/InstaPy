@@ -2,13 +2,13 @@ import argparse
 import codecs
 import os
 import sys
-from time import sleep
-from instapy import InstaPy
-from instapy.bot_action_handler import getAmountDistribution, getActionAmountForEachLoop
-from instapy.bot_util import *
-from instapy.account_privacy_service import AccountPrivacyService
-from instapy.exception_handler import ExceptionHandler
 import traceback
+
+from instapy import InstaPy
+from instapy.account_privacy_service import AccountPrivacyService
+from instapy.bot_action_handler import getAmountDistribution
+from instapy.bot_util import *
+from instapy.exception_handler import ExceptionHandler
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
