@@ -74,8 +74,7 @@ def processUserFollowers():
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
-def userActionsQueueStatus(body):
-    campaigns = body['campaigns']
+def userActionsQueueStatus(campaigns):
     logger = getLogger()
     client = MongoClient(host='localhost', port=27017)
     db = client.angie_app
