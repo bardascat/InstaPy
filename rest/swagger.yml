@@ -277,7 +277,7 @@ paths:
           description: Successfully created the followers crawler
   /crawler/user-actions:
     post:
-      operationId: crawler.scanUserActions
+      operationId: crawler.userActionsQueueCrawler
       tags:
       - Start user actions crawler
       summary: Start user actions crawler
@@ -311,6 +311,23 @@ paths:
       tags:
       - crawler
       summary: Get User Actions Queue status
+      parameters:
+      - in: body
+        name: campaigns
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/campaign'
+      responses:
+        201:
+          description: Successfully started an engagment bot scheduler
+  /crawler/user-actions-queue:
+    post:
+      operationId: crawler.userActionsQueueCrawler
+      tags:
+      - crawler
+      summary: Status user actions queue crawler
       parameters:
       - in: body
         name: campaigns

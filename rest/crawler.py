@@ -37,7 +37,7 @@ def scanUserProfile(campaign):
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
-def scanUserActions(campaign):
+def userActionsQueueCrawler(campaign):
     id_campaign = campaign['id_campaign']
     logger = getLogger()
     logger.info("crawler.scanUserActions: Going to start user action crawler, id_campaign: %s", id_campaign)

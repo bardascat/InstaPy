@@ -61,9 +61,9 @@ class ActionsService:
 
             # pause once at 100 posts
             if it % 100 == 0:
-                self.logger.info("perform_engagement: Iteration: %s Going to wait for %s minutes" % (it, wait))
                 wait = randint(7, 15)
                 time.sleep(wait * 60)
+                self.logger.info("perform_engagement: Iteration: %s Going to wait for %s minutes" % (it, wait))
 
             self.logger.info("perform_engagement: Done waiting...")
 
