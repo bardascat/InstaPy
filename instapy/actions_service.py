@@ -78,7 +78,7 @@ class ActionsService:
         client = getMongoConnection()
         db = client.angie_app
         db.user_actions_queue.update({"_id": post["_id"]}, {"$set": {"processed": 1}})
-        #client.close()
+        client.close()
 
     def getPosts(self, noPosts):
 
@@ -87,7 +87,7 @@ class ActionsService:
         # sort them asc
         result = db.user_actions_queue.find({"id_campaign": self.campaign['id_campaign'], "processed": 0},
                                             sort=[("timestamp", 1)]).limit(noPosts)
-        #client.close()
+        client.close()
 
         if result is None:
             self.logger.error("getPosts: Could not find any posts to engage with, going to return")
@@ -112,17 +112,17 @@ class ActionsService:
 
         self.logger.info("engage: Trying to follow user: %s", post['instagram_username'])
 
-        followStatus = self.performFollow(followAmountProbabilityPercentage=self.followProbabilityPercentage,
-                                          link=post['link'],
-                                          operation=operation,
-                                          user_name=post['instagram_username'],
-                                          tag=post['tag'])
+        # followStatus = self.performFollow(followAmountProbabilityPercentage=self.followProbabilityPercentage,
+        #                                   link=post['link'],
+        #                                   operation=operation,
+        #                                   user_name=post['instagram_username'],
+        #                                   tag=post['tag'])
+        #
+        # self.logger.info("engage: Trying to unfollow an user from database...")
+        #
+        # unfollowStatus = self.performUnfollow(unFollowAmountProbabilityPercentage=self.unfollowProbabilityPercentage, operation=operation)
 
-        self.logger.info("engage: Trying to unfollow an user from database...")
-
-        unfollowStatus = self.performUnfollow(unFollowAmountProbabilityPercentage=self.unfollowProbabilityPercentage, operation=operation)
-
-        return {"like": likeStatus, "follow": followStatus, "unfollow": unfollowStatus}
+        return {"like": likeStatus, "follow": False, "unfollow": False}
 
     def getOperationName(self, post):
         if post['targetType'] == "hashtag":

@@ -43,7 +43,7 @@ def postWasLikedInThePast(linkCode, id_user):
 
     row = db.bot_action.find_one(
         {"post_link": linkCode, "id_user": id_user, "bot_operation": {"$regex": "^like_engagement_"}})
-    #client.close()
+    client.close()
 
     if row == None:
         return False
@@ -56,7 +56,7 @@ def userWasFollowedInThePast(user_name, id_user):
     db = client.angie_app
 
     row = db.bot_action.find_one({"username": user_name, "id_user": id_user, "bot_operation": {"$regex": "^follow"}})
-    #client.close()
+    client.close()
 
     if row == None:
         return False
@@ -115,7 +115,7 @@ def getCampaignWorkingDays(id_campaign):
                 {"$group": {"_id": {"year": {"$year": "$timestamp"}, "month": {"$month": "$timestamp"},
                                     "day": {"$dayOfMonth": "$timestamp"}}, "count": {"$sum": 1}}}]
 
-    #client.close()
+    client.close()
     return len(list(db.bot_action.aggregate(pipeline=pipeline)))
 
 
@@ -123,7 +123,7 @@ def revertBotFollow(recordToUnfollow, lastBotAction):
     client = getMongoConnection()
     db = client.angie_app
     db.bot_action.update({"_id": recordToUnfollow}, {"$set": {"bot_operation_reverted": lastBotAction}})
-    #client.close()
+    client.close()
 
 
 def getAmountOperations(campaign, dateParam, operation):
@@ -135,7 +135,7 @@ def getAmountOperations(campaign, dateParam, operation):
 
     result = db.bot_action.find({"id_user": campaign['id_user'], "bot_operation": {"$regex": "^" + operation},
                                  "timestamp": {"$gte": gte, "$lte": lte}})
-    #client.close()
+    client.close()
 
     if result == None:
         return 0
@@ -159,7 +159,7 @@ def getUserToUnfollow(id_user, olderThan):
     result = db.bot_action.find_one(
         {"id_user": id_user, "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},
          "timestamp": {"$lte": queryDate}})
-    #client.close()
+    client.close()
 
     return result
 
@@ -185,7 +185,7 @@ def insertBotAction(*args):
         "timestamp": datetime.datetime.now(),
     })
 
-    #client.close()
+    client.close()
     return _id
 
 
