@@ -294,7 +294,7 @@ paths:
     post:
       operationId: crawler.userFollowersCralwerStatus
       tags:
-      - get user followers status
+      - crawler
       summary: Get User Followers Cralwer status
       parameters:
       - in: body
@@ -302,6 +302,23 @@ paths:
         required: true
         schema:
             $ref: '#/definitions/scan_followers_cralwer_status_request'
+      responses:
+        201:
+          description: Successfully started an engagment bot scheduler
+  /crawler/user-actions-queue/status:
+    post:
+      operationId: crawler.userActionsQueueStatus
+      tags:
+      - crawler
+      summary: Get User Actions Queue status
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/campaign'
       responses:
         201:
           description: Successfully started an engagment bot scheduler

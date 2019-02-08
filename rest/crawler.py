@@ -49,6 +49,7 @@ def scanUserActions(campaign):
     logger.info("executing command: %s", command)
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
+
 def scanUserFollowers(campaign):
     id_campaign = campaign['id_campaign']
     logger = getLogger()
@@ -73,11 +74,34 @@ def processUserFollowers():
     subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
+def userActionsQueueStatus(body):
+    campaigns = body['campaigns']
+    logger = getLogger()
+    client = MongoClient(host='localhost', port=27017)
+    db = client.angie_app
+
+    logger.info("crawler.userActionsCrawlerStatus: Getting user actions status for %s campaigns", len(campaigns))
+
+    status = []
+    for id_campaign in campaigns:
+        pipeline = [{"$match": {'processed': 0, "id_campaign": id_campaign}},
+                    {"$group": {"_id": "$id_campaign", "count": {"$sum": 1}}}]
+
+        result = list(db.user_actions_queue.aggregate(pipeline=pipeline))
+
+        count = 0
+        if len(result) > 0:
+            count = result[0]['count']
+
+        status.append({"id_campaign": id_campaign, "queue": count})
+
+    return list(result)
+
+
 def userFollowersCralwerStatus(body):
     campaigns = body['campaigns']
     date = body['date']
 
-    # todo: implement this
     logger = getLogger()
 
     client = MongoClient(host='localhost', port=27017)
@@ -90,7 +114,7 @@ def userFollowersCralwerStatus(body):
     lte = lte.replace(minute=59, hour=23, second=59, microsecond=999)
 
     logger.info("crawler.userFollowersStatus: Going to return crawler status between: %s - %s, users: %s" % (
-    gte, lte, campaigns))
+        gte, lte, campaigns))
 
     output = []
     for campaign in campaigns:
@@ -105,6 +129,6 @@ def userFollowersCralwerStatus(body):
             output.append({"instagram_username": user, "scanned": True})
         else:
             output.append({"instagram_username": user, "scanned": False})
-    
+
     logger.info("Result is : %s", output)
     return output
