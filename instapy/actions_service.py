@@ -30,6 +30,11 @@ class ActionsService:
             likeAmount, followAmount, unfollowAmount))
 
         numberOfPostsToInteractWith = max(likeAmount, followAmount, unfollowAmount)
+
+        if numberOfPostsToInteractWith < 0:
+            self.logger.info("perform_engagement: No actions to performed, likeAmount: %s, followAmount: %s, unfollowAmount: %s " % (likeAmount, followAmount, unfollowAmount))
+            return False
+
         self.followProbabilityPercentage = followAmount * 100 // numberOfPostsToInteractWith
         self.likeProbabilityPercentage = likeAmount * 100 // numberOfPostsToInteractWith
         self.unfollowProbabilityPercentage = unfollowAmount * 100 // numberOfPostsToInteractWith

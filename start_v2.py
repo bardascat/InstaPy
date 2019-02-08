@@ -42,11 +42,6 @@ def start(session):
     totalExpectedFollowAmount = int(calculatedAmount["follow_amount"])
     totalExpectedUnfollowAmount = int(calculatedAmount["unfollow_amount"])
 
-    # if amount of action was reached earlier this day
-    if session.engagementService.totalLikePerformed >= totalExpectedLikeAmount and session.engagementService.totalFollowPerformed >= totalExpectedFollowAmount and session.engagementService.totalUnfollowPerformed >= totalExpectedUnfollowAmount:
-        session.logger.info("start.py: going to break the MAIN loop. Number of actions reached for all ops !")
-        return False
-
     operations = getBotOperations(campaign['id_campaign'], session.logger)
     if getOperationsNumber(operations)==0:
         session.logger.info("No operations of type engagement by hashtag/location enabled for this user.")
