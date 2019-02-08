@@ -56,10 +56,8 @@ def start(session):
     session.logger.info("start: PID: %s, Instapy Started for account %s using proxy: %s" % (
     os.getpid(), campaign['username'], campaign['ip']))
 
-    noOfLoops = randint(6, 8)
 
-    session.logger.info("start.py: Bot started performing actions: %s likes, %s follow, %s unfollow during %s loops" % (
-    totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount, noOfLoops))
+    session.logger.info("start.py: Bot started performing actions: %s likes, %s follow, %s unfollow." % (totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount))
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
            campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 

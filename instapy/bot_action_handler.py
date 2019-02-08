@@ -161,8 +161,16 @@ def resumeOperation(self, id_campaign):
 def getAmountDistribution(self, id_campaign):
     resume = resumeOperation(self, id_campaign)
 
+    totalLikePerformed = getActionsPerformed(self.campaign, datetime.now(), "like",self.logger)
+    totalFollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "follow",self.logger)
+    totalUnfollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "unfollow",self.logger)
+
+
     if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
+        resume['like_amount']-=totalLikePerformed
+        resume['follow_amount'] -= totalFollowPerformed
+        resume['unfollow_amount'] -= totalUnfollowPerformed
         return resume
 
     foundRightCategory = api_db.fetchOne("select * from action_amount_distribution where type='maximum'")
