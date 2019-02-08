@@ -133,7 +133,7 @@ def getAmountOperations(campaign, dateParam, operation):
     client = getMongoConnection()
     db = client.angie_app
 
-    result = db.bot_action.find({"id_user": campaign['id_user'], "bot_operation": {"$regex": "^" + operation},
+    result = db.bot_action.find({"id_campaign": campaign['id_campaign'], "bot_operation": {"$regex": "^" + operation},
                                  "timestamp": {"$gte": gte, "$lte": lte}})
     client.close()
 
@@ -143,8 +143,8 @@ def getAmountOperations(campaign, dateParam, operation):
     return result.count()
 
 
-def getUserToUnfollow(id_user, olderThan):
-    return True
+def getUserToUnfollow(id_campaign, olderThan):
+    #return True
     # TODO: unfollow only users who did not follow back
     # selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null ORDER BY - follow_back desc, timestamp asc limit %s"
     # recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
@@ -157,7 +157,7 @@ def getUserToUnfollow(id_user, olderThan):
     db = client.angie_app
 
     result = db.bot_action.find_one(
-        {"id_user": id_user, "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},
+        {"id_campaign": id_campaign, "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},
          "timestamp": {"$lte": queryDate}})
     client.close()
 

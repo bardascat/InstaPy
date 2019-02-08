@@ -112,17 +112,17 @@ class ActionsService:
 
         self.logger.info("engage: Trying to follow user: %s", post['instagram_username'])
 
-        # followStatus = self.performFollow(followAmountProbabilityPercentage=self.followProbabilityPercentage,
-        #                                   link=post['link'],
-        #                                   operation=operation,
-        #                                   user_name=post['instagram_username'],
-        #                                   tag=post['tag'])
-        #
-        # self.logger.info("engage: Trying to unfollow an user from database...")
-        #
-        # unfollowStatus = self.performUnfollow(unFollowAmountProbabilityPercentage=self.unfollowProbabilityPercentage, operation=operation)
+        followStatus = self.performFollow(followAmountProbabilityPercentage=self.followProbabilityPercentage,
+                                          link=post['link'],
+                                          operation=operation,
+                                          user_name=post['instagram_username'],
+                                          tag=post['tag'])
 
-        return {"like": likeStatus, "follow": False, "unfollow": False}
+        self.logger.info("engage: Trying to unfollow an user from database...")
+
+        unfollowStatus = self.performUnfollow(unFollowAmountProbabilityPercentage=self.unfollowProbabilityPercentage, operation=operation)
+
+        return {"like": likeStatus, "follow": followStatus, "unfollow": unfollowStatus}
 
     def getOperationName(self, post):
         if post['targetType'] == "hashtag":
@@ -244,7 +244,7 @@ class ActionsService:
             self.logger.info("performUnfollow: User wants to unfollow after %s hours" % userWantsToUnfollow['value'])
 
             # get users to unfollow older than x days. People who did not follow back are the first to be unfollowed.
-            recordToUnfollow = getUserToUnfollow(self.campaign['id_user'], userWantsToUnfollow['value'])
+            recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], userWantsToUnfollow['value'])
 
             if recordToUnfollow:
                 status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
