@@ -82,8 +82,8 @@ def userActionsQueueStatus(campaigns):
     logger.info("crawler.userActionsCrawlerStatus: Getting user actions status for %s campaigns", len(campaigns))
 
     status = []
-    for id_campaign in campaigns:
-        pipeline = [{"$match": {'processed': 0, "id_campaign": id_campaign}},
+    for campaign in campaigns:
+        pipeline = [{"$match": {'processed': 0, "id_campaign": campaign['id_campaign']}},
                     {"$group": {"_id": "$id_campaign", "count": {"$sum": 1}}}]
 
         result = list(db.user_actions_queue.aggregate(pipeline=pipeline))
@@ -92,7 +92,7 @@ def userActionsQueueStatus(campaigns):
         if len(result) > 0:
             count = result[0]['count']
 
-        status.append({"id_campaign": id_campaign, "queue": count})
+        status.append({"id_campaign": campaign['id_campaign'], "queue": count})
 
     return status
 
