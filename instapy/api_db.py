@@ -4,8 +4,9 @@ import datetime
 
 
 def getMongoConnection():
-    client = MongoClient(host='localhost', port=27017)
-    return client
+    #client = MongoClient(host='localhost', port=27017)
+    #return client
+    x=1
 
 
 def getMysqlConnection():
@@ -138,6 +139,7 @@ def getAmountOperations(campaign, dateParam, operation):
     return result.count()
 
 def getUserToUnfollow(id_user, olderThan):
+    return True
     #TODO: unfollow only users who did not follow back
     #selectFollowings = "select * from bot_action where  bot_operation like %s and timestamp< (NOW() - INTERVAL %s HOUR) and id_user= %s and bot_operation_reverted is null ORDER BY - follow_back desc, timestamp asc limit %s"
     #recordToUnfollow = fetchOne(selectFollowings, 'follow' + '%', userWantsToUnfollow['value'],
