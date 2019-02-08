@@ -313,7 +313,7 @@ paths:
       summary: Get User Actions Queue status
       parameters:
       - in: body
-        name: body
+        name: campaigns
         required: true
         schema:
           type: array
