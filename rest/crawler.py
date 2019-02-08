@@ -94,7 +94,7 @@ def userActionsQueueStatus(campaigns):
 
         status.append({"id_campaign": id_campaign, "queue": count})
 
-    return list(result)
+    return status
 
 
 def userFollowersCralwerStatus(body):
