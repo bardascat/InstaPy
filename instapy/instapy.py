@@ -113,9 +113,9 @@ class InstaPy:
                  bypass_suspicious_attempt=False,
                  multi_logs=True,
                  force_login=False,
-                 like_delay=30,
-                 follow_delay=45,
-                 unfollow_delay=45,
+                 like_delay=20,
+                 follow_delay=30,
+                 unfollow_delay=30,
                  bot_type="engagement_bot"):
 
         if nogui:
