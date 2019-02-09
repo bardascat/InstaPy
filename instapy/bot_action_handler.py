@@ -64,7 +64,7 @@ def getInitialActionAmount(self, id_campaign):
         id_campaign)
 
     d0 = campaign['timestamp']
-    d1 = datetime.datetime.now()
+    d1 = datetime.now()
     delta = d1 - d0
 
     if delta.days >= accountIsFullyFunctionalAfter:
