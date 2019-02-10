@@ -335,6 +335,10 @@ class InstaPy:
             chrome_options.add_argument('--dns-prefetch-disable')
             chrome_options.add_argument('--lang=en-US')
             chrome_options.add_argument('--disable-setuid-sandbox')
+            chrome_options.add_argument('--disable-plugins')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--enable-logging --v=1')
+            chrome_options.add_argument('--log-path=/home/ubuntut/chromedriver.log')
 
             # this option implements Chrome Headless, a new (late 2017)
             # GUI-less browser. chromedriver 2.9 and above required
