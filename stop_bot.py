@@ -30,6 +30,8 @@ def stopProcesses():
     os.system("ps aux  |  grep -i angie_scan_user |  awk '{print $2}'  |  xargs  kill -9")
     os.system("ps aux  |  grep -i angie_ |  awk '{print $2}'  |  xargs  kill -9")
     os.system("ps aux  |  grep -i chrome |  awk '{print $2}'  |  xargs  kill -9")
+    os.system("ps aux  |  grep -i instabot |  awk '{print $2}'  |  xargs  kill -9")
+    os.system("ps aux  |  grep -i instapy |  awk '{print $2}'  |  xargs  kill -9")
     print("final cleanup done...")
 
     print("stopProcesses: DONE")
