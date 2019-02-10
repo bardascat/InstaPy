@@ -70,7 +70,7 @@ class ActionsService:
                 time.sleep(wait * 60)
                 self.logger.info("perform_engagement: Iteration: %s Going to wait for %s minutes" % (it, wait))
 
-            self.logger.info("perform_engagement: Done waiting...")
+                self.logger.info("perform_engagement: Done waiting...")
 
         return result
 
