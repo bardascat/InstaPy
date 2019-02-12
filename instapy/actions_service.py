@@ -1,6 +1,6 @@
 import time
 from random import randint
-
+import pymongo
 from selenium.common.exceptions import NoSuchElementException
 
 from .api_db import *
@@ -82,11 +82,14 @@ class ActionsService:
 
     def getPosts(self, noPosts):
 
+
+        increasedNumberOfPosts = noPosts * 12 // 100 + noPosts
+
         client = getMongoConnection()
         db = client.angie_app
-        # sort them asc
+        # sort them desc, interact with latest post
         result = db.user_actions_queue.find({"id_campaign": self.campaign['id_campaign'], "processed": 0},
-                                            sort=[("timestamp", 1)]).limit(noPosts)
+                                            sort=[("timestamp", pymongo.DESCENDING)]).limit(increasedNumberOfPosts)
         client.close()
 
         if result is None:
@@ -94,7 +97,7 @@ class ActionsService:
             return False
 
         result = list(result)
-        self.logger.info("getPosts: Found %s posts for this user, expected: %s posts." % (len(result), noPosts))
+        self.logger.info("getPosts: Found %s posts for this user, expected: %s posts, expected with safety: %s" % (len(result), noPosts, increasedNumberOfPosts))
 
         return result
 
