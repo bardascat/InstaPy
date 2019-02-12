@@ -113,9 +113,9 @@ class InstaPy:
                  bypass_suspicious_attempt=False,
                  multi_logs=True,
                  force_login=False,
-                 like_delay=30,
-                 follow_delay=45,
-                 unfollow_delay=45,
+                 like_delay=20,
+                 follow_delay=30,
+                 unfollow_delay=30,
                  bot_type="engagement_bot"):
 
         if nogui:
@@ -335,6 +335,10 @@ class InstaPy:
             chrome_options.add_argument('--dns-prefetch-disable')
             chrome_options.add_argument('--lang=en-US')
             chrome_options.add_argument('--disable-setuid-sandbox')
+            chrome_options.add_argument('--disable-plugins')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--enable-logging --v=1')
+            chrome_options.add_argument('--log-path=/home/ubuntut/chromedriver.log')
 
             # this option implements Chrome Headless, a new (late 2017)
             # GUI-less browser. chromedriver 2.9 and above required

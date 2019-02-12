@@ -70,7 +70,7 @@ class ActionsService:
                 time.sleep(wait * 60)
                 self.logger.info("perform_engagement: Iteration: %s Going to wait for %s minutes" % (it, wait))
 
-            self.logger.info("perform_engagement: Done waiting...")
+                self.logger.info("perform_engagement: Done waiting...")
 
         return result
 
@@ -247,7 +247,7 @@ class ActionsService:
             self.logger.info("performUnfollow: User wants to unfollow after %s hours" % userWantsToUnfollow['value'])
 
             # get users to unfollow older than x days. People who did not follow back are the first to be unfollowed.
-            recordToUnfollow = getUserToUnfollow(self.campaign['id_user'], userWantsToUnfollow['value'])
+            recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], userWantsToUnfollow['value'])
 
             if recordToUnfollow:
                 status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
