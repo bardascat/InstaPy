@@ -502,7 +502,7 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
     logger.info("execute_login: Done... going to click log in button")
 
     login_button = browser.find_element_by_xpath(
-        "//button[text()='Log in']")
+        "//div[text()='Log in']")
 
     (ActionChains(browser)
      .move_to_element(login_button)

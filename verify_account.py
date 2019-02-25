@@ -8,6 +8,7 @@ import traceback
 from instapy import InstaPy
 from instapy.bot_util import *
 from instapy.account_privacy_service import AccountPrivacyService
+from instapy.exception_handler import ExceptionHandler
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
@@ -52,8 +53,10 @@ try:
         accountPrivacyService.extractInstagramUsername()
 
     session.logger.info("start: ALL DONE, CLOSING APP")
-except:
+except Exception as exc:
     exceptionDetail = traceback.format_exc()
+    exceptionHandler = ExceptionHandler(session, 'engagement_bot')
+    exceptionHandler.handle(exc)
     # print(exceptionDetail)
     session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception'] = exceptionDetail
