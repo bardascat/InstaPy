@@ -71,7 +71,7 @@ def start(session):
 
 try:
     campaign = fetchOne(
-        "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
+        "select ip,username,password,instagram_username,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
         args.angie_campaign)
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
            campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED", None)

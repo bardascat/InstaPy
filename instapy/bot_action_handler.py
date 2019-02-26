@@ -8,6 +8,47 @@ import bot_util
 from datetime import datetime
 
 
+#todo: test this method
+def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
+
+    self.logger.info("getFollowUnfollowRatio: Calculating follow unfollow ratio for campaign: %s, default ratio: %s" % (id_campaign, defaultFollowUnfollowRatio))
+
+    userProfileStatus = api_db.fetchOne("SELECT followers_count, following_count FROM `instagram_user_followers` WHERE id_user=%s and DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 2 DAY) order by date desc limit 1", id_campaign)
+
+    if userProfileStatus is None:
+        self.logger.error("getFollowUnfollowRatio: ERROR: No user profile status was found in table instagram_user_followers in last 2 days")
+        return defaultFollowUnfollowRatio
+
+    startCycleDifference = 5000
+    completeCycleDifference = 1000
+    cycleRatio = "0.2"
+
+    difference = userProfileStatus['following_count'] - userProfileStatus['followers_count']
+
+    cycle = api_db.fetchOne("select * from bot_unfollow_cycle where completed=0 and id_campaign=%s", id_campaign)
+
+
+    if cycle is not None:
+        self.logger.info("getFollowUnfollowRatio: Found this active cycle: %s", cycle)
+        if difference < completeCycleDifference:
+            api_db.insert("update bot_unfollow_cycle set completed=1 where id_campaign=%s", id_campaign)
+            self.logger.info("getFollowUnfollowRatio: Cycle completed, current diff is:%s, completeCycleDiff set to: %s" % (difference, completeCycleDifference))
+            return defaultFollowUnfollowRatio
+
+
+        self.logger.info("getFollowUnfollowRatio: Going to se ratio to: %s" % (cycle, cycleRatio))
+        return cycleRatio
+
+    #no cycle found, check if we should create one
+
+    if difference >= startCycleDifference:
+        self.logger.info("getFollowUnfollowRatio: Followers/Followings diff is: %s, going to create an unfollow cycle. and set ratio to: %s" % (difference, cycleRatio))
+        api_db.insert("INSERT INTO bot_unfollow_cycle (id_campaign, followings, followers, completed ) VALUES(%s, %s, %s, 0)", id_campaign, userProfileStatus['following_count'], userProfileStatus['followers_count'])
+        return cycleRatio
+
+    self.logger.info("getFollowUnfollowRatio: Followers/Followings diff is: %s, return default ratio: %s" % (difference, defaultFollowUnfollowRatio))
+    return defaultFollowUnfollowRatio
+
 # todo cleanup the code
 def getInitialActionAmount(self, id_campaign):
     result = {}
@@ -24,6 +65,8 @@ def getInitialActionAmount(self, id_campaign):
 
     if actionConfigs is None:
         raise Exception("Invalid bot settings for this campaign")
+
+    actionConfigs['follow_unfollow_ratio'] = getFollowUnfollowRatio(self, id_campaign, actionConfigs['follow_unfollow_ratio'])
 
     self.logger.info("getInitialActionAmount: actionConfigs: %s", actionConfigs)
 
@@ -167,7 +210,7 @@ def getAmountDistribution(self, id_campaign):
     totalUnfollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "unfollow",self.logger)
 
 
-    if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
+    if 1==2 and resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         resume['like_amount']-=totalLikePerformed
         resume['follow_amount'] -= totalFollowPerformed
