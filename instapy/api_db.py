@@ -6,9 +6,7 @@ client = None
 
 
 def getMongoConnection():
-    global client
-    if client is None:
-        client = MongoClient(host='localhost', port=27017)
+    client = MongoClient('mongodb://35.166.100.155/angie_app')
     return client
 
 

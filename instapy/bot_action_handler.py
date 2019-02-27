@@ -5,7 +5,7 @@ import json
 from random import randint
 import calendar
 import bot_util
-from datetime import datetime
+from datetime import datetime,timedelta
 
 
 #todo: test this method
@@ -13,40 +13,43 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
 
     self.logger.info("getFollowUnfollowRatio: Calculating follow unfollow ratio for campaign: %s, default ratio: %s" % (id_campaign, defaultFollowUnfollowRatio))
 
-    userProfileStatus = api_db.fetchOne("SELECT followers_count, following_count FROM `instagram_user_followers` WHERE id_user=%s and DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 2 DAY) order by date desc limit 1", id_campaign)
+    #count number of followed users
+    olderThan = 168 # 7 days
+    currentDate = datetime.now()
+    queryDate = currentDate - timedelta(hours=int(olderThan))
+    client = api_db.getMongoConnection()
+    db = client.angie_app
+    result = db.bot_action.find({"id_campaign": int(id_campaign), "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},"timestamp": {"$lte": queryDate}})
+    activeFollowings = result.count()
+    client.close()
 
-    if userProfileStatus is None:
-        self.logger.error("getFollowUnfollowRatio: ERROR: No user profile status was found in table instagram_user_followers in last 2 days")
-        return defaultFollowUnfollowRatio
+    followingsTreshhold = 4000
+    completeCycleTreshhold = 500
+    cycleRatio = "0.1"
 
-    startCycleDifference = 5000
-    completeCycleDifference = 1000
-    cycleRatio = "0.2"
-
-    difference = userProfileStatus['following_count'] - userProfileStatus['followers_count']
 
     cycle = api_db.fetchOne("select * from bot_unfollow_cycle where completed=0 and id_campaign=%s", id_campaign)
 
 
     if cycle is not None:
         self.logger.info("getFollowUnfollowRatio: Found this active cycle: %s", cycle)
-        if difference < completeCycleDifference:
+        if activeFollowings <= completeCycleTreshhold:
             api_db.insert("update bot_unfollow_cycle set completed=1 where id_campaign=%s", id_campaign)
-            self.logger.info("getFollowUnfollowRatio: Cycle completed, current diff is:%s, completeCycleDiff set to: %s" % (difference, completeCycleDifference))
+            self.logger.info("getFollowUnfollowRatio: Cycle completed, current followings number: %s, stopCycleAt: %s" % (activeFollowings, completeCycleTreshhold))
             return defaultFollowUnfollowRatio
 
 
-        self.logger.info("getFollowUnfollowRatio: Going to se ratio to: %s" % (cycle, cycleRatio))
+        self.logger.info("getFollowUnfollowRatio: Going to se ratio to: %s. activeFollowings: %s, completeCycleTreshhold: %s" % (cycleRatio, activeFollowings, completeCycleTreshhold))
         return cycleRatio
 
     #no cycle found, check if we should create one
 
-    if difference >= startCycleDifference:
-        self.logger.info("getFollowUnfollowRatio: Followers/Followings diff is: %s, going to create an unfollow cycle. and set ratio to: %s" % (difference, cycleRatio))
-        api_db.insert("INSERT INTO bot_unfollow_cycle (id_campaign, followings, followers, completed ) VALUES(%s, %s, %s, 0)", id_campaign, userProfileStatus['following_count'], userProfileStatus['followers_count'])
+    if activeFollowings >= followingsTreshhold:
+        self.logger.info("getFollowUnfollowRatio: Active followings: %s, followingsTreshhold: %s, going to create an unfollow cycle. and set ratio to: %s" % (activeFollowings, followingsTreshhold, cycleRatio))
+        api_db.insert("INSERT INTO bot_unfollow_cycle (id_campaign, angie_followings, completed ) VALUES(%s, %s, 0)", id_campaign, activeFollowings)
         return cycleRatio
 
-    self.logger.info("getFollowUnfollowRatio: Followers/Followings diff is: %s, return default ratio: %s" % (difference, defaultFollowUnfollowRatio))
+    self.logger.info("getFollowUnfollowRatio: Active followings: %s, treshhold: %s, return default ratio: %s" % (activeFollowings, followingsTreshhold, defaultFollowUnfollowRatio))
     return defaultFollowUnfollowRatio
 
 # todo cleanup the code
@@ -210,7 +213,7 @@ def getAmountDistribution(self, id_campaign):
     totalUnfollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "unfollow",self.logger)
 
 
-    if 1==2 and resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
+    if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         resume['like_amount']-=totalLikePerformed
         resume['follow_amount'] -= totalFollowPerformed
