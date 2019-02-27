@@ -4,7 +4,7 @@ import pymongo
 from selenium.common.exceptions import NoSuchElementException
 
 from .api_db import *
-from .bot_util import getIfUserWantsToUnfollow, isFollowEnabled
+from .bot_util import getIfUserWantsToUnfollow, isFollowEnabled, isLikeEnabled
 from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 from random import randint
@@ -20,6 +20,7 @@ class ActionsService:
         self.browser = instapy.browser
         self.logger = instapy.logger
         self.isFollowEnabled = isFollowEnabled(campaign['id_campaign'], self.logger)
+        self.isLikeEnabled = isLikeEnabled(campaign['id_campaign'], self.logger)
         self.isUnfollowEnabled = getIfUserWantsToUnfollow(campaign['id_campaign'])
 
     def perform_engagement(self, likeAmount, followAmount, unfollowAmount):
@@ -135,30 +136,30 @@ class ActionsService:
         return operation
 
     def performLike(self, user_name, link, operation, engagementValue):
-        # if self.totalLikePerformed >= self.totalLikeExpected:
-        #     self.logger.error("performLike: ERROR - The like amount is reached. Expected %s, performed %s " % (
-        #         self.totalLikeExpected, self.totalLikePerformed))
-        #     return False
-        liked, msg = like_image(self.browser,
-                                user_name,
-                                self.instapy.blacklist,
-                                self.logger,
-                                self.instapy.logfolder,
-                                self.instapy)
-        if liked:
-            self.logger.info("performLike: Link %s was liked. User %s" % (link, user_name))
 
-        if msg == "already_liked":
-            self.logger.info("performLike: Link %s was already liked, going to store it in db.", link)
+        if self.isLikeEnabled:
+            liked, msg = like_image(self.browser,
+                                    user_name,
+                                    self.instapy.blacklist,
+                                    self.logger,
+                                    self.instapy.logfolder,
+                                    self.instapy)
+            if liked:
+                self.logger.info("performLike: Link %s was liked. User %s" % (link, user_name))
 
-        if liked is True or msg == "already_liked":
-            insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                            None, None, user_name,
-                            None, None, None,
-                            link, 'like_' + operation, engagementValue, self.instapy.id_log)
-            self.logger.info("performLike: Going to sleep 3 seconds after jumping to other page...")
-            time.sleep(3)
-            return True
+            if msg == "already_liked":
+                self.logger.info("performLike: Link %s was already liked, going to store it in db.", link)
+
+            if liked is True or msg == "already_liked":
+                insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                                None, None, user_name,
+                                None, None, None,
+                                link, 'like_' + operation, engagementValue, self.instapy.id_log)
+                self.logger.info("performLike: Going to sleep 3 seconds after jumping to other page...")
+                time.sleep(3)
+                return True
+
+            return False
 
         return False
 
@@ -224,6 +225,8 @@ class ActionsService:
                         followAmountProbabilityPercentage, randomProbability))
 
             return False
+
+        return False
 
     def performUnfollow(self, unFollowAmountProbabilityPercentage, operation):
         # todo check if there is user to unfollow

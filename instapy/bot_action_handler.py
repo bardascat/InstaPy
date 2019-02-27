@@ -8,7 +8,7 @@ import bot_util
 from datetime import datetime,timedelta
 
 
-#todo: test this method
+
 def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
 
     self.logger.info("getFollowUnfollowRatio: Calculating follow unfollow ratio for campaign: %s, default ratio: %s" % (id_campaign, defaultFollowUnfollowRatio))
@@ -183,6 +183,8 @@ def getWarmUpResult(self, initialAmount, percentageAmount):
 # this function is used to retrieve the configuration if it is stoped and restarted
 def resumeOperation(self, id_campaign):
     self.logger.info("resumeOperation: trying to resume")
+    return None
+
     resumeResult = api_db.fetchOne(
         "SELECT * FROM campaign_log WHERE DATE(`timestamp`) = CURDATE() and id_campaign=%s AND event=%s", id_campaign,
         "CALCULATE_AMOUNT_OF_ACTIONS")
@@ -366,7 +368,7 @@ def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
 
     #if both of them is enabled
     if userWantsToUnfollow is not False and enableFollows is True:
-        result["unfollow_amount"] = int(defaultFollowAmount - (defaultFollowAmount * follow_unfollow_ratio))
+        result["unfollow_amount"] = int(defaultFollowAmount - (defaultFollowAmount * float(follow_unfollow_ratio)))
         result["follow_amount"] = int(defaultFollowAmount - result["unfollow_amount"])
 
     result["total_follow"] = defaultFollowAmount

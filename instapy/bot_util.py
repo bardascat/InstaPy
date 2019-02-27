@@ -57,6 +57,17 @@ def getIfUserWantsToUnfollow(id_campaign):
     return result
 
 
+def isLikeEnabled(id_campaign, logger):
+    operations = getBotOperations(id_campaign, logger)
+
+    enabled = False
+    for o in operations:
+        if o['enabled'] == 1 and o['like_post'] == 1 and len(o['list']) > 0:
+            enabled = True
+            return enabled
+
+    return enabled
+
 def isFollowEnabled(id_campaign, logger):
     operations = getBotOperations(id_campaign, logger)
 
