@@ -1,6 +1,6 @@
 from random import randint
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, InvalidElementStateException
 
 import bot_util
 from .api_db import *
@@ -179,8 +179,8 @@ class Engagements:
 
 
 
-            except NoSuchElementException as err:
-                self.logger.error('engage: Invalid Page: {}'.format(err))
+            except (NoSuchElementException, StaleElementReferenceException, InvalidElementStateException) as err:
+                self.logger.error('engage: Something wnt wrong Page: {}'.format(err))
                 continue
 
             self.logger.info(
