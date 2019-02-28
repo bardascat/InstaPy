@@ -1,6 +1,7 @@
 import MySQLdb
 from pymongo import MongoClient
 import datetime
+import pymongo
 
 client = None
 
@@ -156,7 +157,7 @@ def getUserToUnfollow(id_campaign, olderThan):
 
     result = db.bot_action.find_one(
         {"id_campaign": id_campaign, "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},
-         "timestamp": {"$lte": queryDate}})
+         "timestamp": {"$lte": queryDate}}, sort=[("timestamp", pymongo.ASCENDING)])
     client.close()
 
     return result

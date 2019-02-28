@@ -23,8 +23,8 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
     activeFollowings = result.count()
     client.close()
 
-    followingsTreshhold = 4000
-    completeCycleTreshhold = 500
+    followingsTreshhold = 3000
+    completeCycleTreshhold = 100
     cycleRatio = "0.1"
 
 

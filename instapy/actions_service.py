@@ -229,56 +229,49 @@ class ActionsService:
         return False
 
     def performUnfollow(self, unFollowAmountProbabilityPercentage, operation):
-        # todo check if there is user to unfollow
-        # if self.totalUnfollowPerformed >= self.totalUnfollowExpected:
-        #     self.logger.error("performLike: ERROR - The unfollow amount is reached. Expected %s, performed %s " % (
-        #         self.totalUnfollowExpected, self.totalUnfollowPerformed))
-        #     return False
 
-        # check if user wants to unfollow
-        userWantsToUnfollow = getIfUserWantsToUnfollow(self.campaign['id_campaign'])
-        if userWantsToUnfollow == False:
-            self.logger.info("performUnfollow: User does not want to unfollow, going to continue !")
-            return False
+        if self.isUnfollowEnabled is not False:
+            randomProbability = randint(0, 100)
 
-        randomProbability = randint(0, 100)
+            self.logger.info("performUnfollow: Probability to unfollow: %s. Random Probability: %s" % (
+                unFollowAmountProbabilityPercentage, randomProbability))
 
-        self.logger.info("performUnfollow: Probability to unfollow: %s. Random Probability: %s" % (
-            unFollowAmountProbabilityPercentage, randomProbability))
+            if randomProbability <= unFollowAmountProbabilityPercentage:
+                self.logger.info("performUnfollow: User wants to unfollow after %s hours" % self.isUnfollowEnabled['value'])
 
-        if randomProbability <= unFollowAmountProbabilityPercentage:
-            self.logger.info("performUnfollow: User wants to unfollow after %s hours" % userWantsToUnfollow['value'])
+                # get users to unfollow older than x days. People who did not follow back are the first to be unfollowed.
+                recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], self.isUnfollowEnabled['value'])
 
-            # get users to unfollow older than x days. People who did not follow back are the first to be unfollowed.
-            recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], userWantsToUnfollow['value'])
+                if recordToUnfollow:
+                    status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+                    if status is True:
+                        lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                                                        None, None, recordToUnfollow['username'],
+                                                        None, None, None, None, 'unfollow_' + operation,
+                                                        None,
+                                                        self.instapy.id_log)
 
-            if recordToUnfollow:
-                status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
-                if status is True:
-                    lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                                                    None, None, recordToUnfollow['username'],
-                                                    None, None, None, None, 'unfollow_' + operation,
-                                                    None,
-                                                    self.instapy.id_log)
+                        self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
 
-                    self.logger.info("performUnfollow: Succesfully unfollowed user: %s", recordToUnfollow['username'])
+                        revertBotFollow(recordToUnfollow['_id'], lastBotAction)
+                        self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
+                            lastBotAction, recordToUnfollow['_id']))
+                        self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
+                        time.sleep(3)
+                        return True
+                    else:
+                        self.logger.info("performFollow: Could not unfollow user...")
+                        return False
 
-                    revertBotFollow(recordToUnfollow['_id'], lastBotAction)
-                    self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (
-                        lastBotAction, recordToUnfollow['_id']))
-                    self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
-                    time.sleep(3)
-                    return True
                 else:
-                    self.logger.info("performFollow: Could not unfollow user...")
-                    return False
+                    self.logger.info("performUnfollow: No user found in database to unfollow, going to close the cycle if any.")
+                    insert("update bot_unfollow_cycle set completed=1 where id_campaign=%s", self.campaign['id_campaign'])
+                    self.isUnfollowEnabled = False
 
             else:
-                self.logger.info("performUnfollow: No user found in database to unfollow...")
+                self.logger.info(
+                    "performUnfollow: Going go skip UNFOLLOW. Actual Probability: %s, random probability: %s" % (
+                        unFollowAmountProbabilityPercentage, randomProbability))
 
-        else:
-            self.logger.info(
-                "performUnfollow: Going go skip UNFOLLOW. Actual Probability: %s, random probability: %s" % (
-                    unFollowAmountProbabilityPercentage, randomProbability))
-
+            return False
         return False
