@@ -180,7 +180,7 @@ class Engagements:
 
 
             except (NoSuchElementException, StaleElementReferenceException, InvalidElementStateException) as err:
-                self.logger.error('engage: Something wnt wrong Page: {}'.format(err))
+                self.logger.error('engage: Something went wrong: {}'.format(err))
                 continue
 
             self.logger.info(
