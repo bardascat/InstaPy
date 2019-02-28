@@ -25,7 +25,7 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
 
     followingsTreshhold = 3000
     completeCycleTreshhold = 100
-    cycleRatio = "0.1"
+    cycleRatio = "0.05"
 
 
     cycle = api_db.fetchOne("select * from bot_unfollow_cycle where completed=0 and id_campaign=%s", id_campaign)
