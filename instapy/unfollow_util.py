@@ -532,7 +532,7 @@ def unfollow(browser,
 def follow_user(browser, track, login, user_name, button, blacklist, logger, logfolder, instapy):
 
     sleepSeconds = action_delay_util.get_follow_delay(instapy=instapy)
-    logger.info("follow_user: Going to sleep for %s seconds before following", sleepSeconds)
+    logger.info("follow_user: Sleep for %s seconds before following", sleepSeconds)
     sleep(sleepSeconds)
 
 
@@ -589,9 +589,8 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     if status == 'Following':
         return False, "Error: The user could not be followed I don'' know why... debug it. "
 
-    logger.info("follow_user: Followed '{}'!".format(user_name.encode("utf-8")))
+    #logger.info("follow_user: Followed '{}'!".format(user_name.encode("utf-8")))
 
-    action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
     return True, "success"
 
 
@@ -1352,7 +1351,7 @@ def verify_action(browser, action, track, username, person, person_id, logger,
 
 
 def custom_unfollow(browser, username, logger, instapy):
-    logger.info("custom_unfollow: Going to unfollow user: %s", username)
+    #logger.info("custom_unfollow: Going to unfollow user: %s", username)
     sleepSeconds = action_delay_util.get_unfollow_delay(instapy=instapy)
     logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)
     sleep(sleepSeconds)
@@ -1373,7 +1372,7 @@ def custom_unfollow(browser, username, logger, instapy):
 
 
     if following_status in ["Following", "Requested"]:
-        logger.info("custom_unfollow: You are  following user: %s. Going to unfollow it.", username)
+        #logger.info("custom_unfollow: You are  following user: %s. Going to unfollow it.", username)
         follow_button.click()
         sleep(4)  # TODO: use explicit wait here
         confirm_unfollow(browser)
@@ -1386,16 +1385,13 @@ def custom_unfollow(browser, username, logger, instapy):
                                                                logger,
                                                                instapy.logfolder)
         if following_status in ["Follow", "Follow Back"]:
-            logger.info("custom_unfollow: successfully unfollowed user: %s ", username)
+            #logger.info("custom_unfollow: successfully unfollowed user: %s ", username)
             return True
         else:
             logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
             return False
     else:
-        logger.info("custom_unfollow: you are not following user: %s, following status is: %s, still going to save it as successfully unfollowed." % (username, following_status))
+        logger.info("custom_unfollow: You are not following user: %s, following status is: %s, still going to save it as successfully unfollowed." % (username, following_status))
         return True
-
-
-
 
     return False

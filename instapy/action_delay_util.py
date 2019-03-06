@@ -38,5 +38,5 @@ def get_current_timestamp():
 
 
 def set_last_action_timestamp(instapy, last_action_timestamp):
-    instapy.logger.info("set_last_action_timestamp: setting last action timestamp to: %s", last_action_timestamp)
+    #instapy.logger.info("set_last_action_timestamp: setting last action timestamp to: %s", last_action_timestamp)
     instapy.last_action_timestamp = last_action_timestamp

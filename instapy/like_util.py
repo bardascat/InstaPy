@@ -562,7 +562,7 @@ def check_link(browser, post_link, dont_like, mandatory_words, ignore_if_contain
 def like_image(browser, username, blacklist, logger, logfolder, instapy):
 
     sleepSeconds = action_delay_util.get_like_delay(instapy=instapy)
-    logger.info("like_image: Going to like image after sleeping %s seconds", sleepSeconds)
+    logger.info("like_image: Sleeping %s seconds", sleepSeconds)
     time.sleep(sleepSeconds)
 
 
@@ -584,14 +584,12 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
 
         if len(liked_elem) == 1:
-            logger.info('like_image: Image Liked')
             #update_activity('likes')
 
             #if blacklist['enabled'] is True:
                 #action = 'liked'
                 #add_user_to_blacklist(username, blacklist['campaign'], action, logger, logfolder)
             #sleep(2)
-            action_delay_util.set_last_action_timestamp(instapy, action_delay_util.get_current_timestamp())
             return True, "success"
 
         else:
@@ -602,7 +600,7 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
     else:
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
         if len(liked_elem) == 1:
-            logger.info('like_image: --> Image already liked!')
+            #logger.info('like_image: --> Image already liked!')
             return False, "already_liked"
 
     logger.info('like_image: --> Invalid Like Element!, element is : %s', like_elem)
