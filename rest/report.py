@@ -9,12 +9,17 @@ def getMongoConnection():
 
 
 def summary(body):
+
+
+
     start = body['start']
     end = body['end']
     campaigns = body['campaigns']
     groupBy = body['groupBy']
 
     logger = getLogger()
+    logger.info("Received body: %s", body)
+
     format_str = '%Y-%m-%d'  # The format
 
     gte = datetime.datetime.strptime(start, format_str)
@@ -26,30 +31,32 @@ def summary(body):
     client = getMongoConnection()
     db = client.angie_app
 
-    output=[]
+    output = []
 
     for campaign in campaigns:
 
         id_campaign = campaign['id_campaign']
-        logger.info("report.search: Bot Action report by operation: campaign: %s, start: %s, end: %s" % (id_campaign, gte, lte))
+        logger.info(
+            "report.search: Bot Action report by operation: campaign: %s, start: %s, end: %s" % (id_campaign, gte, lte))
 
         if groupBy == "operation":
             pipeline = [
                 {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
-                {"$group": {"_id": {"bot_operation": "$bot_operation"},"total_action": {"$sum": 1}}},
+                {"$group": {"_id": {"bot_operation": "$bot_operation"}, "total_action": {"$sum": 1}}},
                 {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
             ]
         elif groupBy == "operationAndValue":
             pipeline = [
                 {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
-                {"$group": {"_id": {"bot_operation": "$bot_operation", "bot_operation_value": "$bot_operation_value"},"total_action": {"$sum": 1}}},
+                {"$group": {"_id": {"bot_operation": "$bot_operation", "bot_operation_value": "$bot_operation_value"},
+                            "total_action": {"$sum": 1}}},
                 {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
             ]
 
         result = db.bot_action.aggregate(pipeline=pipeline)
         result = list(result)
         logger.info("report: Retrieved %s rows, for id_campaign: %s" % (len(result), id_campaign))
-        output.append({"id_campaign":id_campaign, "result":result})
+        output.append({"id_campaign": id_campaign, "result": result})
 
     client.close()
 
