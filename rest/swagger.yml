@@ -332,32 +332,17 @@ paths:
         201:
           description: Successfully created the followers crawler
   /report/grouped:
-    get:
+    post:
       operationId: report.summary
       tags:
-      - Bot actions group by operations
+      - crawler
       summary: Bot actions group by operations
       parameters:
-      - name: id_campaign
-        in: query
-        description: id_campaign
-        type: string
-        required: True
-      - name: start
-        in: query
-        description: start
-        type: string
-        required: True
-      - name: end
-        in: query
-        description: end
-        type: string
-        required: True
-      - name: groupBy
-        in: query
-        description: end
-        type: string
-        required: True
+      - in: body
+        name: body
+        required: true
+        schema:
+            $ref: '#/definitions/report_summary_request'
       responses:
         200:
           description: Locations
@@ -397,6 +382,22 @@ definitions:
     type: "object"
     properties:
       date:
+        type: "string"
+      campaigns:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id_campaign:
+              type: "integer"
+  report_summary_request:
+    type: "object"
+    properties:
+      start:
+        type: "string"
+      end:
+        type: "string"
+      groupBy:
         type: "string"
       campaigns:
         type: "array"

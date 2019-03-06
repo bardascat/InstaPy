@@ -8,7 +8,12 @@ def getMongoConnection():
     return client
 
 
-def summary(id_campaign, start, end, groupBy):
+def summary(body):
+    start = body['start']
+    end = body['end']
+    campaigns = body['campaigns']
+    groupBy = body['groupBy']
+
     logger = getLogger()
     format_str = '%Y-%m-%d'  # The format
 
@@ -18,32 +23,36 @@ def summary(id_campaign, start, end, groupBy):
     gte = gte.replace(minute=0, hour=0, second=0, microsecond=0)
     lte = lte.replace(minute=59, hour=23, second=59, microsecond=999)
 
-    logger.info(
-        "report.search: Bot Action report by operation: campaign: %s, start: %s, end: %s" % (id_campaign, gte, lte))
-
     client = getMongoConnection()
     db = client.angie_app
 
-    if groupBy == "operation":
-        pipeline = [
-            {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
-            {"$group": {"_id": {"bot_operation": "$bot_operation"},"total_action": {"$sum": 1}}},
-            {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
-        ]
-    elif groupBy == "operationAndValue":
-        pipeline = [
-            {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
-            {"$group": {"_id": {"bot_operation": "$bot_operation", "bot_operation_value": "$bot_operation_value"},"total_action": {"$sum": 1}}},
-            {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
-        ]
+    output=[]
 
-    result = db.bot_action.aggregate(pipeline=pipeline)
-    result = list(result)
+    for id_campaign in campaigns:
 
-    logger.info("report: Retrieved %s rows", len(result))
+        logger.info("report.search: Bot Action report by operation: campaign: %s, start: %s, end: %s" % (id_campaign, gte, lte))
+
+        if groupBy == "operation":
+            pipeline = [
+                {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
+                {"$group": {"_id": {"bot_operation": "$bot_operation"},"total_action": {"$sum": 1}}},
+                {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
+            ]
+        elif groupBy == "operationAndValue":
+            pipeline = [
+                {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
+                {"$group": {"_id": {"bot_operation": "$bot_operation", "bot_operation_value": "$bot_operation_value"},"total_action": {"$sum": 1}}},
+                {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
+            ]
+
+        result = db.bot_action.aggregate(pipeline=pipeline)
+        result = list(result)
+        logger.info("report: Retrieved %s rows, for id_campaign: %s" % (len(result), id_campaign))
+        output.append({"id_campaign":id_campaign, "result":result})
+
     client.close()
 
-    return result
+    return output
 
 
 def getUserFollowersBreakdown(instagram_username, since, until):
