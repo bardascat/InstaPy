@@ -64,7 +64,7 @@ class ActionsService:
                 self.disablePost(post)
                 continue
             finally:
-                self.logger.info("********************* DONE PROCESSING: [%s][%s] link: %s ***********************" % ( it, len(posts), post['link']))
+                self.logger.info("Done processing link.")
             it += 1
 
             # pause once at 100 posts
