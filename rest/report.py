@@ -28,8 +28,9 @@ def summary(body):
 
     output=[]
 
-    for id_campaign in campaigns:
+    for campaign in campaigns:
 
+        id_campaign = campaign['id_campaign']
         logger.info("report.search: Bot Action report by operation: campaign: %s, start: %s, end: %s" % (id_campaign, gte, lte))
 
         if groupBy == "operation":
