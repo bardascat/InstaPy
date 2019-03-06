@@ -146,7 +146,7 @@ class ActionsService:
                                     self.instapy.logfolder,
                                     self.instapy)
             if liked:
-                self.logger.info("performLike: Link was liked: " % (link))
+                self.logger.info("performLike: Link was liked.")
                 action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
 
             if msg == "already_liked":
