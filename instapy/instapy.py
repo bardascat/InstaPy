@@ -474,10 +474,12 @@ class InstaPy:
         self.logger.info("canBotStart: All Good, no other bot instance is running for this campaign")
 
         #check for pause
-        pause = fetchOne("SELECT * FROM `bot_pause` WHERE pause_from>=CURDATE() and CURDATE()<pause_until")
+        pause = fetchOne("SELECT * FROM `bot_pause` WHERE pause_from>=CURDATE() and CURDATE()<pause_until and id_campaign=%s", self.campaign['id_campaign'])
         if pause is not None:
             self.logger.info("canBotStart: Found a pause: %s, going to stop the bot.", pause)
             return False
+        else:
+            self.logger.info("canBotStart: No pause detected.")
 
         return True
 
