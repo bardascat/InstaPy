@@ -50,7 +50,7 @@ class VerifyActionService:
                    self.instapy.campaign['id_campaign'], exception, exceptionDetail)
 
         if isLikeBlocked is True or isFollowBlocked is True or isUnfollowBlocked is True:
-            #urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(self.instapy.campaign['id_campaign'])).read()
+            urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(self.instapy.campaign['id_campaign'])).read()
             self.addPause()
             raise Exception("verifyAction: SPAM BLOCK: likeBlocked: %s, followBlocked: %s, unfollowBlocked: %s, going to stop the bot" % (isLikeBlocked, isFollowBlocked, isUnfollowBlocked))
 
