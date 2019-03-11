@@ -175,9 +175,7 @@ class VerifyActionService:
             break
 
         if post is None:
-            self.logger.error(
-                "getPostToVerify: Could not verify if instagram blocked like/follow actions because we did not find any available posts in queue.")
-            return False
+            return None
 
         self.instapy.actionService.disablePost(post)
         return post
