@@ -472,6 +472,13 @@ class InstaPy:
             exit("canBotStart: ERROR: another bot instance is running for this campaign")
 
         self.logger.info("canBotStart: All Good, no other bot instance is running for this campaign")
+
+        #check for pause
+        pause = fetchOne("SELECT * FROM `bot_pause` WHERE pause_from>=CURDATE() and CURDATE()<pause_until")
+        if pause is not None:
+            self.logger.info("canBotStart: Found a pause: %s, going to stop the bot.", pause)
+            return False
+
         return True
 
     # this method should be used to connect with instagram for the first time and bypass all security steps in order to create the cookie

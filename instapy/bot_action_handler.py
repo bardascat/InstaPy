@@ -104,7 +104,7 @@ def getInitialActionAmount(self, id_campaign):
 
     # check maturity of account
     self.logger.info("getInitialActionAmount: Checking if the account is 100% functional...")
-    accountIsFullyFunctionalAfter = 10
+    accountIsFullyFunctionalAfter = 5
     campaign = api_db.fetchOne(
         "select campaign.timestamp, percentage_amount, month_start,month_end from campaign join instagram_account_type using (id_account_type) where id_campaign=%s",
         id_campaign)

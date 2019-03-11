@@ -9,6 +9,9 @@ from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 from random import randint
 import action_delay_util
+from unfollow_util import get_following_status
+import urllib2
+from verify_actions_service import VerifyActionService
 
 class ActionsService:
     def __init__(self,
@@ -19,11 +22,14 @@ class ActionsService:
         self.instapy = instapy
         self.browser = instapy.browser
         self.logger = instapy.logger
+        self.verifyActionService = VerifyActionService(campaign=self.campaign, instapy=self.instapy)
         self.isFollowEnabled = isFollowEnabled(campaign['id_campaign'], self.logger)
         self.isLikeEnabled = isLikeEnabled(campaign['id_campaign'], self.logger)
         self.isUnfollowEnabled = getIfUserWantsToUnfollow(campaign['id_campaign'])
 
     def perform_engagement(self, likeAmount, followAmount, unfollowAmount):
+
+        self.verifyActionService.verifyActions()
 
         result = {"like": 0, "follow": 0, "unfollow": 0}
 
@@ -86,7 +92,7 @@ class ActionsService:
     def getPosts(self, noPosts):
 
 
-        increasedNumberOfPosts = noPosts * 12 // 100 + noPosts
+        increasedNumberOfPosts = noPosts * 10 // 100 + noPosts
 
         client = getMongoConnection()
         db = client.angie_app
