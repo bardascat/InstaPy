@@ -33,23 +33,24 @@ class VerifyActionService:
 
         if isLikeBlocked:
             exceptionDetail = "The like was reverted after refresh, going to assume that like is blocked by instagram"
-            exception = "LIKE_SPAM_BLOCK"
+            likeException = "LIKE_SPAM_BLOCK"
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-                   self.instapy.campaign['id_campaign'], exception, exceptionDetail)
+                   self.instapy.campaign['id_campaign'], likeException, exceptionDetail)
 
         if isFollowBlocked is True:
-            exception = "FOLLOW_SPAM_BLOCK"
+            followException = "FOLLOW_SPAM_BLOCK"
             exceptionDetail = "Could not follow an user, going to assume that follow is blocked by instagram"
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-                   self.instapy.campaign['id_campaign'], exception, exceptionDetail)
+                   self.instapy.campaign['id_campaign'], followException, exceptionDetail)
 
         if isUnfollowBlocked is True:
-            exception = "UNFOLLOW_SPAM_BLOCK"
+            unfollowException = "UNFOLLOW_SPAM_BLOCK"
             exceptionDetail = "Could not unfollow an user, going to assume that unfollow is blocked by instagram"
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-                   self.instapy.campaign['id_campaign'], exception, exceptionDetail)
+                   self.instapy.campaign['id_campaign'], unfollowException, exceptionDetail)
 
         if isLikeBlocked is True or isFollowBlocked is True or isUnfollowBlocked is True:
+            exception = likeException + "|" + followException + "|" + unfollowException
             urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(self.instapy.campaign['id_campaign'])).read()
             self.addPause()
             raise Exception("verifyAction: SPAM BLOCK: likeBlocked: %s, followBlocked: %s, unfollowBlocked: %s, going to stop the bot" % (isLikeBlocked, isFollowBlocked, isUnfollowBlocked))
