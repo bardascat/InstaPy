@@ -558,6 +558,10 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
                                                                logfolder)
         if following_status in ["Follow", "Follow Back"]:
             click_visibly(browser, follow_button)  # click to follow
+            #sleep 2 seconds to wait for ajax request
+            logger.info("waiting for 2 seconds, until ajax request completes")
+            time.sleep(2)
+            logger.info("done waiting...")
 
         elif following_status in ["Following", "Requested"]:
             if following_status == "Following":
