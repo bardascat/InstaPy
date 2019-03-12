@@ -582,7 +582,7 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
         click_element(browser, like_elem[0])
         # check now we have unlike instead of like
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
-
+        time.sleep(1)
         if len(liked_elem) == 1:
             #update_activity('likes')
 

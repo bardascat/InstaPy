@@ -559,8 +559,8 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
         if following_status in ["Follow", "Follow Back"]:
             click_visibly(browser, follow_button)  # click to follow
             #sleep 2 seconds to wait for ajax request
-            logger.info("waiting for 2 seconds, until ajax request completes")
-            time.sleep(2)
+            logger.info("waiting for 3 seconds, until ajax request completes")
+            time.sleep(3)
             logger.info("done waiting...")
 
         elif following_status in ["Following", "Requested"]:
@@ -590,8 +590,10 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
 
     status, button = get_following_status(browser, track, login, user_name, None, logger, logfolder)
 
-    if status == 'Following':
-        return False, "Error: The user could not be followed I don'' know why... debug it. "
+    if status in ["Following", "Requested"]:
+        return True, "success"
+    else:
+        logger.error("follow_user: Could not follow, following_status is : %s", status)
 
     #logger.info("follow_user: Followed '{}'!".format(user_name.encode("utf-8")))
 
