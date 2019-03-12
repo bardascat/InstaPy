@@ -163,7 +163,7 @@ class VerifyActionService:
                 self.logger.info("verifyUnfollow: Unfollowing status after refresh: %s, path: %s" % (following_status, path))
 
                 if following_status in ["Follow"]:
-                    self.logger.info("verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (post['instagram_username']))
+                    self.logger.info("verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (recordToUnfollow['username']))
                     lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                     None, None, recordToUnfollow['username'],
                                                     None, None, None, None, 'unfollow_engagement_by_hashtag',
