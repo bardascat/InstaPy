@@ -108,6 +108,7 @@ class VerifyActionService:
                                                                    None,
                                                                    self.logger,
                                                                    self.instapy.logfolder)
+            self.logger.info("verifyAction: Follow status after refresh: %s", following_status)
             if following_status in ["Following", "Requested"]:
                 self.logger.info(
                     "verifyActions: User %s was verified after refresh and it was successfully followed, follow action is not blocked." % (
