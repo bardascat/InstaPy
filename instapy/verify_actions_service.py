@@ -97,6 +97,12 @@ class VerifyActionService:
                                                                 operation='engagement_by_hashtag',
                                                                 user_name=post['instagram_username'],
                                                                 tag=post['tag'])
+
+        path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+        self.browser.get_screenshot_as_file(path)
+
+        self.logger.info("verifyUnfollow: Following status: %s" % (path))
+
         if followStatus is True:
             # reload the page
             self.browser.get("https://www.instagram.com/{}/".format(post['instagram_username']))
