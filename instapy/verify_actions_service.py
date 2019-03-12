@@ -31,28 +31,35 @@ class VerifyActionService:
         isFollowBlocked = self.verifyFollow(post)
         isUnfollowBlocked = self.verifyUnfollow(post)
 
+        likeException = ""
+        followException = ""
+        unfollowException = ""
         if isLikeBlocked:
             exceptionDetail = "The like was reverted after refresh, going to assume that like is blocked by instagram"
-            exception = "LIKE_SPAM_BLOCK"
+            likeException = "LIKE_SPAM_BLOCK"
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-                   self.instapy.campaign['id_campaign'], exception, exceptionDetail)
+                   self.instapy.campaign['id_campaign'], likeException, exceptionDetail)
 
         if isFollowBlocked is True:
-            exception = "FOLLOW_SPAM_BLOCK"
+            followException = "FOLLOW_SPAM_BLOCK"
             exceptionDetail = "Could not follow an user, going to assume that follow is blocked by instagram"
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-                   self.instapy.campaign['id_campaign'], exception, exceptionDetail)
+                   self.instapy.campaign['id_campaign'], followException, exceptionDetail)
 
         if isUnfollowBlocked is True:
-            exception = "UNFOLLOW_SPAM_BLOCK"
+            unfollowException = "UNFOLLOW_SPAM_BLOCK"
             exceptionDetail = "Could not unfollow an user, going to assume that unfollow is blocked by instagram"
             insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
-                   self.instapy.campaign['id_campaign'], exception, exceptionDetail)
+                   self.instapy.campaign['id_campaign'], unfollowException, exceptionDetail)
 
         if isLikeBlocked is True or isFollowBlocked is True or isUnfollowBlocked is True:
-            urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(self.instapy.campaign['id_campaign'])).read()
+            exception = likeException + "|" + followException + "|" + unfollowException
+            urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(
+                self.instapy.campaign['id_campaign'])).read()
             self.addPause()
-            raise Exception("verifyAction: SPAM BLOCK: likeBlocked: %s, followBlocked: %s, unfollowBlocked: %s, going to stop the bot" % (isLikeBlocked, isFollowBlocked, isUnfollowBlocked))
+            raise Exception(
+                "verifyAction: SPAM BLOCK: likeBlocked: %s, followBlocked: %s, unfollowBlocked: %s, going to stop the bot" % (
+                isLikeBlocked, isFollowBlocked, isUnfollowBlocked))
 
     def verifyLiking(self, post):
 
@@ -61,9 +68,9 @@ class VerifyActionService:
         # ------------------- verify liking -----------------
         self.browser.get(post['link'])
         likeStatus = self.instapy.actionService.performLike(user_name=post['instagram_username'],
-                                      operation='engagement_by_hashtag',
-                                      link=post['link'],
-                                      engagementValue=post['tag'])
+                                                            operation='engagement_by_hashtag',
+                                                            link=post['link'],
+                                                            engagementValue=post['tag'])
         if likeStatus is True:
             # reload the page
             self.browser.get(post['link'])
@@ -86,10 +93,10 @@ class VerifyActionService:
         isFollowBlocked = False
 
         followStatus = self.instapy.actionService.performFollow(followAmountProbabilityPercentage=100,
-                                          link=post['link'],
-                                          operation='engagement_by_hashtag',
-                                          user_name=post['instagram_username'],
-                                          tag=post['tag'])
+                                                                link=post['link'],
+                                                                operation='engagement_by_hashtag',
+                                                                user_name=post['instagram_username'],
+                                                                tag=post['tag'])
         if followStatus is True:
             # reload the page
             self.browser.get("https://www.instagram.com/{}/".format(post['instagram_username']))
@@ -104,11 +111,11 @@ class VerifyActionService:
             if following_status in ["Following", "Requested"]:
                 self.logger.info(
                     "verifyActions: User %s was verified after refresh and it was successfully followed, follow action is not blocked." % (
-                    post['instagram_username']))
+                        post['instagram_username']))
             else:
                 self.logger.info(
                     "verifyActions: User %s, was verified after refresh and it was not followed, follow is blocked." % (
-                    post['instagram_username']))
+                        post['instagram_username']))
                 isFollowBlocked = True
         else:
             self.logger.info("verifyActions: Could not FOLLOW user: %s, so we are going to skip verifying follow.",
@@ -139,7 +146,7 @@ class VerifyActionService:
                 if following_status in ["Follow"]:
                     self.logger.info(
                         "verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (
-                        post['instagram_username']))
+                            post['instagram_username']))
                     lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                     None, None, recordToUnfollow['username'],
                                                     None, None, None, None, 'unfollow_engagement_by_hashtag',
@@ -148,10 +155,13 @@ class VerifyActionService:
                     revertBotFollow(recordToUnfollow['_id'], lastBotAction)
                 else:
                     self.logger.info(
-                        "verifyActions: User %s was verified after refresh and it was not followed, follow is blocked." % (post['instagram_username']))
+                        "verifyActions: User %s was verified after refresh and it was not followed, follow is blocked." % (
+                        post['instagram_username']))
                     isUnfollowBlocked = True
             else:
-                self.logger.info("performFollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",recordToUnfollow['username'])
+                self.logger.info(
+                    "performFollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",
+                    recordToUnfollow['username'])
                 return False
         else:
             self.logger.info(
@@ -162,7 +172,9 @@ class VerifyActionService:
     def addPause(self):
         pauseDays = 2
         self.logger.info("addPause: Going to pause the bot until: current_date + %s days", pauseDays)
-        insert("insert into bot_pause (id_campaign, pause_from, pause_until) VALUES (%s, CURDATE(), CURDATE() + INTERVAL %s DAY)", self.campaign['id_campaign'], pauseDays)
+        insert(
+            "insert into bot_pause (id_campaign, pause_from, pause_until) VALUES (%s, CURDATE(), CURDATE() + INTERVAL %s DAY)",
+            self.campaign['id_campaign'], pauseDays)
 
     def getPostToVerify(self):
         posts = self.instapy.actionService.getPosts(10)
@@ -175,10 +187,7 @@ class VerifyActionService:
             break
 
         if post is None:
-            self.logger.error(
-                "getPostToVerify: Could not verify if instagram blocked like/follow actions because we did not find any available posts in queue.")
-            return False
+            return None
 
         self.instapy.actionService.disablePost(post)
         return post
-
