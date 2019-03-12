@@ -3,7 +3,7 @@ import urllib2
 from unfollow_util import get_following_status
 from .api_db import *
 from .unfollow_util import custom_unfollow
-
+import time
 
 class VerifyActionService:
     def __init__(self,
@@ -101,6 +101,7 @@ class VerifyActionService:
             # reload the page
             self.browser.get("https://www.instagram.com/{}/".format(post['instagram_username']))
 
+
             following_status, follow_button = get_following_status(self.browser,
                                                                    'post',
                                                                    self.instapy.campaign['username'],
@@ -108,7 +109,12 @@ class VerifyActionService:
                                                                    None,
                                                                    self.logger,
                                                                    self.instapy.logfolder)
-            self.logger.info("verifyAction: Follow status after refresh: %s", following_status)
+
+            path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+            self.browser.get_screenshot_as_file(path)
+
+            self.logger.info("verifyAction: Follow status after refresh: %s, screenshot: %s" % (following_status, path))
+
             if following_status in ["Following", "Requested"]:
                 self.logger.info(
                     "verifyActions: User %s was verified after refresh and it was successfully followed, follow action is not blocked." % (
@@ -144,10 +150,14 @@ class VerifyActionService:
                                                                        None,
                                                                        self.logger,
                                                                        self.instapy.logfolder)
+
+                path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+                self.browser.get_screenshot_as_file(path)
+
+                self.logger.info("verifyUnfollow: Following status: %s, path: %s" % (following_status, path))
+
                 if following_status in ["Follow"]:
-                    self.logger.info(
-                        "verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (
-                            post['instagram_username']))
+                    self.logger.info("verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (post['instagram_username']))
                     lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                     None, None, recordToUnfollow['username'],
                                                     None, None, None, None, 'unfollow_engagement_by_hashtag',
@@ -155,9 +165,7 @@ class VerifyActionService:
                                                     self.instapy.id_log)
                     revertBotFollow(recordToUnfollow['_id'], lastBotAction)
                 else:
-                    self.logger.info(
-                        "verifyActions: User %s was verified after refresh and it was not followed, follow is blocked." % (
-                        post['instagram_username']))
+                    self.logger.info("verifyActions: User %s was verified after refresh and it was not unfollowed, unfollow is blocked." % (post['instagram_username']))
                     isUnfollowBlocked = True
             else:
                 self.logger.info(
