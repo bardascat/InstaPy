@@ -1095,33 +1095,33 @@ def unfollow_user(browser, track, username, person, person_id, button, relations
         # find out following status
         following, follow_button = get_following_status(browser, track, person, logger)
 
-        if following is None:
-            # check if the page is available
-            valid_page = is_page_available(browser, logger)
-            if valid_page:
-                # check out if the loop has to be broken immidiately
-                sirens_wailing, emergency_state = emergency_exit(browser, username, logger)
-                if sirens_wailing == True:
-                    return False, emergency_state
-
-            if not valid_page or sirens_wailing == False:
-                logger.warning("Maybe '{}' has changed the username!\t~verifying through the user ID"
-                                    .format(person.encode('utf-8')))
-                person_new = verify_username_by_id(browser, username, person, person_id, logger, logfolder)
-                if person_new:
-                    # re-check the following status
-                    following, follow_button = get_following_status(browser, track, person_new, logger)
-                    if following is None:
-                        logger.warning("--> Couldn't access the profile page of '{}'!"
-                                       "\t~user has either closed the profile or blocked you"
-                                            .format(person_new.encode('utf-8')))
-                        post_unfollow_cleanup("uncertain", username, person, relationship_data, logger, logfolder)
-                        return False, "user unavailable"
-
-                else:
-                    logger.warning("--> Couldn't unfollow '{}'!".format(person))
-                    post_unfollow_cleanup("uncertain", username, person, relationship_data, logger, logfolder)
-                    return False, "user inaccessible"
+        # if following is None:
+        #     # check if the page is available
+        #     valid_page = is_page_available(browser, logger)
+        #     if valid_page:
+        #         # check out if the loop has to be broken immidiately
+        #         sirens_wailing, emergency_state = emergency_exit(browser, username, logger)
+        #         if sirens_wailing == True:
+        #             return False, emergency_state
+        #
+        #     if not valid_page or sirens_wailing == False:
+        #         logger.warning("Maybe '{}' has changed the username!\t~verifying through the user ID"
+        #                             .format(person.encode('utf-8')))
+        #         person_new = verify_username_by_id(browser, username, person, person_id, logger, logfolder)
+        #         if person_new:
+        #             # re-check the following status
+        #             following, follow_button = get_following_status(browser, track, person_new, logger)
+        #             if following is None:
+        #                 logger.warning("--> Couldn't access the profile page of '{}'!"
+        #                                "\t~user has either closed the profile or blocked you"
+        #                                     .format(person_new.encode('utf-8')))
+        #                 post_unfollow_cleanup("uncertain", username, person, relationship_data, logger, logfolder)
+        #                 return False, "user unavailable"
+        #
+        #         else:
+        #             logger.warning("--> Couldn't unfollow '{}'!".format(person))
+        #             post_unfollow_cleanup("uncertain", username, person, relationship_data, logger, logfolder)
+        #             return False, "user inaccessible"
 
         if following in [True, "Requested"]:
             click_element(browser, follow_button)
@@ -1133,7 +1133,6 @@ def unfollow_user(browser, track, username, person, person_id, button, relations
 
             if not button_change:
                 browser.execute_script("location.reload()")
-                update_activity()
                 sleep(2)
 
                 # double check the following state
@@ -1152,6 +1151,7 @@ def unfollow_user(browser, track, username, person, person_id, button, relations
                         logger.warning("--> Unfollow error!\t~username '{}' might be blocked from unfollowing\n"
                                            .format(username))
                         return False, "temporary block"
+                    return True,"success"
 
         elif following == False:
             logger.info("--> Couldn't unfollow '{}'!\t~maybe was unfollowed before"
@@ -1174,10 +1174,8 @@ def unfollow_user(browser, track, username, person, person_id, button, relations
 
     # general tasks after a successful unfollow
     logger.info("--> Unfollowed '{}'!".format(person))
-    update_activity('unfollows')
-    post_unfollow_cleanup("successful", username, person, relationship_data, logger, logfolder)
 
-    return True, "success"
+    return False, "error"
 
 
 
@@ -1391,13 +1389,13 @@ def custom_unfollow(browser, username, logger, instapy):
                                                                logger,
                                                                instapy.logfolder)
         if following_status in ["Follow", "Follow Back"]:
-            #logger.info("custom_unfollow: successfully unfollowed user: %s ", username)
             return True
         else:
             logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
             return False
-    else:
+    elif following_status in ["Follow","Follow Back"]:
         logger.info("custom_unfollow: You are not following user: %s, following status is: %s, still going to save it as successfully unfollowed." % (username, following_status))
         return True
-
-    return False
+    else:
+        logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
+        return False
