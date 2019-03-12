@@ -257,17 +257,17 @@ class ActionsService:
 
                 if recordToUnfollow:
                     status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+
+                    lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                                                    None, None, recordToUnfollow['username'],
+                                                    None, None, None, None, 'unfollow_' + operation,
+                                                    None,
+                                                    self.instapy.id_log)
+
+                    revertBotFollow(recordToUnfollow['_id'], lastBotAction)
+
                     if status is True:
                         action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
-                        lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                                                        None, None, recordToUnfollow['username'],
-                                                        None, None, None, None, 'unfollow_' + operation,
-                                                        None,
-                                                        self.instapy.id_log)
-
-
-                        revertBotFollow(recordToUnfollow['_id'], lastBotAction)
-                        #self.logger.info("peformUnfolow: Update bot_operation_reverted with value %s for id: %s" % (lastBotAction, recordToUnfollow['_id']))
                         self.logger.info("performUnfollow: Succesfully unfollowed user: %s.", recordToUnfollow['username'])
                         return True
                     else:
