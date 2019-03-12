@@ -101,7 +101,7 @@ class VerifyActionService:
         path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
         self.browser.get_screenshot_as_file(path)
 
-        self.logger.info("verifyUnfollow: Following status: %s" % (path))
+        self.logger.info("verifyFollow: Following status: %s" % (path))
 
         if followStatus is True:
             # reload the page
@@ -119,19 +119,19 @@ class VerifyActionService:
             path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
             self.browser.get_screenshot_as_file(path)
 
-            self.logger.info("verifyAction: Follow status after refresh: %s, screenshot: %s" % (following_status, path))
+            self.logger.info("verifyFollow: Follow status after refresh: %s, screenshot: %s" % (following_status, path))
 
             if following_status in ["Following", "Requested"]:
                 self.logger.info(
-                    "verifyActions: User %s was verified after refresh and it was successfully followed, follow action is not blocked." % (
+                    "verifyFollow: User %s was verified after refresh and it was successfully followed, follow action is not blocked." % (
                         post['instagram_username']))
             else:
                 self.logger.info(
-                    "verifyActions: User %s, was verified after refresh and it was not followed, follow is blocked." % (
+                    "verifyFollow: User %s, was verified after refresh and it was not followed, follow is blocked." % (
                         post['instagram_username']))
                 isFollowBlocked = True
         else:
-            self.logger.info("verifyActions: Could not FOLLOW user: %s, so we are going to skip verifying follow.",
+            self.logger.info("verifyFollow: Could not FOLLOW user: %s, so we are going to skip verifying follow.",
                              post['instagram_username'])
             isFollowBlocked = False
 
@@ -160,7 +160,7 @@ class VerifyActionService:
                 path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
                 self.browser.get_screenshot_as_file(path)
 
-                self.logger.info("verifyUnfollow: Following status: %s, path: %s" % (following_status, path))
+                self.logger.info("verifyUnfollow: Unfollowing status after refresh: %s, path: %s" % (following_status, path))
 
                 if following_status in ["Follow"]:
                     self.logger.info("verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (post['instagram_username']))
@@ -175,7 +175,7 @@ class VerifyActionService:
                     isUnfollowBlocked = True
             else:
                 self.logger.info(
-                    "performFollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",
+                    "verifyUnfollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",
                     recordToUnfollow['username'])
                 return False
         else:
