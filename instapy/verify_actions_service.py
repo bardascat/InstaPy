@@ -145,10 +145,16 @@ class VerifyActionService:
 
         if recordToUnfollow:
             status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+            lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                                            None, None, recordToUnfollow['username'],
+                                            None, None, None, None, 'unfollow_engagement_by_hashtag',
+                                            None,
+                                            self.instapy.id_log)
+            revertBotFollow(recordToUnfollow['_id'], lastBotAction)
+
             if status is True:
 
                 self.browser.get("https://www.instagram.com/{}/".format(recordToUnfollow['username']))
-
                 following_status, follow_button = get_following_status(self.browser,
                                                                        'post',
                                                                        self.instapy.campaign['username'],
@@ -157,26 +163,20 @@ class VerifyActionService:
                                                                        self.logger,
                                                                        self.instapy.logfolder)
 
+
                 path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
                 self.browser.get_screenshot_as_file(path)
 
                 self.logger.info("verifyUnfollow: Unfollowing status after refresh: %s, path: %s" % (following_status, path))
 
+
                 if following_status in ["Follow"]:
                     self.logger.info("verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (recordToUnfollow['username']))
-                    lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                                                    None, None, recordToUnfollow['username'],
-                                                    None, None, None, None, 'unfollow_engagement_by_hashtag',
-                                                    None,
-                                                    self.instapy.id_log)
-                    revertBotFollow(recordToUnfollow['_id'], lastBotAction)
                 else:
                     self.logger.info("verifyActions: User %s was verified after refresh and it was not unfollowed, unfollow is blocked." % (post['instagram_username']))
                     isUnfollowBlocked = True
             else:
-                self.logger.info(
-                    "verifyUnfollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",
-                    recordToUnfollow['username'])
+                self.logger.info("verifyUnfollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",recordToUnfollow['username'])
                 return False
         else:
             self.logger.info(
