@@ -3,6 +3,7 @@ import os
 from rest_logger import getLogger
 import json
 from flask import abort
+import re
 
 python_path = "python"
 base_path = "/home/ubuntu/projects/InstaPy"
@@ -53,11 +54,12 @@ def getProcess(query):
     logger = getLogger()
     logger.info("bot.process: Going to search for process with name: %s" % processName)
 
-    tmp = os.popen("ps -Af").read()
-    proccount = tmp.count(processName)
+    query = re.compile(processName + r"\b")
+    contents = os.popen("ps -Af").read()
+    count = sum(1 for match in re.finditer(query, contents))
 
-    logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (proccount, processName))
-    if proccount > 0:
+    logger.info("engagement-bot.getBot: Found %s processes that contain name: %s" % (count, processName))
+    if count > 0:
         return True
     return abort(404)
 
