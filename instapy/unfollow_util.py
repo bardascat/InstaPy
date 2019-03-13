@@ -559,9 +559,9 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
         if following_status in ["Follow", "Follow Back"]:
             click_visibly(browser, follow_button)  # click to follow
             #sleep 2 seconds to wait for ajax request
-            logger.info("waiting for 3 seconds, until ajax request completes")
+            #logger.info("waiting for 3 seconds, until ajax request completes")
             time.sleep(3)
-            logger.info("done waiting...")
+            #logger.info("done waiting...")
 
         elif following_status in ["Following", "Requested"]:
             if following_status == "Following":
@@ -587,17 +587,43 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
             logger.warning("follow_user:Couldn't unfollow '{}'!\t~unexpected failure".format(user_name))
             return False, "unexpected failure"
 
+    status_before_refresh, button = get_following_status(browser, track, login, user_name, None, logger, logfolder)
+    browser.execute_script("location.reload()")
+    status_after_refresh, button = get_following_status(browser, track, login, user_name, None, logger, logfolder)
 
-    status, button = get_following_status(browser, track, login, user_name, None, logger, logfolder)
+    if status_before_refresh in ["Following", "Requested"] and status_after_refresh in ["Following", "Requested"]:
+        return True, "success"
+    elif status_before_refresh in ["Following", "Requested"] and status_after_refresh not in ["Following", "Requested"]:
+        logger.error("follow_user: FOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s" %  (status_before_refresh, status_after_refresh))
+        return False, "follow_spam_block"
+
+    logger.error("follow_user: Could not follow, we don't know why !")
+
+    return False, "error"
+
+def verify_if_unfollow_was_successful(browser, track, login, user_name, smth, logger, logfolder):
+    browser.execute_script("location.reload()")
+    status, follow_button = get_following_status(browser, track, login, user_name, smth, logger, logfolder)
+
+    if status in ["Follow", "Follow Back"]:
+        logger.info("verify_if_unfollow_was_successful: Unfollow was successful.")
+        return True
+
+    logger.info("verify_if_unfollow_was_successful: Unfollow was NOT successful, status is : %s", status)
+    return False
+
+
+
+def verify_if_follow_was_successful(browser,track,login,user_name,smth,logger,logfolder):
+    browser.execute_script("location.reload()")
+    status, follow_button = get_following_status(browser,track,login,user_name,smth,logger,logfolder)
 
     if status in ["Following", "Requested"]:
-        return True, "success"
-    else:
-        logger.error("follow_user: Could not follow, following_status is : %s", status)
+        logger.info("verify_if_follow_was_successful: Follow was successful.")
+        return True
 
-    #logger.info("follow_user: Followed '{}'!".format(user_name.encode("utf-8")))
-
-    return True, "success"
+    logger.info("verify_if_follow_was_successful: Follow was NOT successful, status is : %s", status)
+    return False
 
 
 
@@ -1151,6 +1177,8 @@ def unfollow_user(browser, track, username, person, person_id, button, relations
                         logger.warning("--> Unfollow error!\t~username '{}' might be blocked from unfollowing\n"
                                            .format(username))
                         return False, "temporary block"
+                    #relod and check status again
+                    browser.execute_script("location.reload()")
                     return True,"success"
 
         elif following == False:
@@ -1380,22 +1408,24 @@ def custom_unfollow(browser, username, logger, instapy):
         follow_button.click()
         sleep(4)  # TODO: use explicit wait here
         confirm_unfollow(browser)
+        time.sleep(3)
 
-        following_status, follow_button = get_following_status(browser,
-                                                               'post',
-                                                               instapy.campaign['username'],
-                                                               username,
-                                                               None,
-                                                               logger,
-                                                               instapy.logfolder)
-        if following_status in ["Follow", "Follow Back"]:
-            return True
+        status_before_refresh, follow_button = get_following_status(browser,'post',instapy.campaign['username'],username,None,logger,instapy.logfolder)
+        browser.execute_script("location.reload()")
+        status_after_refresh, follow_button = get_following_status(browser, 'post', instapy.campaign['username'],username, None, logger, instapy.logfolder)
+
+
+        if status_before_refresh in ["Follow", "Follow Back"] and status_after_refresh in ["Follow", "Follow Back"]:
+            return True, "success"
+        elif status_before_refresh in  ["Follow", "Follow Back"] and status_after_refresh not in  ["Follow", "Follow Back"]:
+            logger.error("custom_unfollow: UNFOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s" % (status_before_refresh, status_after_refresh))
+            return False, "unfollow_spam_block"
         else:
             logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
-            return False
+            return False,"error"
     elif following_status in ["Follow","Follow Back"]:
         logger.info("custom_unfollow: You are not following user: %s, following status is: %s, still going to save it as successfully unfollowed." % (username, following_status))
-        return True
+        return True, "success"
     else:
         logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
-        return False
+        return False,"error"

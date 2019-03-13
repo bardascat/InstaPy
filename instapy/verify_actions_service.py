@@ -4,6 +4,8 @@ from unfollow_util import get_following_status
 from .api_db import *
 from .unfollow_util import custom_unfollow
 import time
+from .like_util import like_image
+from .unfollow_util import custom_unfollow, follow_user
 
 class VerifyActionService:
     def __init__(self,
@@ -29,7 +31,7 @@ class VerifyActionService:
 
         isLikeBlocked = self.verifyLiking(post)
         isFollowBlocked = self.verifyFollow(post)
-        isUnfollowBlocked = self.verifyUnfollow(post)
+        isUnfollowBlocked = self.verifyUnfollow()
 
         likeException = ""
         followException = ""
@@ -63,124 +65,87 @@ class VerifyActionService:
 
     def verifyLiking(self, post):
 
-        isLikeBlocked = False
-
         # ------------------- verify liking -----------------
         self.browser.get(post['link'])
-        likeStatus = self.instapy.actionService.performLike(user_name=post['instagram_username'],
-                                                            operation='engagement_by_hashtag',
-                                                            link=post['link'],
-                                                            engagementValue=post['tag'])
-        if likeStatus is True:
-            # reload the page
-            self.browser.get(post['link'])
 
-            unlike_xpath = "//section/span/button/span[@aria-label='Unlike']"
-            liked_elem = self.browser.find_elements_by_xpath(unlike_xpath)
-            if len(liked_elem) == 1:
-                self.logger.info(
-                    "verifyActions: Post was verify after refresh and it was successfully liked, like action is not blocked.")
-            else:
-                self.logger.info(
-                    "verifyActions: Post was verified after refresh, and was not Liked, like action is blocked.")
-                isLikeBlocked = True
-        else:
-            self.logger.info("verifyActions: Could not like the post, so we are going to skip the verifying for like.")
+        liked, msg = like_image(self.browser,
+                                post['instagram_username'],
+                                self.instapy.blacklist,
+                                self.logger,
+                                self.instapy.logfolder,
+                                self.instapy)
 
-        return isLikeBlocked
+
+        if msg=="like_spam_block":
+            self.logger.info("like_spam_block: %s", True)
+            return True
+        self.logger.info("like_spam_block: %s, status: %s" % (False, msg))
+
+        if liked is True or msg == "already_liked" or "like_spam_block":
+            insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                            None, None, post['instagram_username'],
+                            None, None, None,
+                            post['link'], 'like_engagement_by_hashtag', post['tag'], self.instapy.id_log, liked)
+
+        return False
 
     def verifyFollow(self, post):
-        isFollowBlocked = False
 
-        followStatus = self.instapy.actionService.performFollow(followAmountProbabilityPercentage=100,
-                                                                link=post['link'],
-                                                                operation='engagement_by_hashtag',
-                                                                user_name=post['instagram_username'],
-                                                                tag=post['tag'])
+        followed, msg = follow_user(self.browser,
+                                    "post",
+                                    self.campaign['username'],
+                                    post['instagram_username'],
+                                    None,
+                                    self.instapy.blacklist,
+                                    self.logger,
+                                    self.instapy.logfolder,
+                                    self.instapy)
 
-        path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
-        self.browser.get_screenshot_as_file(path)
-
-        self.logger.info("verifyFollow: Following status: %s" % (path))
-
-        if followStatus is True:
-            # reload the page
-            self.browser.get("https://www.instagram.com/{}/".format(post['instagram_username']))
-
-
-            following_status, follow_button = get_following_status(self.browser,
-                                                                   'post',
-                                                                   self.instapy.campaign['username'],
-                                                                   post['instagram_username'],
-                                                                   None,
-                                                                   self.logger,
-                                                                   self.instapy.logfolder)
-
+        if msg == "follow_spam_block":
             path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
             self.browser.get_screenshot_as_file(path)
-
-            self.logger.info("verifyFollow: Follow status after refresh: %s, screenshot: %s" % (following_status, path))
-
-            if following_status in ["Following", "Requested"]:
-                self.logger.info(
-                    "verifyFollow: User %s was verified after refresh and it was successfully followed, follow action is not blocked." % (
-                        post['instagram_username']))
-            else:
-                self.logger.info(
-                    "verifyFollow: User %s, was verified after refresh and it was not followed, follow is blocked." % (
-                        post['instagram_username']))
-                isFollowBlocked = True
+            self.logger.info("verify_follow: follow_spam_block: True, image path: %s" % (msg, path))
+            isFollowBlocked=True
         else:
-            self.logger.info("verifyFollow: Could not FOLLOW user: %s, so we are going to skip verifying follow.",
-                             post['instagram_username'])
+            self.logger.info("verify_follow: Follow operation status: %s. follow_spam_block: False", msg)
             isFollowBlocked = False
+
+        insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                        None, None, post['instagram_username'],
+                        None, None, None,
+                        post['link'], 'follow_engagement_by_hashtag', post['tag'], self.instapy.id_log, followed)
+
+
 
         return isFollowBlocked
 
-    def verifyUnfollow(self, post):
+    def verifyUnfollow(self):
         isUnfollowBlocked = False
 
         self.logger.info("verifyUnfollow: Going to check if unfollow is blocked by IG.")
         recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], 72)
 
         if recordToUnfollow:
-            status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+            status, message = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
             lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                             None, None, recordToUnfollow['username'],
                                             None, None, None, None, 'unfollow_engagement_by_hashtag',
                                             None,
-                                            self.instapy.id_log)
+                                            self.instapy.id_log, status)
             revertBotFollow(recordToUnfollow['_id'], lastBotAction)
 
-            if status is True:
-
-                self.browser.get("https://www.instagram.com/{}/".format(recordToUnfollow['username']))
-                following_status, follow_button = get_following_status(self.browser,
-                                                                       'post',
-                                                                       self.instapy.campaign['username'],
-                                                                       recordToUnfollow['username'],
-                                                                       None,
-                                                                       self.logger,
-                                                                       self.instapy.logfolder)
-
+            if message=="unfollow_spam_block":
 
                 path = "/home/instapy-log/campaign/logs/" + str(self.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
                 self.browser.get_screenshot_as_file(path)
 
-                self.logger.info("verifyUnfollow: Unfollowing status after refresh: %s, path: %s" % (following_status, path))
-
-
-                if following_status in ["Follow"]:
-                    self.logger.info("verifyActions: User %s, was verified after refresh and it was  successfully UNFOLLOWED, unfollow action is not blocked." % (recordToUnfollow['username']))
-                else:
-                    self.logger.info("verifyActions: User %s was verified after refresh and it was not unfollowed, unfollow is blocked." % (post['instagram_username']))
-                    isUnfollowBlocked = True
+                self.logger.info("verifyUnfollow: Unfollowing status after refresh: %s, unfollow_spam_block:True path: %s" % (message, path))
+                isUnfollowBlocked = True
             else:
-                self.logger.info("verifyUnfollow: Could not unfollow user: %s. Could not verify if unfollow is blocked by IG.",recordToUnfollow['username'])
-                return False
+                self.logger.info("verifyUnfollow: Unfollowing status after refresh: %s. unfollow_spam_block: False" % (message))
+
         else:
-            self.logger.info(
-                "verifyUnfollow: No available user found in database could not check if unfollow is blocked.")
+            self.logger.info("verifyUnfollow: No available user found in database could not check if unfollow is blocked.")
 
         return isUnfollowBlocked
 

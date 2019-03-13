@@ -558,6 +558,17 @@ def check_link(browser, post_link, dont_like, mandatory_words, ignore_if_contain
     return False, user_name, is_video, 'None', "Success"
 
 
+def verify_if_like_was_successful(browser, logger):
+    browser.execute_script("location.reload()")
+    unlike_xpath = "//section/span/button/span[@aria-label='Unlike']"
+    liked_elem = browser.find_elements_by_xpath(unlike_xpath)
+    if len(liked_elem) == 1:
+        logger.info("verify_if_like_was_successful: Status after refreshing the page: True -> Like is NOT bocked.")
+        return True
+
+    logger.info("verify_if_like_was_successful: Status after refreshing the page: False -> Unlike button was not found. LIKE IS BLOCKED !")
+    return False
+
 
 def like_image(browser, username, blacklist, logger, logfolder, instapy):
 
@@ -580,22 +591,20 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
         # sleep real quick right before clicking the element
         sleep(2)
         click_element(browser, like_elem[0])
-        # check now we have unlike instead of like
-        liked_elem = browser.find_elements_by_xpath(unlike_xpath)
         time.sleep(1)
-        if len(liked_elem) == 1:
-            #update_activity('likes')
 
-            #if blacklist['enabled'] is True:
-                #action = 'liked'
-                #add_user_to_blacklist(username, blacklist['campaign'], action, logger, logfolder)
-            #sleep(2)
-            return True, "success"
+        # check now we have unlike instead of like
+        status_before_refresh = len(browser.find_elements_by_xpath(unlike_xpath))
+        browser.execute_script("location.reload()")
+        status_after_refresh = len(browser.find_elements_by_xpath(unlike_xpath))
 
-        else:
-            # if like not seceded wait for 2 min
-            logger.info('like_image: --> Image was not able to get Liked! maybe blocked ?')
-            sleep(20)
+
+        if status_after_refresh==1 and status_before_refresh==1:
+            return True,"success"
+        elif status_before_refresh==1 and status_after_refresh!=1:
+            logger.error("like_image: LIKE_SPAM DETECTED.")
+            return False, "like_spam_block"
+        return False,"error"
 
     else:
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)

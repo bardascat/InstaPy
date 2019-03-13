@@ -9,8 +9,6 @@ from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 from random import randint
 import action_delay_util
-from unfollow_util import get_following_status
-import urllib2
 from verify_actions_service import VerifyActionService
 
 class ActionsService:
@@ -158,11 +156,11 @@ class ActionsService:
             if msg == "already_liked":
                 self.logger.info("performLike: Link %s was already liked, going to store it in db.", link)
 
-            if liked is True or msg == "already_liked":
+            if liked is True or msg == "already_liked" or "like_spam_block":
                 insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                 None, None, user_name,
                                 None, None, None,
-                                link, 'like_' + operation, engagementValue, self.instapy.id_log)
+                                link, 'like_' + operation, engagementValue, self.instapy.id_log, liked)
                 #self.logger.info("performLike: Going to sleep 3 seconds after jumping to other page...")
                 #time.sleep(3)
                 return True
@@ -177,29 +175,12 @@ class ActionsService:
             self.logger.error("performFollow: Cannot follow user: %s ", user_name)
             return False
 
-        # if self.totalFollowPerformed >= self.totalFollowExpected:
-        #     self.logger.error("performFollow: ERROR - The follow amount is reached. Expected %s, performed %s " % (
-        #         self.totalFollowExpected, self.totalFollowPerformed))
-        #     return False
-
         if self.isFollowEnabled:
             self.logger.info("performFollow: Going to follow: %s", user_name)
 
             randomProbability = randint(0, 100)
 
-            # self.logger.info("performFollow: Probability to follow: %s. Random Probability: %s" % (
-            #     followAmountProbabilityPercentage, randomProbability))
-
             if randomProbability <= followAmountProbabilityPercentage:
-
-                # this is not necessary since the posts are prefiltered
-                # # check if user was followed in the past
-                # if userWasFollowedInThePast(user_name, self.campaign['id_user']):
-                #     self.logger.error("performFollow: Warning: User %s was followed in the past, going to skip it !",
-                #                       user_name)
-                #     return False
-
-                # todo: follow_user method is overengineered , try to simplify it
 
                 followed, msg = follow_user(self.browser,
                                             "post",
@@ -218,14 +199,11 @@ class ActionsService:
                     action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
                     self.logger.info("performFollow: User: %s followed.", user_name)
 
-                if followed is True or msg == "already_followed":
+                if followed is True or msg == "already_followed" or msg == "follow_spam_block":
                     insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                     None, None, user_name,
                                     None, None, None,
-                                    link, 'follow_' + operation, tag, self.instapy.id_log)
-
-                    # self.logger.info("performFollow: Going to sleep 3 seconds after jumping to other page...")
-                    # time.sleep(3)
+                                    link, 'follow_' + operation, tag, self.instapy.id_log, followed)
 
                     return True
                 else:
@@ -256,13 +234,13 @@ class ActionsService:
                 recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], self.isUnfollowEnabled['value'])
 
                 if recordToUnfollow:
-                    status = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+                    status,msg = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
 
                     lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                     None, None, recordToUnfollow['username'],
                                                     None, None, None, None, 'unfollow_' + operation,
                                                     None,
-                                                    self.instapy.id_log)
+                                                    self.instapy.id_log,status)
 
                     revertBotFollow(recordToUnfollow['_id'], lastBotAction)
 
@@ -271,7 +249,7 @@ class ActionsService:
                         self.logger.info("performUnfollow: Succesfully unfollowed user: %s.", recordToUnfollow['username'])
                         return True
                     else:
-                        self.logger.info("performFollow: Could not unfollow user: %s", recordToUnfollow['username'])
+                        self.logger.info("performFollow: Could not unfollow user: %s, message: %s" % (recordToUnfollow['username'], msg))
                         return False
 
                 else:

@@ -181,6 +181,7 @@ def insertBotAction(*args):
         "bot_operation_value": args[10],
         "bot_operation_reverted": None,
         "id_log": args[11],
+        "status":args[12],
         "timestamp": datetime.datetime.now(),
     })
 
