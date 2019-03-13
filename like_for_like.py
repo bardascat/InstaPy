@@ -42,17 +42,17 @@ try:
                       bot_type="like_for_like",
                       multi_logs=True)
 
-    session.logger.info(
-        "likeforlike: START PID: %s, account %s, using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
-    session.canBotStart(id_campaign=args.angie_campaign, prefix="angie_instapy_like_for_like_idc")
+    session.logger.info("likeforlike: START PID: %s, account %s, using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
+    canBotStart = session.canBotStart(id_campaign=args.angie_campaign, prefix="angie_instapy_like_for_like_idc")
 
-    session.set_quota_supervisor(enabled=True)
-    status = session.login()
+    if canBotStart:
+        session.set_quota_supervisor(enabled=True)
+        status = session.login()
 
-    if status == False:
-        exit("Could not  login")
+        if status == False:
+            exit("Could not  login")
 
-    session.startLikeForLike()
+        session.startLikeForLike()
 
 except Exception as exc:
     exceptionHandler = ExceptionHandler(session, 'like_for_like')
