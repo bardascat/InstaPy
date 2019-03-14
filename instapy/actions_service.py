@@ -1,7 +1,9 @@
 import time
 from random import randint
 import pymongo
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import InvalidElementStateException
 
 from .api_db import *
 from .bot_util import getIfUserWantsToUnfollow, isFollowEnabled, isLikeEnabled
@@ -63,7 +65,7 @@ class ActionsService:
                     result['unfollow'] += 1
                 self.disablePost(post)
 
-            except NoSuchElementException as err:
+            except (NoSuchElementException, StaleElementReferenceException, InvalidElementStateException) as err:
                 self.logger.error('perform_engagement: Error: {}'.format(err))
                 self.disablePost(post)
                 continue
