@@ -530,6 +530,10 @@ def unfollow(browser,
 
 
 def follow_user(browser, track, login, user_name, button, blacklist, logger, logfolder, instapy):
+    status = is_page_available(browser, logger)
+    if status is False:
+        logger.info("follow_user: Page is unavailable.")
+        return False, "page_unavailable"
 
     sleepSeconds = action_delay_util.get_follow_delay(instapy=instapy)
     logger.info("follow_user: Sleep for %s seconds before following", sleepSeconds)
@@ -571,7 +575,7 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
                 logger.info("follow_user: Already requested '{}' to follow!\n".format(user_name))
 
             sleep(1)
-            return False, "already_followed"
+            return False, "action_already_performed"
 
         elif following_status in ["Unblock", "UNAVAILABLE"]:
             if following_status == "Unblock":
@@ -581,11 +585,11 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
                 failure_msg = "user is inaccessible"
 
             logger.warning("follow_user:Couldn't follow '{}'!\t~{}".format(user_name,failure_msg))
-            return False, following_status
+            return False, "error"
 
         elif following_status is None:
             logger.warning("follow_user:Couldn't unfollow '{}'!\t~unexpected failure".format(user_name))
-            return False, "unexpected failure"
+            return False, "error"
 
     status_before_refresh, button = get_following_status(browser, track, login, user_name, None, logger, logfolder)
     browser.execute_script("location.reload()")
@@ -1386,6 +1390,11 @@ def verify_action(browser, action, track, username, person, person_id, logger,
 
 
 def custom_unfollow(browser, username, logger, instapy):
+    status = is_page_available(browser, logger)
+    if status is False:
+        logger.info("custom_unfollow: Page unavailable !")
+        return False, "page_unavailable"
+
     #logger.info("custom_unfollow: Going to unfollow user: %s", username)
     sleepSeconds = action_delay_util.get_unfollow_delay(instapy=instapy)
     logger.info("custom_unfollow: Going to sleep %s seconds before starting to unfollow...", sleepSeconds)
@@ -1431,7 +1440,7 @@ def custom_unfollow(browser, username, logger, instapy):
             return False,"error"
     elif following_status in ["Follow","Follow Back"]:
         logger.info("custom_unfollow: You are not following user: %s, following status is: %s, still going to save it as successfully unfollowed." % (username, following_status))
-        return True, "success"
+        return True, "action_already_performed"
     else:
         logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))
         return False,"error"

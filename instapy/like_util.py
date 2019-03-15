@@ -20,7 +20,7 @@ import action_delay_util
 
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import NoSuchElementException
-
+from .util import is_page_available
 
 
 
@@ -572,6 +572,12 @@ def verify_if_like_was_successful(browser, logger):
 
 def like_image(browser, username, blacklist, logger, logfolder, instapy):
 
+    status = is_page_available(browser, logger)
+
+    if status is False:
+        logger.info("like_image: Page unavailable !")
+        return False, "page_unavailable"
+
     sleepSeconds = action_delay_util.get_like_delay(instapy=instapy)
     logger.info("like_image: Sleeping %s seconds", sleepSeconds)
     time.sleep(sleepSeconds)
@@ -612,8 +618,8 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
     else:
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
         if len(liked_elem) == 1:
-            #logger.info('like_image: --> Image already liked!')
-            return False, "already_liked"
+            logger.info('like_image: Image already liked.')
+            return False, "action_already_performed"
 
     logger.info('like_image: --> Invalid Like Element!, element is : %s', like_elem)
 

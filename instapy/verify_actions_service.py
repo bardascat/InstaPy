@@ -29,6 +29,7 @@ class VerifyActionService:
 
         self.logger.info("verifyActions: Going to verify 'like' action by liking post %s", post['link'])
 
+        post['link']='https://www.instagram.com/p/Bu_wsasxzcz6H7h2-4/'
         isLikeBlocked = self.verifyLiking(post)
         isFollowBlocked = self.verifyFollow(post)
         isUnfollowBlocked = self.verifyUnfollow()
@@ -79,13 +80,17 @@ class VerifyActionService:
         if msg=="like_spam_block":
             self.logger.info("like_spam_block: %s", True)
             return True
+
         self.logger.info("like_spam_block: %s, status: %s" % (False, msg))
 
-        if liked is True or msg == "already_liked" or "like_spam_block":
-            insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                            None, None, post['instagram_username'],
-                            None, None, None,
-                            post['link'], 'like_engagement_by_hashtag', post['tag'], self.instapy.id_log, liked)
+        status = True
+        if liked is not True:
+            status = msg
+
+        insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                        None, None, post['instagram_username'],
+                        None, None, None, post['link'],
+                        'like_engagement_by_hashtag', post['tag'], self.instapy.id_log, status)
 
         return False
 
@@ -110,10 +115,14 @@ class VerifyActionService:
             self.logger.info("verify_follow: Follow operation status: %s. follow_spam_block: False", msg)
             isFollowBlocked = False
 
+        status = True
+        if followed is not True:
+            status = msg
+
         insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                         None, None, post['instagram_username'],
                         None, None, None,
-                        post['link'], 'follow_engagement_by_hashtag', post['tag'], self.instapy.id_log, followed)
+                        post['link'], 'follow_engagement_by_hashtag', post['tag'], self.instapy.id_log, status)
 
 
 
@@ -126,7 +135,12 @@ class VerifyActionService:
         recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], 72)
 
         if recordToUnfollow:
-            status, message = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+            unfollowed, message = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+
+            status = True
+            if unfollowed is not True:
+                status = message
+
             lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                             None, None, recordToUnfollow['username'],
                                             None, None, None, None, 'unfollow_engagement_by_hashtag',

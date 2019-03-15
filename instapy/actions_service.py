@@ -155,19 +155,17 @@ class ActionsService:
                 self.logger.info("performLike: Link was liked.")
                 action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
 
-            if msg == "already_liked":
-                self.logger.info("performLike: Link %s was already liked, going to store it in db.", link)
+            status = True
 
-            if liked is True or msg == "already_liked" or "like_spam_block":
-                insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                                None, None, user_name,
-                                None, None, None,
-                                link, 'like_' + operation, engagementValue, self.instapy.id_log, liked)
-                #self.logger.info("performLike: Going to sleep 3 seconds after jumping to other page...")
-                #time.sleep(3)
-                return True
+            if liked is not True:
+                status = msg
 
-            return False
+            insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                            None, None, user_name,
+                            None, None, None,
+                            link, 'like_' + operation, engagementValue, self.instapy.id_log, liked, status)
+
+            return liked
 
         return False
 
@@ -194,24 +192,21 @@ class ActionsService:
                                             self.instapy.logfolder,
                                             self.instapy)
 
-                if msg == "already_followed":
-                    self.logger.info("performFollow: User %s was already followed, going to store it in DB", user_name)
 
                 if followed is True:
                     action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
                     self.logger.info("performFollow: User: %s followed.", user_name)
 
-                if followed is True or msg == "already_followed" or msg == "follow_spam_block":
-                    insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
-                                    None, None, user_name,
-                                    None, None, None,
-                                    link, 'follow_' + operation, tag, self.instapy.id_log, followed)
+                status = True
+                if followed is not True:
+                    status = msg
 
-                    return True
-                else:
-                    self.logger.error(
-                        "peformFollow: Error could not perform follow for user %s, reason: %s" % (user_name, msg))
-                    return False
+                insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
+                                None, None, user_name,
+                                None, None, None,
+                                link, 'follow_' + operation, tag, self.instapy.id_log, status)
+
+                return followed
             else:
                 self.logger.info("performFollow: Skipping follow. Actual Probability: %s, random probability: %s" % (followAmountProbabilityPercentage, randomProbability))
 
@@ -236,24 +231,26 @@ class ActionsService:
                 recordToUnfollow = getUserToUnfollow(self.campaign['id_campaign'], self.isUnfollowEnabled['value'])
 
                 if recordToUnfollow:
-                    status,msg = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+                    unfollowed, msg = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
+
+                    if unfollowed is True:
+                        action_delay_util.set_last_action_timestamp(self.instapy,action_delay_util.get_current_timestamp())
+                        self.logger.info("performUnfollow: Succesfully unfollowed user: %s.",recordToUnfollow['username'])
+
+                    status = True
+                    if unfollowed is not True:
+                        status = msg
 
                     lastBotAction = insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                                     None, None, recordToUnfollow['username'],
                                                     None, None, None, None, 'unfollow_' + operation,
                                                     None,
-                                                    self.instapy.id_log,status)
+                                                    self.instapy.id_log, status)
 
                     revertBotFollow(recordToUnfollow['_id'], lastBotAction)
 
-                    if status is True:
-                        action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
-                        self.logger.info("performUnfollow: Succesfully unfollowed user: %s.", recordToUnfollow['username'])
-                        return True
-                    else:
-                        self.logger.info("performFollow: Could not unfollow user: %s, message: %s" % (recordToUnfollow['username'], msg))
-                        return False
 
+                    return unfollowed
                 else:
                     self.logger.info("performUnfollow: No available user found in database to unfollow, going to close the unfollow cycle, and disable unfollow to false for this session.")
                     insert("update bot_unfollow_cycle set completed=1 where id_campaign=%s", self.campaign['id_campaign'])

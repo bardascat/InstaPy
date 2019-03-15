@@ -1228,7 +1228,7 @@ def get_username_from_id(browser, user_id, logger):
 def is_page_available(browser, logger):
     """ Check if the page is available and valid """
     # wait for the current page fully load
-    explicit_wait(browser, "PFL", [], logger, 10)
+    #explicit_wait(browser, "PFL", [], logger, 10)
 
     try:
         page_title = browser.title
@@ -1249,14 +1249,14 @@ def is_page_available(browser, logger):
     expected_keywords = ["Page Not Found", "Content Unavailable"]
     if any(keyword in page_title for keyword in expected_keywords):
 
-        path = "/home/instapy-log/campaign/logs/page_unavailable_"  + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
-        browser.get_screenshot_as_file(path)
+        #path = "/home/instapy-log/campaign/logs/page_unavailable_"  + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+        #browser.get_screenshot_as_file(path)
 
         if "Page Not Found" in page_title:
-            logger.warning("The page isn't available!\t~the link may be broken, or the page may have been removed.... Image here: %s", path)
+            logger.warning("The page isn't available!\t~the link may be broken, or the page may have been removed...")
 
         elif "Content Unavailable" in page_title:
-            logger.warning("The page isn't available!\t~the user may have blocked you... Image here: %s", path)
+            logger.warning("The page isn't available!\t~the user may have blocked you.")
 
         return False
 
