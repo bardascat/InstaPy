@@ -163,7 +163,7 @@ class ActionsService:
             insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                             None, None, user_name,
                             None, None, None,
-                            link, 'like_' + operation, engagementValue, self.instapy.id_log, liked, status)
+                            link, 'like_' + operation, engagementValue, self.instapy.id_log, status)
 
             return liked
 
