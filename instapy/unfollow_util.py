@@ -594,7 +594,10 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     if status_before_refresh in ["Following", "Requested"] and status_after_refresh in ["Following", "Requested"]:
         return True, "success"
     elif status_before_refresh in ["Following", "Requested"] and status_after_refresh not in ["Following", "Requested"]:
-        logger.error("follow_user: FOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s" %  (status_before_refresh, status_after_refresh))
+        path = "/home/instapy-log/campaign/logs/" + str(instapy.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+        browser.get_screenshot_as_file(path)
+
+        logger.error("follow_user: FOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s. PrintScreen: %s" %  (status_before_refresh, status_after_refresh, path))
         return False, "follow_spam_block"
 
     logger.error("follow_user: Could not follow, we don't know why !")
@@ -1418,7 +1421,10 @@ def custom_unfollow(browser, username, logger, instapy):
         if status_before_refresh in ["Follow", "Follow Back"] and status_after_refresh in ["Follow", "Follow Back"]:
             return True, "success"
         elif status_before_refresh in  ["Follow", "Follow Back"] and status_after_refresh not in  ["Follow", "Follow Back"]:
-            logger.error("custom_unfollow: UNFOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s" % (status_before_refresh, status_after_refresh))
+            path = "/home/instapy-log/campaign/logs/" + str(instapy.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+            browser.get_screenshot_as_file(path)
+
+            logger.error("custom_unfollow: UNFOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s, screenshot: %s" % (status_before_refresh, status_after_refresh, path))
             return False, "unfollow_spam_block"
         else:
             logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))

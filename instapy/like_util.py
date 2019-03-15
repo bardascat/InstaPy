@@ -602,7 +602,10 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
         if status_after_refresh==1 and status_before_refresh==1:
             return True,"success"
         elif status_before_refresh==1 and status_after_refresh!=1:
-            logger.error("like_image: LIKE_SPAM DETECTED.")
+            path = "/home/instapy-log/campaign/logs/" + str(instapy.campaign['id_campaign']) + "/" + time.strftime("%d.%m.%Y.%H.%M.%S") + ".png"
+            browser.get_screenshot_as_file(path)
+
+            logger.error("like_image: LIKE_SPAM DETECTED. screenshot: %s", path)
             return False, "like_spam_block"
         return False,"error"
 
