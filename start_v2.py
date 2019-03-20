@@ -84,7 +84,7 @@ try:
                       headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
-                      disable_image_load=False,
+                      disable_image_load=True,
                       campaign=campaign,
                       proxy_port=80,
                       multi_logs=True,
