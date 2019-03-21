@@ -17,7 +17,7 @@ chrome_options.add_argument('--log-path=/home/ubuntut/chromedriver.log')
 #chrome_options.add_argument('--headless')
 #chrome_options.add_argument('--no-sandbox')
 
-chromedriver_location='/Users/cbardas/instapy-log/assets/chromedriver'
+chromedriver_location='/home/instapy-log/assets/chromedriver'
 
 browser = webdriver.Chrome(chromedriver_location,chrome_options=chrome_options)
 
