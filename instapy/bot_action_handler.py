@@ -19,7 +19,7 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
     queryDate = currentDate - timedelta(hours=int(olderThan))
     client = api_db.getMongoConnection()
     db = client.angie_app
-    result = db.bot_action.find({"id_campaign": int(id_campaign), "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},"timestamp": {"$lte": queryDate}})
+    result = db.bot_action.find({"id_campaign": int(id_campaign), "bot_operation_reverted": None, "status":True, "bot_operation": {"$regex": "^follow"},"timestamp": {"$lte": queryDate}})
     activeFollowings = result.count()
     client.close()
 

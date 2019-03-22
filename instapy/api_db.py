@@ -156,7 +156,7 @@ def getUserToUnfollow(id_campaign, olderThan):
     db = client.angie_app
 
     result = db.bot_action.find_one(
-        {"id_campaign": id_campaign, "bot_operation_reverted": None, "bot_operation": {"$regex": "^follow"},
+        {"id_campaign": id_campaign, "bot_operation_reverted": None, "status":True, "bot_operation": {"$regex": "^follow"},
          "timestamp": {"$lte": queryDate}}, sort=[("timestamp", pymongo.ASCENDING)])
     client.close()
 
