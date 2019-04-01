@@ -42,7 +42,7 @@ def summary(body):
         if groupBy == "operation":
             pipeline = [
                 {"$match": {"id_campaign": int(id_campaign), "timestamp": {"$gte": gte, "$lte": lte}}},
-                {"$group": {"_id": {"bot_operation": "$bot_operation"}, "total_action": {"$sum": 1}}},
+                {"$group": {"_id": {"bot_operation": "$bot_operation", "status": "$status"}, "total_action": {"$sum": 1}}},
                 {"$project": {"_id": 0, "grouping": "$_id", "total_action": 1}}
             ]
         elif groupBy == "operationAndValue":
