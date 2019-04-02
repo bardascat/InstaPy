@@ -125,6 +125,25 @@ def revertBotFollow(recordToUnfollow, lastBotAction):
     client.close()
 
 
+def createUnfollowCycle(id_campaign, activeFollowings):
+
+    cycle = fetchOne("select * from bot_unfollow_cycle where completed=0 and id_campaign=%s", id_campaign)
+    if cycle is None:
+        insert("INSERT INTO bot_unfollow_cycle (id_campaign, angie_followings, completed ) VALUES(%s, %s, 0)", id_campaign, activeFollowings)
+        return True
+    return False
+
+
+def getActiveFollowings(id_campaign, queryDate):
+    client = getMongoConnection()
+    db = client.angie_app
+    result = db.bot_action.find({"id_campaign": int(id_campaign), "bot_operation_reverted": None, "status": True,
+                                 "bot_operation": {"$regex": "^follow"}, "timestamp": {"$lte": queryDate}})
+    activeFollowings = result.count()
+    client.close()
+
+    return activeFollowings
+
 def getAmountOperations(campaign, dateParam, operation):
     gte = dateParam.replace(minute=0, hour=0, second=0, microsecond=0)
     lte = dateParam.replace(minute=59, hour=23, second=59, microsecond=59)
@@ -132,7 +151,7 @@ def getAmountOperations(campaign, dateParam, operation):
     client = getMongoConnection()
     db = client.angie_app
 
-    result = db.bot_action.find({"id_campaign": campaign['id_campaign'], "bot_operation": {"$regex": "^" + operation},
+    result = db.bot_action.find({"id_campaign": campaign['id_campaign'], "status":True, "bot_operation": {"$regex": "^" + operation},
                                  "timestamp": {"$gte": gte, "$lte": lte}})
     client.close()
 

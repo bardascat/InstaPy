@@ -1,5 +1,5 @@
 """ Module which handles the follow features like unfollowing and following """
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import random
 import json
@@ -47,6 +47,7 @@ from selenium.common.exceptions import StaleElementReferenceException
 from random import randint
 import time
 import action_delay_util
+from api_db import insert, getActiveFollowings, createUnfollowCycle
 
 
 def set_automated_followed_pool(username, unfollow_after, logger, logfolder):
@@ -603,6 +604,15 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
 
         logger.error("follow_user: FOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s. PrintScreen: %s" %  (status_before_refresh, status_after_refresh, path))
         return False, "follow_spam_block"
+    elif status_before_refresh in ["Follow"] and status_after_refresh in ["Follow"]:
+        logger.error("follow_user: Instagram following limit reached, you have to unfollow !. Going to setup an unfollow cycle !")
+
+        olderThan = 168  # 7 days
+        currentDate = datetime.now()
+        queryDate = currentDate - timedelta(hours=int(olderThan))
+        activeFollowings = getActiveFollowings(instapy.campaign['id_campaign'], queryDate)
+        createUnfollowCycle(instapy.campaign['id_campaign'], activeFollowings)
+        return False, "instagram_following_limit_reached"
 
     logger.error("follow_user: Could not follow, we don't know why !")
 

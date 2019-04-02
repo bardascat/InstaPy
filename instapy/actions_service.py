@@ -200,6 +200,9 @@ class ActionsService:
                 status = True
                 if followed is not True:
                     status = msg
+                    if msg == 'instagram_following_limit_reached':
+                        self.logger.error("performFollow: Going ot disable Follow since the maximum number is reached !")
+                        self.isFollowEnabled = False
 
                 insertBotAction(self.campaign['id_campaign'], self.campaign['id_user'],
                                 None, None, user_name,

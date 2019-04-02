@@ -29,7 +29,6 @@ class VerifyActionService:
 
         self.logger.info("verifyActions: Going to verify 'like' action by liking post %s", post['link'])
 
-        post['link']='https://www.instagram.com/p/Bu_wsasxzcz6H7h2-4/'
         isLikeBlocked = self.verifyLiking(post)
         isFollowBlocked = self.verifyFollow(post)
         isUnfollowBlocked = self.verifyUnfollow()
@@ -59,7 +58,7 @@ class VerifyActionService:
             exception = likeException + "|" + followException + "|" + unfollowException
             urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(
                 self.instapy.campaign['id_campaign'])).read()
-            self.addPause()
+            #self.addPause()
             raise Exception(
                 "verifyAction: SPAM BLOCK: likeBlocked: %s, followBlocked: %s, unfollowBlocked: %s, going to stop the bot" % (
                 isLikeBlocked, isFollowBlocked, isUnfollowBlocked))

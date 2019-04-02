@@ -17,11 +17,7 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
     olderThan = 168 # 7 days
     currentDate = datetime.now()
     queryDate = currentDate - timedelta(hours=int(olderThan))
-    client = api_db.getMongoConnection()
-    db = client.angie_app
-    result = db.bot_action.find({"id_campaign": int(id_campaign), "bot_operation_reverted": None, "status":True, "bot_operation": {"$regex": "^follow"},"timestamp": {"$lte": queryDate}})
-    activeFollowings = result.count()
-    client.close()
+    activeFollowings = api_db.getActiveFollowings(id_campaign, queryDate)
 
     followingsTreshhold = 3000
     completeCycleTreshhold = 100
@@ -43,10 +39,9 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
         return cycleRatio
 
     #no cycle found, check if we should create one
-
     if activeFollowings >= followingsTreshhold:
         self.logger.info("getFollowUnfollowRatio: Active followings: %s, followingsTreshhold: %s, going to create an unfollow cycle. and set ratio to: %s" % (activeFollowings, followingsTreshhold, cycleRatio))
-        api_db.insert("INSERT INTO bot_unfollow_cycle (id_campaign, angie_followings, completed ) VALUES(%s, %s, 0)", id_campaign, activeFollowings)
+        api_db.createUnfollowCycle(id_campaign, activeFollowings)
         return cycleRatio
 
     self.logger.info("getFollowUnfollowRatio: Active followings: %s, treshhold: %s, return default ratio: %s" % (activeFollowings, followingsTreshhold, defaultFollowUnfollowRatio))
@@ -183,7 +178,6 @@ def getWarmUpResult(self, initialAmount, percentageAmount):
 # this function is used to retrieve the configuration if it is stoped and restarted
 def resumeOperation(self, id_campaign):
     self.logger.info("resumeOperation: trying to resume")
-    return None
 
     resumeResult = api_db.fetchOne(
         "SELECT * FROM campaign_log WHERE DATE(`timestamp`) = CURDATE() and id_campaign=%s AND event=%s", id_campaign,
@@ -207,20 +201,34 @@ def resumeOperation(self, id_campaign):
     return result
 
 
-def getAmountDistribution(self, id_campaign):
-    resume = resumeOperation(self, id_campaign)
+def substractAlreadyPerformedActions(self, actions):
 
     totalLikePerformed = getActionsPerformed(self.campaign, datetime.now(), "like",self.logger)
     totalFollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "follow",self.logger)
     totalUnfollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "unfollow",self.logger)
 
+    actions['like_amount'] -= totalLikePerformed
+    actions['follow_amount'] -= totalFollowPerformed
+    actions['unfollow_amount'] -= totalUnfollowPerformed
+
+    if actions['like_amount']<0:
+        actions['like_amount'] = 0
+
+    if actions['follow_amount']<0:
+        actions['follow_amount'] = 0
+
+    if actions['unfollow_amount']<0:
+        actions['unfollow_amount'] = 0
+
+    return actions
+
+
+def getAmountDistribution(self, id_campaign):
+    resume = resumeOperation(self, id_campaign)
 
     if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
-        resume['like_amount']-=totalLikePerformed
-        resume['follow_amount'] -= totalFollowPerformed
-        resume['unfollow_amount'] -= totalUnfollowPerformed
-        return resume
+        return substractAlreadyPerformedActions(self, resume)
 
     foundRightCategory = api_db.fetchOne("select * from action_amount_distribution where type='maximum'")
     initialActionAmountResult = getInitialActionAmount(self, id_campaign)
