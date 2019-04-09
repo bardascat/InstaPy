@@ -162,7 +162,7 @@ def login_user(browser,
     browser.get('https://www.instagram.com')
     # Cookie has been loaded, user should be logged in. Ensurue this is true
     login_elem = browser.find_elements_by_xpath(
-        "//*[contains(text(), 'Log in')]")
+        "//*[contains(text(), 'Log In')]")
     # Login text is not found, user logged in
     # If not, issue with cookie, create new cookie
     logger.info("login_user: Done searching for login_elem")
@@ -184,7 +184,7 @@ def login_user(browser,
 
     # Check if the first div is 'Create an Account' or 'Log In'
     login_elem = browser.find_element_by_xpath(
-        "//article/div/div/p/a[text()='Log in']")
+        "//article/div/div/p/a[text()='Log In']")
 
     if login_elem is not None:
         (ActionChains(browser)
@@ -239,7 +239,7 @@ def login_user(browser,
         update_activity()
 
     login_button = browser.find_element_by_xpath(
-        "//button[text()='Log in']")
+        "//button[text()='Log In']")
 
     (ActionChains(browser)
      .move_to_element(login_button)
@@ -502,7 +502,7 @@ def execute_login(username, password, browser, switch_language, bypass_suspiciou
     logger.info("execute_login: Done... going to click log in button")
 
     login_button = browser.find_element_by_xpath(
-        "//div[text()='Log in']")
+        "//div[text()='Log In']")
 
     (ActionChains(browser)
      .move_to_element(login_button)
