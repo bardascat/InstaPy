@@ -18,30 +18,29 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-settings', type=str, help="settings")
 args = parser.parse_args()
 
-#if args.settings is None:
-#    exit("verify_account: settings are not specified !")
+if args.settings is None:
+    exit("verify_account: settings are not specified !")
 
 result = {}
 result['status'] = False
 
 try:
-    #settings = json.loads(args.settings)
-    settings={"id_campaign":417,"u":"luna_sinistra","p":"cabronnegru13","twoFactorRecoveryCode":None, "unusualLoginToken":False}
+    settings = json.loads(args.settings)
     campaign = fetchOne(
         "select ip,username,password,campaign.timestamp,id_campaign,id_user  from campaign left join ip_bot using (id_ip_bot) where id_campaign=%s",
         settings['id_campaign'])
 
-    #insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "USER_TRYING_TO_VERIFY_INSTAGRAM_CREDENTIALS", None)
+    insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())", campaign['id_campaign'], "USER_TRYING_TO_VERIFY_INSTAGRAM_CREDENTIALS", None)
 
     session = InstaPy(username=settings['u'],
                       password=settings['p'],
-                      headless_browser=False,
+                      headless_browser=True,
                       bypass_suspicious_attempt=False,
                       proxy_address=campaign['ip'].replace("http://cata:lin@", ""),
                       campaign=campaign,
                       proxy_port="80",
                       multi_logs=True,
-                      show_logs=True,
+                      show_logs=False,
                       force_login=True)
 
     status = session.connectWithInstagram(two_factor_auth_token=settings['twoFactorRecoveryCode'], unusual_login_token=settings['unusualLoginToken'])
@@ -56,11 +55,12 @@ try:
     session.logger.info("start: ALL DONE, CLOSING APP")
 except Exception as exc:
     exceptionDetail = traceback.format_exc()
-    print(exceptionDetail)
     exceptionHandler = ExceptionHandler(session, 'engagement_bot')
     exceptionHandler.handle(exc)
+    # print(exceptionDetail)
     session.logger.critical("start: FATAL ERROR: %s", exceptionDetail)
     result['exception'] = exceptionDetail
 finally:
     print(json.dumps(result))
     # session.logger.info("start:finally: Closing process...")
+
