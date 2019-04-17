@@ -6,6 +6,7 @@ from .unfollow_util import custom_unfollow
 import time
 from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
+from datetime import datetime
 
 class VerifyActionService:
     def __init__(self,
@@ -16,6 +17,88 @@ class VerifyActionService:
         self.instapy = instapy
         self.browser = instapy.browser
         self.logger = instapy.logger
+
+
+    def checkUnfollowSpamTreshhold(self):
+        TRESH_HOLD = 15
+        dateParam = datetime.today()
+        gte = dateParam.replace(minute=0, hour=0, second=0, microsecond=0)
+        lte = dateParam.replace(minute=59, hour=23, second=59, microsecond=59)
+
+        client = getMongoConnection()
+        db = client.angie_app
+        result = db.bot_action.find({"id_campaign": self.campaign['id_campaign'], "bot_operation": {"$regex": "^unfollow"},"status": {"$regex": "^unfollow_spam"}, "timestamp": {"$gte": gte, "$lte": lte}})
+        client.close()
+
+        if result == None:
+            return 0
+
+        noSpams = result.count()
+        if noSpams >= TRESH_HOLD:
+            # raise exception, set pause
+            exceptionDetail = "The follow was reverted after refresh, going to assume that like is blocked by instagram"
+            likeException = "UNFOLLOW_SPAM_BLOCK"
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], 'unfollow_spam_block', exceptionDetail)
+            urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + likeException + "&id_campaign=" + str(self.campaign['id_campaign'])).read()
+            self.addPause()
+            raise Exception(likeException)
+
+        return True
+
+    def checkFollowSpamTreshhold(self):
+        TRESH_HOLD = 15
+        dateParam = datetime.today()
+        gte = dateParam.replace(minute=0, hour=0, second=0, microsecond=0)
+        lte = dateParam.replace(minute=59, hour=23, second=59, microsecond=59)
+
+        client = getMongoConnection()
+        db = client.angie_app
+        result = db.bot_action.find({"id_campaign": self.campaign['id_campaign'], "bot_operation": {"$regex": "^follow"}, "status": {"$regex": "^follow_spam"},"timestamp": {"$gte": gte, "$lte": lte}})
+        client.close()
+
+        if result == None:
+            return 0
+
+        noSpams = result.count()
+        if noSpams >= TRESH_HOLD:
+            #raise exception, set pause
+            exceptionDetail = "The follow was reverted after refresh, going to assume that like is blocked by instagram"
+            followException = "FOLLOW_SPAM_BLOCK"
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], 'follow_spam_block', exceptionDetail)
+            urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + followException + "&id_campaign=" + str(self.campaign['id_campaign'])).read()
+            self.addPause()
+            raise Exception(followException)
+
+        return True
+
+    def checkLikeSpamTreshhold(self):
+        TRESH_HOLD = 15
+        dateParam = datetime.today()
+        gte = dateParam.replace(minute=0, hour=0, second=0, microsecond=0)
+        lte = dateParam.replace(minute=59, hour=23, second=59, microsecond=59)
+
+        client = getMongoConnection()
+        db = client.angie_app
+
+        result = db.bot_action.find(
+            {"id_campaign": self.campaign['id_campaign'], "bot_operation": {"$regex": "^like"}, "status": {"$regex": "^like_spam"},"timestamp": {"$gte": gte, "$lte": lte}})
+        client.close()
+
+        if result == None:
+            return 0
+
+        noSpams = result.count()
+        if noSpams >= TRESH_HOLD:
+            #raise exception, set pause
+            exceptionDetail = "The like was reverted after refresh, going to assume that like is blocked by instagram"
+            likeException = "LIKE_SPAM_BLOCK"
+            insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",self.campaign['id_campaign'], 'like_spam_block', exceptionDetail)
+            urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + likeException + "&id_campaign=" + str(self.campaign['id_campaign'])).read()
+            self.addPause()
+            raise Exception(likeException)
+
+        return True
+
 
     def verifyActions(self):
 

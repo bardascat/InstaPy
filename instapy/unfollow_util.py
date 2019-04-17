@@ -603,6 +603,7 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
         browser.get_screenshot_as_file(path)
 
         logger.error("follow_user: FOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s. PrintScreen: %s" %  (status_before_refresh, status_after_refresh, path))
+        instapy.verifyActionService.checkFollowSpamTreshhold()
         return False, "follow_spam_block"
     elif status_before_refresh in ["Follow"] and status_after_refresh in ["Follow"]:
         logger.error("follow_user: Instagram following limit reached, you have to unfollow !. Going to setup an unfollow cycle !")
@@ -1444,6 +1445,7 @@ def custom_unfollow(browser, username, logger, instapy):
             browser.get_screenshot_as_file(path)
 
             logger.error("custom_unfollow: UNFOLLOW_SPAM DETECTED, status before refresh: %s, status after refresh: %s, screenshot: %s" % (status_before_refresh, status_after_refresh, path))
+            instapy.verifyActionService.checkUnfollowSpamTreshhold()
             return False, "unfollow_spam_block"
         else:
             logger.info("custom_unfollow: ERROR:  could not unfollow user %s. Folow status: %s" % (username, following_status))

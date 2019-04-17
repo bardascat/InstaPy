@@ -612,6 +612,7 @@ def like_image(browser, username, blacklist, logger, logfolder, instapy):
             browser.get_screenshot_as_file(path)
 
             logger.error("like_image: LIKE_SPAM DETECTED. screenshot: %s", path)
+            instapy.verifyActionService.checkLikeSpamTreshhold()
             return False, "like_spam_block"
         return False,"error"
 

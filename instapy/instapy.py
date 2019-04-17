@@ -79,7 +79,7 @@ import atexit
 import copy
 from bot_util import getOperationsNumber
 import urllib2
-from datetime import datetime
+from verify_actions_service import VerifyActionService
 
 
 class InstaPyError(Exception):
@@ -251,11 +251,11 @@ class InstaPy:
         if self.selenium_local_session == True:
             self.set_selenium_local_session()
 
-        #self.engagementService = Engagements(campaign=self.campaign, instapy=self)
         self.actionService = ActionsService(campaign=self.campaign, instapy=self)
-
         self.likeForLikeService = LikeForLike(campaign=self.campaign, instapy=self)
         self.instabotRestClient = InstabotRestClient(campaign=self.campaign, instapy=self)
+        self.verifyActionService = VerifyActionService(campaign=self.campaign, instapy=self)
+
 
     def get_instapy_logger(self, show_logs):
         """
@@ -474,7 +474,7 @@ class InstaPy:
         self.logger.info("canBotStart: All Good, no other bot instance is running for this campaign")
 
         #check for pause
-        pause = fetchOne("SELECT * FROM `bot_pause` WHERE pause_from<=CURDATE() and CURDATE()<pause_until and id_campaign=%s", self.campaign['id_campaign'])
+        pause = fetchOne("SELECT * FROM `bot_pause` WHERE pause_from<=CURDATE() and CURDATE()<=pause_until and id_campaign=%s", self.campaign['id_campaign'])
         if pause is not None:
             self.logger.info("canBotStart: Found a pause: %s, going to stop the bot.", pause)
             return False

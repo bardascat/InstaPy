@@ -130,4 +130,5 @@ def userFollowersCralwerStatus(body):
             output.append({"instagram_username": user, "scanned": False})
 
     logger.info("Result is : %s", output)
+    client.close()
     return output
