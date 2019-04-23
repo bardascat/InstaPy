@@ -608,7 +608,7 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     elif status_before_refresh in ["Follow"] and status_after_refresh in ["Follow"]:
         logger.error("follow_user: Instagram following limit reached, you have to unfollow !. Going to setup an unfollow cycle !")
 
-        olderThan = 168  # 7 days
+        olderThan = 120  # 5 days
         currentDate = datetime.now()
         queryDate = currentDate - timedelta(hours=int(olderThan))
         activeFollowings = getActiveFollowings(instapy.campaign['id_campaign'], queryDate)

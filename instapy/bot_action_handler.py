@@ -3,29 +3,47 @@ from bot_util import getBotOperations
 import datetime
 import json
 from random import randint
-import calendar
 import bot_util
 from datetime import datetime,timedelta
+import urllib2
+
+def getUserInfo(self, id_campaign, logger):
+
+    logger.info("getUserInfo: Getting user info: %s...", id_campaign)
+    self.browser.get("https://www.instagram.com/"+self.campaign['instagram_username'])
+
+    #getting followers
+    followers = int(self.browser.find_element_by_xpath("//a[contains(@href,'/"+self.campaign['instagram_username']+"/followers')]").find_element_by_xpath("span").text.replace(",",""))
+    followings = int(self.browser.find_element_by_xpath("//a[contains(@href,'/"+self.campaign['instagram_username']+"/following')]").find_element_by_xpath("span").text.replace(",", ""))
+
+    #check if active followings reached the treshshold
+    followingsWarning = 100
+    activeFollowings = api_db.getActiveFollowings(id_campaign, datetime.now())
+
+    if (followings-activeFollowings)>=followingsWarning:
+        logger.info("User with campaign: %s, is following more than %s people(apart from angie followings). The treshhold is set to: %s manual followings" % (id_campaign, followings-activeFollowings, followingsWarning))
+        exception = "FOLLOWINGS_TRESHHOLD"
+        urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(id_campaign)).read()
 
 
+    return {"followers":followers, "followings":followings}
 
 def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
 
     self.logger.info("getFollowUnfollowRatio: Calculating follow unfollow ratio for campaign: %s, default ratio: %s" % (id_campaign, defaultFollowUnfollowRatio))
 
     #count number of followed users
-    olderThan = 168 # 7 days
+    olderThan = 120 # 5 days
     currentDate = datetime.now()
     queryDate = currentDate - timedelta(hours=int(olderThan))
     activeFollowings = api_db.getActiveFollowings(id_campaign, queryDate)
 
-    followingsTreshhold = 3000
+    followingsTreshhold = 2000
     completeCycleTreshhold = 100
     cycleRatio = "0.05"
 
 
     cycle = api_db.fetchOne("select * from bot_unfollow_cycle where completed=0 and id_campaign=%s", id_campaign)
-
 
     if cycle is not None:
         self.logger.info("getFollowUnfollowRatio: Found this active cycle: %s", cycle)
@@ -36,11 +54,16 @@ def getFollowUnfollowRatio(self, id_campaign, defaultFollowUnfollowRatio):
 
 
         self.logger.info("getFollowUnfollowRatio: Going to se ratio to: %s. activeFollowings: %s, completeCycleTreshhold: %s" % (cycleRatio, activeFollowings, completeCycleTreshhold))
+        self.browser.get("https://www.instagram.com/" + self.campaign['instagram_username'])
         return cycleRatio
 
     #no cycle found, check if we should create one
-    if activeFollowings >= followingsTreshhold:
-        self.logger.info("getFollowUnfollowRatio: Active followings: %s, followingsTreshhold: %s, going to create an unfollow cycle. and set ratio to: %s" % (activeFollowings, followingsTreshhold, cycleRatio))
+    userInfo = getUserInfo(self, id_campaign, self.logger)
+    totalTreshHold = 7000
+
+
+    if activeFollowings >= followingsTreshhold or userInfo['followings'] >= totalTreshHold:
+        self.logger.info("getFollowUnfollowRatio: Angie followings: %s/treshhold: %s, total followings: %s/treshshold: %s. Going to create an unfollow cycle. and set ratio to: %s" % (activeFollowings, followingsTreshhold, userInfo['followings'], totalTreshHold, cycleRatio))
         api_db.createUnfollowCycle(id_campaign, activeFollowings)
         return cycleRatio
 

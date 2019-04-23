@@ -139,6 +139,9 @@ def getActiveFollowings(id_campaign, queryDate):
     db = client.angie_app
     result = db.bot_action.find({"id_campaign": int(id_campaign), "bot_operation_reverted": None, "status": True,
                                  "bot_operation": {"$regex": "^follow"}, "timestamp": {"$lte": queryDate}})
+    if result is None:
+        return 0
+
     activeFollowings = result.count()
     client.close()
 
