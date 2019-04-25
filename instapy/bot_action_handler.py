@@ -146,7 +146,9 @@ def getInitialActionAmount(self, id_campaign):
         "getInitialActionAmount: Going to calculated action number based on account type: month_start: %s, month_end:%s, percentage: %s" % (
             campaign['month_start'], campaign['month_end'], campaign['percentage_amount']))
     result['accountMaturity']['usage_percentage'] = campaign['percentage_amount']
-    calculatedAmount = getWarmUpResult(self, result['initialAmount'], campaign['percentage_amount'])
+
+    percentageAmount = 50 #half of normal amount of actions
+    calculatedAmount = getWarmUpResult(self, result['initialAmount'], percentageAmount)
     result['calculatedAmount'] = calculatedAmount
     self.logger.info("getInitialActionAmount: After applying %s percentage, the result is: %s" % (
         campaign['percentage_amount'], result))
@@ -154,12 +156,9 @@ def getInitialActionAmount(self, id_campaign):
 
 
 def isAccountWarmingUp(self):
-    warmUpDays = 3
+    warmUpDays = 2
     self.logger.info("getInitialActionAmount: Checking if account is warming up...")
     self.logger.info("getInitialActionAmount: Warming up is DISABLED, going to return False")
-
-    return False
-
 
     workingDays = api_db.getCampaignWorkingDays(self.campaign["id_campaign"])
 
@@ -187,13 +186,14 @@ def getWarmUpResult(self, initialAmount, percentageAmount):
     calculatedAmount = {}
 
     calculatedAmount['maximumLikeAmount'] = int(round(initialAmount['maximumLikeAmount'] * percentageAmount / 100))
-    calculatedAmount['maximumFollowAmount'] = int(round(initialAmount['maximumFollowAmount'] * percentageAmount / 100))
     calculatedAmount['minimumLikeAmount'] = int(round(initialAmount['minimumLikeAmount'] * percentageAmount / 100))
-    calculatedAmount['minimumFollowAmount'] = int(round(initialAmount['minimumFollowAmount'] * percentageAmount / 100))
-    calculatedAmount['minimumActionAmount'] = initialAmount['minimumLikeAmount'] + calculatedAmount[
-        'minimumFollowAmount']
-    calculatedAmount['maximumActionAmount'] = initialAmount['maximumLikeAmount'] + calculatedAmount[
-        'maximumFollowAmount']
+
+    #we don't need to warmup  that much  for follow/unfollow
+    calculatedAmount['minimumFollowAmount'] = int(round(initialAmount['minimumFollowAmount'] * percentageAmount * 1.5 / 100))
+    calculatedAmount['maximumFollowAmount'] = int(round(initialAmount['maximumFollowAmount'] * percentageAmount * 1.5 / 100))
+
+    calculatedAmount['minimumActionAmount'] = initialAmount['minimumLikeAmount'] + calculatedAmount['minimumFollowAmount']
+    calculatedAmount['maximumActionAmount'] = initialAmount['maximumLikeAmount'] + calculatedAmount['maximumFollowAmount']
 
     return calculatedAmount
 
