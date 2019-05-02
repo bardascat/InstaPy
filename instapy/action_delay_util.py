@@ -4,7 +4,7 @@ import random
 
 
 def get_like_delay(instapy):
-    delaySeconds = random.randint(instapy.like_delay - 3, instapy.like_delay + 5)
+    delaySeconds = random.randint(instapy.like_delay - 3, instapy.like_delay + 3)
     timeSpentFromLastAction = get_current_timestamp() - instapy.last_action_timestamp
 
     remainedDelay = delaySeconds - timeSpentFromLastAction.seconds
@@ -17,7 +17,7 @@ def get_like_delay(instapy):
 
 
 def get_follow_delay(instapy):
-    delaySeconds = random.randint(instapy.follow_delay - 5, instapy.follow_delay + 5)
+    delaySeconds = random.randint(instapy.follow_delay - 3, instapy.follow_delay + 3)
     timeSpentFromLastAction = get_current_timestamp() - instapy.last_action_timestamp
 
     remainedDelay = delaySeconds - timeSpentFromLastAction.seconds
