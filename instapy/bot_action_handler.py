@@ -17,11 +17,12 @@ def getUserInfo(self, id_campaign, logger):
     followings = int(self.browser.find_element_by_xpath("//a[contains(@href,'/"+self.campaign['instagram_username']+"/following')]").find_element_by_xpath("span").text.replace(",", ""))
 
     #check if active followings reached the treshshold
-    followingsWarning = 100
-    activeFollowings = api_db.getActiveFollowings(id_campaign, datetime.now())
+    followingsWarning = 2000
+    angieFollowings = api_db.getActiveFollowings(id_campaign, datetime.now())
+    manualFollow = followings-angieFollowings
 
-    if (followings-activeFollowings)>=followingsWarning:
-        logger.info("User with campaign: %s, is following more than %s people(apart from angie followings). The treshhold is set to: %s manual followings" % (id_campaign, followings-activeFollowings, followingsWarning))
+    if (manualFollow)>=followingsWarning:
+        logger.info("User with campaign: %s is manually following %s people. The treshhold warning is set to: %s manual followings" % (id_campaign, manualFollow, followingsWarning))
         exception = "FOLLOWINGS_TRESHHOLD"
         urllib2.urlopen("https://rest.angie.one/email/sendBotException?type=" + exception + "&id_campaign=" + str(id_campaign)).read()
 
