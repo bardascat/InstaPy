@@ -13,7 +13,9 @@ def getUserInfo(self, id_campaign, logger):
     self.browser.get("https://www.instagram.com/"+self.campaign['instagram_username'])
 
     #getting followers
-    followers = int(self.browser.find_element_by_xpath("//a[contains(@href,'/"+self.campaign['instagram_username']+"/followers')]").find_element_by_xpath("span").text.replace(",",""))
+    #todo: the number is not correctly parsed: 26.8k followers
+    #followers = int(self.browser.find_element_by_xpath("//a[contains(@href,'/"+self.campaign['instagram_username']+"/followers')]").find_element_by_xpath("span").text.replace(",",""))
+    followers = 0
     followings = int(self.browser.find_element_by_xpath("//a[contains(@href,'/"+self.campaign['instagram_username']+"/following')]").find_element_by_xpath("span").text.replace(",", ""))
 
     #check if active followings reached the treshshold
