@@ -1,6 +1,9 @@
-import api_db
 import time
 from random import randint
+
+import action_delay_util
+import api_db
+from .bot_util import isLikeEnabled
 from .like_util import like_image
 
 
@@ -18,6 +21,11 @@ class LikeForLike:
     def start(self):
         self.logger.info("LikeForLike:performLikes: Going to perform l4l for user with ID: %s.",
                          self.campaign['id_user'])
+
+
+        if isLikeEnabled(self.campaign['id_campaign'], self.logger) is False:
+            self.logger.info("likeForLike: Like is disabled by campaign configs, going to return.")
+            return 0
 
         # Select all user_posts and exclude the ones already liked by the current user
         sqlTotal = " select count(*) as total from user_post  join user_subscription us on (user_post.id_user=us.id_user) " \
@@ -104,6 +112,8 @@ class LikeForLike:
                                 self.logger,
                                 self.instapy.logfolder,
                                 self.instapy)
+
+        action_delay_util.set_last_like_timestamp(self.instapy, action_delay_util.get_current_timestamp())
 
         if liked is True:
             self.logger.info("likeForLike: performLike: SUCCESSFUL liked post id %s", post['id_post'])

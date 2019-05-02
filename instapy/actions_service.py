@@ -149,10 +149,10 @@ class ActionsService:
                                     self.instapy)
             if liked:
                 self.logger.info("performLike: Link was liked.")
-                action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
+
+            action_delay_util.set_last_like_timestamp(self.instapy, action_delay_util.get_current_timestamp())
 
             status = True
-
             if liked is not True:
                 status = msg
 
@@ -188,9 +188,8 @@ class ActionsService:
                                             self.instapy.logfolder,
                                             self.instapy)
 
-
+                action_delay_util.set_last_follow_timestamp(self.instapy, action_delay_util.get_current_timestamp())
                 if followed is True:
-                    action_delay_util.set_last_action_timestamp(self.instapy, action_delay_util.get_current_timestamp())
                     self.logger.info("performFollow: User: %s followed.", user_name)
 
                 status = True
@@ -233,8 +232,9 @@ class ActionsService:
                     unfollowed, msg = custom_unfollow(self.browser, recordToUnfollow['username'], self.logger, self.instapy)
 
                     if unfollowed is True:
-                        action_delay_util.set_last_action_timestamp(self.instapy,action_delay_util.get_current_timestamp())
                         self.logger.info("performUnfollow: Succesfully unfollowed user: %s.",recordToUnfollow['username'])
+
+                    action_delay_util.set_last_unfollow_timestamp(self.instapy, action_delay_util.get_current_timestamp())
 
                     status = True
                     if unfollowed is not True:

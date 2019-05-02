@@ -113,9 +113,9 @@ class InstaPy:
                  bypass_suspicious_attempt=False,
                  multi_logs=True,
                  force_login=False,
-                 like_delay=30,
-                 follow_delay=35,
-                 unfollow_delay=35,
+                 like_delay=40,
+                 follow_delay=50,
+                 unfollow_delay=50,
                  bot_type="engagement_bot"):
 
         if nogui:
@@ -241,7 +241,10 @@ class InstaPy:
         self.isLikeForLikeProcessRunning = False
         self.setupSignals()
 
-        self.last_action_timestamp = action_delay_util.get_current_timestamp()
+        self.last_like_timestamp = action_delay_util.get_current_timestamp()
+        self.last_follow_timestamp = action_delay_util.get_current_timestamp()
+        self.last_unfollow_timestamp = action_delay_util.get_current_timestamp()
+
         self.like_delay = like_delay
         self.follow_delay = follow_delay
         self.unfollow_delay = unfollow_delay
