@@ -48,7 +48,7 @@ from random import randint
 import time
 import action_delay_util
 from api_db import insert, getActiveFollowings, createUnfollowCycle
-
+from bot_util import getIfUserWantsToUnfollow
 
 def set_automated_followed_pool(username, unfollow_after, logger, logfolder):
     """ Generare a user list based on the InstaPy followed usernames """
@@ -608,7 +608,8 @@ def follow_user(browser, track, login, user_name, button, blacklist, logger, log
     elif status_before_refresh in ["Follow"] and status_after_refresh in ["Follow"]:
         logger.error("follow_user: Instagram following limit reached, you have to unfollow !. Going to setup an unfollow cycle !")
 
-        olderThan = 120  # 5 days
+        unfollowConfig = getIfUserWantsToUnfollow(instapy.campaign['id_campaign'])
+        olderThan = unfollowConfig['value']
         currentDate = datetime.now()
         queryDate = currentDate - timedelta(hours=int(olderThan))
         activeFollowings = getActiveFollowings(instapy.campaign['id_campaign'], queryDate)

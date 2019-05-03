@@ -173,13 +173,14 @@ def getUserToUnfollow(id_campaign, olderThan):
 
     currentDate = datetime.datetime.now()
     queryDate = currentDate - datetime.timedelta(hours=int(olderThan))
+    lte = queryDate.replace(minute=59, hour=23, second=59, microsecond=59)
 
     client = getMongoConnection()
     db = client.angie_app
 
     result = db.bot_action.find_one(
         {"id_campaign": id_campaign, "bot_operation_reverted": None, "status":True, "bot_operation": {"$regex": "^follow"},
-         "timestamp": {"$lte": queryDate}}, sort=[("timestamp", pymongo.ASCENDING)])
+         "timestamp": {"$lte": lte}}, sort=[("timestamp", pymongo.ASCENDING)])
     client.close()
 
     return result
