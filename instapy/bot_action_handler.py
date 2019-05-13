@@ -257,7 +257,7 @@ def substractAlreadyPerformedActions(self, actions):
 
 def getAmountDistribution(self, id_campaign):
     resume = resumeOperation(self, id_campaign)
-    resume = None
+
     if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         return substractAlreadyPerformedActions(self, resume)
