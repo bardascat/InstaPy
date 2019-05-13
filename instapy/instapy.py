@@ -4044,37 +4044,5 @@ class InstaPy:
         self.logger.info("atexitHandler: Going to execute")
         self.end()
 
-    def executeAngieActions(self, operations, likeAmount, followAmount, unfollowAmount):
-        self.logger.info("executeAngieLoop: Going to execute %s likes, %s follow, %s unfollow" % (
-            likeAmount, followAmount, unfollowAmount))
-
-        # todo: a bug too many ops. also if the number of actions is low don t divide it to 4 hashtags
-        noOperations = getOperationsNumber(operations)
-
-        result = {"totalLikePerformed": 0, "totalFollowPerformed": 0, "totalUnfollowPerformed": 0}
-
-        self.logger.info("executeAngieActions: Found %s operations of type engagement by location/hashtag",
-                         noOperations)
-
-        if noOperations == 0:
-            return False
-
-        for operation in operations:
-            self.logger.info("executeAngieActions: Going to perform operation: %s", operation['configName'])
-            if 'list' not in operation or len(operation['list']) == 0:
-                self.logger.info("executeAngieActions: Operation %s is not enabled by user.", operation['configName'])
-                self.logger.info(operation)
-                continue
-
-            opCopy = copy.deepcopy(operation)
-            operationResult = self.engagementService.perform_engagement(opCopy, likeAmount=likeAmount // noOperations,
-                                                                        followAmount=followAmount // noOperations,
-                                                                        unfollowAmount=unfollowAmount // noOperations)
-            result['totalLikePerformed'] += operationResult['totalLikePerformed']
-            result['totalFollowPerformed'] += operationResult['totalFollowPerformed']
-            result['totalUnfollowPerformed'] += operationResult['totalUnfollowPerformed']
-
-        return result
-
     def startLikeForLike(self):
         self.likeForLikeService.start()

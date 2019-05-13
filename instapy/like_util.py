@@ -21,10 +21,10 @@ import action_delay_util
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import NoSuchElementException
 from .util import is_page_available
+from string import lower
 
 
-
-def get_links_from_feed(browser, amount, num_of_search, logger):
+def get_links_from_feed(browser, num_of_search, amount, logger):
     """Fetches random number of links from feed and returns a list of links"""
 
     feeds_link = 'https://www.instagram.com/'
@@ -32,31 +32,28 @@ def get_links_from_feed(browser, amount, num_of_search, logger):
     #Check URL of the webpage, if it already is in Feeds page, then do not navigate to it again
     web_address_navigator(browser, feeds_link)
 
+    crawledLinks=[]
     for i in range(num_of_search + 1):
-        browser.execute_script(
-            "window.scrollTo(0, document.body.scrollHeight);")
-        update_activity()
-        sleep(2)
 
-    # get links
-    link_elems = browser.find_elements_by_xpath(
-        "//article/div[2]/div[2]/a")
+        link_elems = browser.find_elements_by_xpath("//article")
+        for link_elem in link_elems:
 
-    total_links = len(link_elems)
-    logger.info("Total of links feched for analysis: {}".format(total_links))
-    links = []
-    try:
-        if link_elems:
-            links = [link_elem.get_attribute('href') for link_elem in link_elems]
-            logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            for i, link in enumerate(links):
-                print(i, link)
-            logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            if len(link_elem.find_elements_by_xpath('div[2]/section[1]/span[1]/button/span'))>0:
+                if lower(link_elem.find_elements_by_xpath('div[2]/section[1]/span[1]/button/span')[0].get_attribute('aria-label'))=='like':
+                    crawledLinks.append(
+                        {
+                            'link':link_elem.find_elements_by_xpath('div[2]/div[2]/a')[0].get_attribute('href'),
+                            'instagram_username':link_elem.find_elements_by_xpath('header[1]/div[2]/div[1]/div[1]/h2[1]/a[1]')[0].text
+                         }
+                    )
 
-    except BaseException as e:
-        logger.error("link_elems error {}".format(str(e)))
+        browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        sleep(3)
 
-    return links
+    crawledLinksUnique = {each['link']: each for each in crawledLinks}.values()
+
+    logger.info("get_links_from_feed: Found %s links", len(crawledLinksUnique))
+    return crawledLinksUnique[:amount]
 
 
 

@@ -46,6 +46,12 @@ def randomizeValue(value, randomizePercent, direction="random"):
 
     return value
 
+def isEngagementWithOwnFeedEnabled(operations, logger):
+    for o in operations:
+        if o['configName']=='engagement_with_own_feed' and o['enabled'] == 1:
+            logger.info("isEngagementWithOwnFeedEnabled: True")
+            return True
+    return False
 
 def getIfUserWantsToUnfollow(id_campaign):
     query = 'select _key,value from  campaign_config join campaign_config_parameters using (id_config) where configName="unfollow"  and id_campaign= %s and _key="after_x_hours" and campaign_config.enabled=1'
@@ -56,20 +62,26 @@ def getIfUserWantsToUnfollow(id_campaign):
 
     return result
 
-
-def isLikeEnabled(id_campaign, logger):
-    operations = getBotOperations(id_campaign, logger)
-
-    enabled = False
+def isLikeEngagementWithPostsEnabled(operations):
     for o in operations:
-        if o['enabled'] == 1 and o['like_post'] == 1 and len(o['list']) > 0:
-            enabled = True
-            return enabled
+        if o['configName'] == 'engagement_by_location' and o['list'] > 0 and o['enabled'] == 1 and o['like_post'] == 1:
+            return True
+        if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0 and o['enabled'] == 1 and o['like_post'] == 1:
+            return True
+    return False
 
-    return enabled
 
-def isFollowEnabled(id_campaign, logger):
-    operations = getBotOperations(id_campaign, logger)
+def isLikeEnabled(operations):
+
+    for o in operations:
+        if o['enabled'] == 1 and o['like_post'] == 1 and 'list' in o and len(o['list']) > 0:
+            return True
+        if o['configName']=='engagement_with_own_feed' and o['enabled'] == 1:
+            return True
+
+    return False
+
+def isFollowEnabled(operations):
 
     enabled = False
     for o in operations:
@@ -106,9 +118,11 @@ def getOperationByName(operations, name):
 def getOperationsNumber(operations):
     ops = 0
     for o in operations:
-        if o['configName'] == 'engagement_by_location' and o['list'] > 0:
+        if o['configName'] == 'engagement_by_location' and o['list'] > 0 and o['enabled'] == 1:
             ops += 1
-        if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0:
+        if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0 and o['enabled'] == 1:
+            ops += 1
+        if o['configName'] == 'engagement_with_own_feed' and o['enabled'] == 1:
             ops += 1
 
     return ops
@@ -120,7 +134,6 @@ def getBotOperations(id_campaign, logger):
     totalLikeOperations = 0
     totalFollowOperations = 0
 
-    # todo: why unfollow is not loaded?
     operations = select(
         "SELECT configName, id_config, enabled, like_post, follow_user, percentageAmount FROM campaign_config where id_campaign=%s and enabled=1",
         id_campaign)
@@ -162,7 +175,7 @@ def getBotOperations(id_campaign, logger):
     # for op in operations:
     #     self.logger.info("Percentage: %s , Amount: %s" % (op['percentageAmount'], op['configName']))
 
-    logger.info("getBotOperations: Found %s operations", len(operations))
+    logger.info("getBotOperations: Found %s operations: %s" % (len(operations), operations))
     return operations
 
 

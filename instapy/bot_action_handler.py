@@ -165,7 +165,7 @@ def getInitialActionAmount(self, id_campaign):
 def isAccountWarmingUp(self):
     warmUpDays = 2
     self.logger.info("getInitialActionAmount: Checking if account is warming up...")
-    self.logger.info("getInitialActionAmount: Warming up is DISABLED, going to return False")
+    #self.logger.info("getInitialActionAmount: Warming up is DISABLED, going to return False")
 
     workingDays = api_db.getCampaignWorkingDays(self.campaign["id_campaign"])
 
@@ -232,12 +232,14 @@ def resumeOperation(self, id_campaign):
 
 
 def substractAlreadyPerformedActions(self, actions):
-
-    totalLikePerformed = getActionsPerformed(self.campaign, datetime.now(), "like",self.logger)
+    #update this function
+    tagLikesPerfomed = getActionsPerformed(self.campaign, datetime.now(), "like",self.logger)
+    feedLikesPerformed = getActionsPerformed(self.campaign, datetime.now(), "like_engagement_with_own_feed",self.logger)
     totalFollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "follow",self.logger)
     totalUnfollowPerformed = getActionsPerformed(self.campaign, datetime.now(), "unfollow",self.logger)
 
-    actions['like_amount'] -= totalLikePerformed
+    actions['like_amount']['feed'] -= feedLikesPerformed
+    actions['like_amount']['tags'] -= tagLikesPerfomed
     actions['follow_amount'] -= totalFollowPerformed
     actions['unfollow_amount'] -= totalUnfollowPerformed
 
@@ -255,7 +257,7 @@ def substractAlreadyPerformedActions(self, actions):
 
 def getAmountDistribution(self, id_campaign):
     resume = resumeOperation(self, id_campaign)
-
+    resume = None
     if resume is not None and resume['like_amount'] is not None and resume['follow_amount'] is not None and resume['unfollow_amount'] is not None:
         self.logger.info("getAmountDistribution: going to resume this amount: %s", resume)
         return substractAlreadyPerformedActions(self, resume)
@@ -358,14 +360,17 @@ def getAmountDistribution(self, id_campaign):
     id = api_db.insert("insert into campaign_log (`id_campaign`,`details`, event, `timestamp`) values (%s, %s, %s,now())",
                 id_campaign, logJson, 'CALCULATE_AMOUNT_OF_ACTIONS')
     self.id_log = id
-    self.logger.info("getAmountDistribution: Final action amount: %s", finalActionAmount)
+    self.logger.info("********************************** ACTION AMOUNT ***************************************")
+    self.logger.info("%s",finalActionAmount)
+    self.logger.info("********************************** ACTION AMOUNT ***************************************")
     self.logger.info("getAmountDistribution: ID_LOG: %s", id)
 
     return finalActionAmount
 
 
 def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
-    enableLikes = False
+    likesByTagEnabled = False
+    feedLikesEnabled = False
     enableFollows = False
     #this method returns False or an Object
     userWantsToUnfollow = bot_util.getIfUserWantsToUnfollow(id_campaign)
@@ -373,22 +378,32 @@ def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
     for o in operations:
         if o['configName'] == 'engagement_by_location' and o['enabled'] == 1:
             if o['like_post'] == 1:
-                enableLikes = True
+                likesByTagEnabled = True
 
             if o['follow_user'] == 1:
                 enableFollows = True
 
         if o['configName'] == 'engagement_by_hashtag' and o['enabled'] == 1:
             if o['like_post'] == 1:
-                enableLikes = True
+                likesByTagEnabled = True
 
             if o['follow_user'] == 1:
                 enableFollows = True
 
+        if o['configName'] == 'engagement_with_own_feed' and o['enabled'] == 1:
+            feedLikesEnabled = True
+
+
     defaultFollowAmount = result['follow_amount']
 
-    if enableLikes == False:
-        result['like_amount'] = 0
+    if feedLikesEnabled == False and likesByTagEnabled == False:
+        result['like_amount'] = {"feed":0,"tags":0}
+
+    if likesByTagEnabled == False and feedLikesEnabled == True:
+        result['like_amount'] = {"feed":100,"tags":0}
+
+    if feedLikesEnabled is True and likesByTagEnabled is True:
+        result['like_amount'] = {"feed": 100, "tags": result['like_amount'] - 100}
 
     if enableFollows == False:
         result['follow_amount'] = 0

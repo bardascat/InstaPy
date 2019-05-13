@@ -3,7 +3,7 @@ from random import randint
 
 import action_delay_util
 import api_db
-from .bot_util import isLikeEnabled
+from .bot_util import isLikeEnabled, getBotOperations
 from .like_util import like_image
 
 
@@ -22,8 +22,7 @@ class LikeForLike:
         self.logger.info("LikeForLike:performLikes: Going to perform l4l for user with ID: %s.",
                          self.campaign['id_user'])
 
-
-        if isLikeEnabled(self.campaign['id_campaign'], self.logger) is False:
+        if isLikeEnabled(getBotOperations(self.campaign['id_campaign'], self.logger)) is False:
             self.logger.info("likeForLike: Like is disabled by campaign configs, going to return.")
             return 0
 

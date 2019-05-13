@@ -34,11 +34,10 @@ def start(session):
     # if no actions are set by the user
     calculatedAmount = getAmountDistribution(session, args.angie_campaign)
     if calculatedAmount['like_amount'] == 0 and calculatedAmount['follow_amount'] == 0:
-        session.logger.info("start: No actions set, going to exit. like_amount:%s, follow_amount:%s" % (
-        calculatedAmount['like_amount'], calculatedAmount['follow_amount']))
+        session.logger.info("start: No actions set, going to exit. like_amount:%s, follow_amount:%s" % (calculatedAmount['like_amount'], calculatedAmount['follow_amount']))
         return False
 
-    totalExpectedLikeAmount = int(calculatedAmount["like_amount"])
+    totalExpectedLikeAmount = int(calculatedAmount['like_amount']['feed'] + calculatedAmount['like_amount']['tags'])
     totalExpectedFollowAmount = int(calculatedAmount["follow_amount"])
     totalExpectedUnfollowAmount = int(calculatedAmount["unfollow_amount"])
 
@@ -52,16 +51,19 @@ def start(session):
     os.getpid(), campaign['username'], campaign['ip']))
 
 
-    session.logger.info("start.py: Bot started performing actions: %s likes, %s follow, %s unfollow." % (totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount))
+    session.logger.info("******************** ENGAGEMENTBOT STARTED *******************")
+    session.logger.info("%s likes, %s follow, %s unfollow." % (totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount))
+    session.logger.info("******************** ENGAGEMENTBOT STARTED *******************")
+
     insert("INSERT INTO campaign_log (`id_campaign`, event, `details`, `timestamp`) VALUES (%s, %s, %s, now())",
            campaign['id_campaign'], "ENGAGEMENT_BOT_STARTED_PERFORMING_ACTIONS", None)
 
 
-    iterationResults = session.actionService.perform_engagement(likeAmount=totalExpectedLikeAmount,
+    results = session.actionService.perform_engagement(likeAmount=calculatedAmount['like_amount'],
                                                                 followAmount=totalExpectedFollowAmount,
                                                                 unfollowAmount=totalExpectedUnfollowAmount)
 
-    session.logger.info("start: Done processing %s posts: result: %s" % (max(totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount), iterationResults))
+    session.logger.info("start: Done processing %s posts: result: %s" % (max(totalExpectedLikeAmount, totalExpectedFollowAmount, totalExpectedUnfollowAmount), results))
     session.logger.info("start: Setting privacy to public for this account...")
     accountPrivacyService = AccountPrivacyService(session)
     accountPrivacyService.switchToPublic()

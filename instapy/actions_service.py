@@ -6,12 +6,14 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import InvalidElementStateException
 
 from .api_db import *
-from .bot_util import getIfUserWantsToUnfollow, isFollowEnabled, isLikeEnabled
+from .bot_util import getIfUserWantsToUnfollow, isFollowEnabled, isLikeEnabled, getBotOperations, isLikeEngagementWithPostsEnabled
 from .like_util import like_image
 from .unfollow_util import custom_unfollow, follow_user
 from random import randint
 import action_delay_util
-
+from feed_service import FeedService
+from bot_action_handler import getActionsPerformed
+from datetime import datetime
 class ActionsService:
     def __init__(self,
                  campaign,
@@ -21,63 +23,61 @@ class ActionsService:
         self.instapy = instapy
         self.browser = instapy.browser
         self.logger = instapy.logger
-        self.isFollowEnabled = isFollowEnabled(campaign['id_campaign'], self.logger)
-        self.isLikeEnabled = isLikeEnabled(campaign['id_campaign'], self.logger)
+        operations = getBotOperations(campaign['id_campaign'], self.logger)
+        self.isFollowEnabled = isFollowEnabled(operations)
+        self.isLikeEnabled = isLikeEnabled(operations)
+        self.isLikeEngagementWithPostsEnabled = isLikeEngagementWithPostsEnabled(operations)
         self.isUnfollowEnabled = getIfUserWantsToUnfollow(campaign['id_campaign'])
+        self.feedService = FeedService(campaign=self.campaign, instapy=instapy, operations=operations, actionService=self)
+
 
     def perform_engagement(self, likeAmount, followAmount, unfollowAmount):
 
         result = {"like": 0, "follow": 0, "unfollow": 0}
 
-        self.logger.info("perform_engagement: Going to perform %s likes, %s follow, %s Unfollow." % (
-            likeAmount, followAmount, unfollowAmount))
+        self.logger.info("perform_engagement: Going to perform %s likes, %s follow, %s Unfollow." % (likeAmount, followAmount, unfollowAmount))
 
-        numberOfPostsToInteractWith = max(likeAmount, followAmount, unfollowAmount)
+        numberOfPostsToInteractWith = max(likeAmount['tags'], followAmount, unfollowAmount)
 
-        if numberOfPostsToInteractWith < 0:
+        if max(likeAmount['tags'] + likeAmount['feed'], followAmount, unfollowAmount) is 0:
             self.logger.info("perform_engagement: No actions to performed, likeAmount: %s, followAmount: %s, unfollowAmount: %s " % (likeAmount, followAmount, unfollowAmount))
             return False
 
         self.followProbabilityPercentage = followAmount * 100 // numberOfPostsToInteractWith
-        self.likeProbabilityPercentage = likeAmount * 100 // numberOfPostsToInteractWith
+        self.likeProbabilityPercentage = likeAmount['tags'] * 100 // numberOfPostsToInteractWith
         self.unfollowProbabilityPercentage = unfollowAmount * 100 // numberOfPostsToInteractWith
+
 
         posts = self.getPosts(numberOfPostsToInteractWith)
         it = 0
-        for post in posts:
+        while self.continueLooping(likeAmount, followAmount, unfollowAmount, result) is True:
 
-            if 'link' not in post:
-                continue
+            #engage with post
+            engagePostResult = self.engageWithPost(posts, it)
 
-            self.logger.info("********************* START PROCESSING: [%s][%s] link: %s ***********************" % (it, len(posts), post['link']))
-            try:
-                actionStatus = self.engage(post)
+            #if all posts are completed set a pause to avoid fast looping
+            self.pause(posts, it)
 
-                if actionStatus['like']:
-                    result['like'] += 1
-                if actionStatus['follow']:
-                    result['follow'] += 1
-                if actionStatus['unfollow']:
-                    result['unfollow'] += 1
-                self.disablePost(post)
+            #engage with feed
+            engageFeedResult = self.feedService.engageWithFeed(postsNumber=2)
 
-            except (NoSuchElementException, StaleElementReferenceException, InvalidElementStateException) as err:
-                self.logger.error('perform_engagement: Error: {}'.format(err))
-                self.disablePost(post)
-                continue
-            finally:
-                self.logger.info("Done processing link.")
-            it += 1
+            result['like'] += engagePostResult['like'] + engageFeedResult['like']
+            result['follow'] += engagePostResult['follow']
+            result['unfollow'] += engagePostResult['unfollow']
 
-            # pause once at 100 posts
-            if it % 100 == 0:
-                wait = randint(7, 15)
-                time.sleep(wait * 60)
-                self.logger.info("perform_engagement: Iteration: %s Going to wait for %s minutes" % (it, wait))
+            it+=1
 
-                self.logger.info("perform_engagement: Done waiting...")
 
         return result
+
+    def continueLooping(self, likeAmount, followAmount, unfollowAmount, result):
+
+        if likeAmount['feed'] + likeAmount['tags']<=result['like'] and followAmount<=result['follow'] and unfollowAmount<=result['unfollow']:
+            self.logger.info("continueLooping: Stopping engagement bot, reached target. result: %s", result)
+            return False
+
+        return True
+
 
     def disablePost(self, post):
         client = getMongoConnection()
@@ -87,7 +87,9 @@ class ActionsService:
 
     def getPosts(self, noPosts):
 
-
+        if self.isLikeEngagementWithPostsEnabled is False:
+            self.logger.info("getPosts: isLikeEngagementWithPostsEnabled: is Fale, going to return [] posts.")
+            return []
         increasedNumberOfPosts = noPosts * 10 // 100 + noPosts
 
         client = getMongoConnection()
@@ -114,11 +116,13 @@ class ActionsService:
 
         operation = self.getOperationName(post)
 
-        #self.logger.info("engage: Trying to like post %s", post['link'])
-        likeStatus = self.performLike(user_name=post['instagram_username'],
-                                      operation=operation,
-                                      link=post['link'],
-                                      engagementValue=post['tag'])
+        if self.isLikeEngagementWithPostsEnabled == False:
+            likeStatus = False
+        else:
+            likeStatus = self.performLike(user_name=post['instagram_username'],
+                                          operation=operation,
+                                          link=post['link'],
+                                          engagementValue=post['tag'])
 
         followStatus = self.performFollow(followAmountProbabilityPercentage=self.followProbabilityPercentage,
                                           link=post['link'],
@@ -260,3 +264,57 @@ class ActionsService:
 
             return False
         return False
+
+    def engageWithPost(self, posts, it):
+        result={'like':0, 'follow':0, 'unfollow':0}
+
+        if len(posts)<=it:
+            self.logger.info("engageWithPosts: No more posts to process. Iteration: %s, posts number: %s" % (it, len(posts)))
+            return result
+
+        post = posts[it]
+
+        if 'link' not in post:
+            return result
+
+        self.logger.info("********************* START PROCESSING: [%s][%s] link: %s ***********************" % (it, len(posts), post['link']))
+        try:
+            actionStatus = self.engage(post)
+
+            if actionStatus['like']:
+                result['like'] = 1
+            if actionStatus['follow']:
+                result['follow'] = 1
+            if actionStatus['unfollow']:
+                result['unfollow'] = 1
+            self.disablePost(post)
+
+        except (NoSuchElementException, StaleElementReferenceException, InvalidElementStateException) as err:
+            self.logger.error('perform_engagement: Error: {}'.format(err))
+            self.disablePost(post)
+        finally:
+            self.logger.info("Done processing link.")
+
+        # pause once at 100 posts
+        if it % 100 == 0 and it > 0:
+            wait = randint(7, 15)
+            self.logger.info("perform_engagement: DAILY PAUSE every 100 posts. Iteration: %s. Going to wait for %s minutes" % (it, wait))
+            time.sleep(wait * 60)
+            self.logger.info("perform_engagement: Done waiting...")
+
+        return result
+
+    def pause(self, posts, it):
+
+        if len(posts) <= it and it!=0:
+            wait = 10
+            self.logger.info("engageWithPosts: No more posts to process. Iteration: %s, number of posts: %s. Going to sleep for %s minutes between actions." % (it, len(posts), wait))
+            time.sleep(wait * 60)
+
+
+
+
+
+
+
+
