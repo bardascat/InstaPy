@@ -175,7 +175,7 @@ def getBotOperations(id_campaign, logger):
     # for op in operations:
     #     self.logger.info("Percentage: %s , Amount: %s" % (op['percentageAmount'], op['configName']))
 
-    logger.info("getBotOperations: Found %s operations: %s" % (len(operations), operations))
+    logger.info("getBotOperations: Found %s operations" % (len(operations)))
 
     for o in operations:
         logger.info("%s, enabled: %s" % (o['configName'], o['enabled']))
