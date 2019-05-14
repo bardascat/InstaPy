@@ -405,6 +405,9 @@ def get_action_amount(result, operations, id_campaign, follow_unfollow_ratio):
     if feedLikesEnabled is True and likesByTagEnabled is True:
         result['like_amount'] = {"feed": 100, "tags": result['like_amount'] - 100}
 
+    if feedLikesEnabled is False and likesByTagEnabled is True:
+        result['like_amount'] = {"feed": 0, "tags": result['like_amount']}
+
     if enableFollows == False:
         result['follow_amount'] = 0
 

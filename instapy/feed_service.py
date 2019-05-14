@@ -29,7 +29,7 @@ class FeedService:
         if self.lastPostLikedTimestamp is not None and self.lastPostLikedTimestamp>=oneHourAgo:
             return result
 
-        self.logger.info("engageWithFeed: **************** FEED ENGAGEMENT: %s POSTS ***********************", postsNumber)
+        self.logger.info("engageWithFeed: **************** FEED ENGAGEMENT WITH: %s POSTS ***********************", postsNumber)
 
 
         posts = get_links_from_feed(self.instapy.browser, 3, postsNumber, self.logger)
@@ -52,7 +52,7 @@ class FeedService:
         client = getMongoConnection()
         db = client.angie_app
 
-        row = db.bot_action.find_one({"id_user": self.campaign['id_user'], "bot_operation": 'like_engagement_with_own_feed'}, sort=[("timestamp", pymongo.ASCENDING)])
+        row = db.bot_action.find_one({"id_user": self.campaign['id_user'], "bot_operation": 'like_engagement_with_own_feed'}, sort=[("timestamp", pymongo.DESCENDING)])
         client.close()
 
         if row == None:

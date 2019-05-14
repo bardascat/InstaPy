@@ -28,6 +28,7 @@ def get_links_from_feed(browser, num_of_search, amount, logger):
     """Fetches random number of links from feed and returns a list of links"""
 
     feeds_link = 'https://www.instagram.com/'
+    logger.info("get_links_from_feed: Searching for %s posts in user feed during %s iterations" % (amount, num_of_search))
 
     #Check URL of the webpage, if it already is in Feeds page, then do not navigate to it again
     web_address_navigator(browser, feeds_link)
@@ -36,14 +37,26 @@ def get_links_from_feed(browser, num_of_search, amount, logger):
     for i in range(num_of_search + 1):
 
         link_elems = browser.find_elements_by_xpath("//article")
+
         for link_elem in link_elems:
 
             if len(link_elem.find_elements_by_xpath('div[2]/section[1]/span[1]/button/span'))>0:
                 if lower(link_elem.find_elements_by_xpath('div[2]/section[1]/span[1]/button/span')[0].get_attribute('aria-label'))=='like':
+                    link = link_elem.find_elements_by_xpath('div[2]/div[2]/a')
+                    text = link_elem.find_elements_by_xpath('header[1]/div[2]/div[1]/div[1]/h2[1]/a[1]')
+
+                    if len(link) == 0:
+                        logger.error("get_links_from_feed: Error, could not find the LINK element for user feed post.")
+                        continue
+
+                    if len(text) == 0:
+                        logger.error("get_links_from_feed: Error, could not find the USERNAME element for user feed post.")
+                        continue
+
                     crawledLinks.append(
                         {
-                            'link':link_elem.find_elements_by_xpath('div[2]/div[2]/a')[0].get_attribute('href'),
-                            'instagram_username':link_elem.find_elements_by_xpath('header[1]/div[2]/div[1]/div[1]/h2[1]/a[1]')[0].text
+                            'link': link[0].get_attribute('href'),
+                            'instagram_username': text[0].text
                          }
                     )
 
