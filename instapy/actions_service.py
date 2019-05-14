@@ -59,7 +59,7 @@ class ActionsService:
             self.pause(posts, it)
 
             #engage with feed
-            engageFeedResult = self.feedService.engageWithFeed(postsNumber=2)
+            engageFeedResult = self.feedService.engageWithFeed(postsNumber=10)
 
             result['like'] += engagePostResult['like'] + engageFeedResult['like']
             result['follow'] += engagePostResult['follow']

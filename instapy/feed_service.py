@@ -34,7 +34,10 @@ class FeedService:
 
         posts = get_links_from_feed(self.instapy.browser, 3, postsNumber, self.logger)
         self.logger.info("engageWithFeed: Received %s posts from feed / expected %s" % (len(posts), postsNumber))
+        it=1
         for post in posts:
+
+            self.logger.info("[%s][%s] - %s" % (it, len(posts), post['link']))
             self.browser.get(post['link'])
             if self.actionService.performLike(user_name=post['instagram_username'],
                                           operation='engagement_with_own_feed',
@@ -42,6 +45,7 @@ class FeedService:
                                           engagementValue=None) is True:
 
                 result['like']+=1
+            it+=1
         self.lastPostLikedTimestamp = datetime.now()
         self.logger.info("********************* FEED ENGAGEMENT done liking %s posts from user feed. *****************************", len(posts))
         return result
