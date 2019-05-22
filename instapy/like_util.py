@@ -37,7 +37,7 @@ def get_links_from_feed(browser, num_of_search, amount, logger):
     for i in range(num_of_search + 1):
 
         link_elems = browser.find_elements_by_xpath("//article")
-
+        logger.info("iteration: %s, found %s links" % (i, len(link_elems)))
         for link_elem in link_elems:
 
             if len(link_elem.find_elements_by_xpath('div[2]/section[1]/span[1]/button/span'))>0:
@@ -53,22 +53,29 @@ def get_links_from_feed(browser, num_of_search, amount, logger):
                         logger.error("get_links_from_feed: Error, could not find the USERNAME element for user feed post.")
                         continue
 
-                    crawledLinks.append(
-                        {
-                            'link': link[0].get_attribute('href'),
-                            'instagram_username': text[0].text
-                         }
-                    )
+                    crawledLinks = appendFeedLink(crawledLinks, link, text)
 
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         sleep(3)
 
-    crawledLinksUnique = {each['link']: each for each in crawledLinks}.values()
-
-    logger.info("get_links_from_feed: Found %s links", len(crawledLinksUnique))
-    return crawledLinksUnique[:amount]
+    logger.info("get_links_from_feed: Found %s links", len(crawledLinks))
+    return crawledLinks[:amount]
 
 
+def appendFeedLink(crawledLinks, link, text):
+
+    for i in crawledLinks:
+        if i['link'] == link[0].get_attribute('href'):
+            return crawledLinks
+
+    crawledLinks.append(
+        {
+            'link': link[0].get_attribute('href'),
+            'instagram_username': text[0].text
+        }
+    )
+
+    return crawledLinks
 
 def get_links_for_location(browser,
                            location,
