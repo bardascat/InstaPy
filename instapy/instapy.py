@@ -347,7 +347,7 @@ class InstaPy:
             # GUI-less browser. chromedriver 2.9 and above required
             if self.headless_browser:
                 chrome_options.add_argument('--headless')
-                chrome_options.add_argument('--no-sandbox')
+                #chrome_options.add_argument('--no-sandbox')
 
                 if self.disable_image_load:
                     chrome_options.add_argument('--blink-settings=imagesEnabled=false')
