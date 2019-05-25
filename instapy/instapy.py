@@ -341,7 +341,7 @@ class InstaPy:
             chrome_options.add_argument('--disable-plugins')
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--enable-logging --v=1')
-            chrome_options.add_argument('--log-path=/home/ubuntut/chromedriver.log')
+            chrome_options.add_argument('--log-path=/homet/chromedriver.log')
 
             # this option implements Chrome Headless, a new (late 2017)
             # GUI-less browser. chromedriver 2.9 and above required

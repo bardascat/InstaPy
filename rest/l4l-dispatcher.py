@@ -4,7 +4,7 @@ import subprocess
 from rest_logger import getLogger
 
 python_path = "python"
-base_path = "/home/ubuntu/projects/InstaPy"
+base_path = "/home/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
 
 def start():

@@ -6,7 +6,7 @@ from flask import abort
 import re
 
 python_path = "python"
-base_path = "/home/ubuntu/projects/InstaPy"
+base_path = "/home/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
 
 
@@ -32,7 +32,7 @@ def verify(username, password, id_campaign, twoFactorRecoveryCode=None, unusualL
 
 
 def user(username):
-    base_path = "/home/ubuntu/projects/instabot/run"
+    base_path = "/home/projects/instabot/run"
 
     JOHN_CRYAN_BOT = '273'
 

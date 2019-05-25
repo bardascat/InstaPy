@@ -92,7 +92,7 @@ class LikeForLikeDispatcher:
             self.logger.info("startLikeForLikeProcess: All good, the like for like process with name %s is not active, going to start it now !",processName)
 
         subprocess.Popen(
-            "bash -c \"exec -a " + processName + " /usr/bin/python /home/ubuntu/projects/InstaPy/like_for_like.py  -angie_campaign=" + str(id_campaign) + " \"", stdin=None, stdout=self.DEVNULL, stderr=self.DEVNULL, close_fds=True, shell=True)
+            "bash -c \"exec -a " + processName + " /usr/bin/python /home/projects/InstaPy/like_for_like.py  -angie_campaign=" + str(id_campaign) + " \"", stdin=None, stdout=self.DEVNULL, stderr=self.DEVNULL, close_fds=True, shell=True)
         
             
         self.logger.info("startLikeForLikeProcess: Successfully started process for campaign %s", id_campaign)
