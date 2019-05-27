@@ -4014,7 +4014,7 @@ class InstaPy:
             self.logger.info("likeForLikeHandler: browser: %s", self.browser)
 
             # switch to the new tab
-            self.browser.switch_to_window(self.browser.window_handles[1])
+            self.browser.switch_to.window(self.browser.window_handles[1])
 
             self.likeForLikeService.start()
 
