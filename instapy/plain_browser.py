@@ -12,7 +12,7 @@ chrome_options.add_argument('--disable-setuid-sandbox')
 chrome_options.add_argument('--disable-plugins')
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--enable-logging --v=1')
-chrome_options.add_argument('--log-path=/home/ubuntut/chromedriver.log')
+chrome_options.add_argument('--log-path=/homet/chromedriver.log')
 
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')

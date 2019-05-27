@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from rest_logger import getLogger
 
 python_path = "python"
-base_path = "/home/ubuntu/projects/instabot/run"
+base_path = "/home/projects/instabot/run"
 DEVNULL = open(os.devnull, 'wb')
 
 
