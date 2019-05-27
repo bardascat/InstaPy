@@ -6,7 +6,7 @@ from rest_logger import getLogger
 import os.path
 
 python_path = "python"
-base_path = "/home/projects/InstaPy"
+base_path = "/home/ubuntu/projects/InstaPy"
 DEVNULL = open(os.devnull, 'wb')
 
 
@@ -71,13 +71,7 @@ def scheduler(campaigns):
         campaignsList) + "' \""
 
     logger.info("executing command: %s", command)
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-    result = process.communicate()[0]
-    process.wait()
-    logger.info(result)
-
-    return result
-
+    subprocess.Popen(command, close_fds=True, shell=True, stdin=None, stdout=DEVNULL, stderr=DEVNULL)
 
 
 def stopAll():
