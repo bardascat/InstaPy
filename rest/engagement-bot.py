@@ -71,7 +71,13 @@ def scheduler(campaigns):
         campaignsList) + "' \""
 
     logger.info("executing command: %s", command)
-    subprocess.Popen(command, close_fds=True, shell=True)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    result = process.communicate()[0]
+    process.wait()
+    logger.info(result)
+
+    return result
+
 
 
 def stopAll():
