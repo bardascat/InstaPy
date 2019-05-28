@@ -4031,7 +4031,7 @@ class InstaPy:
             self.isLikeForLikeProcessRunning = False
 
             self.logger.info("likeForLikeHandler: finally: Switching to original tab...")
-            self.browser.switch_to_window(self.browser.window_handles[0])
+            self.browser.switch_to.window(self.browser.window_handles[0])
             # go back to original tab
             self.logger.info("likeForLikeHandler: finally: Done, resuming to normal flow...")
 
