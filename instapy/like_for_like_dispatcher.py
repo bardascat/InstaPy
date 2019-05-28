@@ -71,8 +71,9 @@ class LikeForLikeDispatcher:
 
     def sendL4lSignal(self, pid, id_campaign):
         self.logger.info("sendL4lSignal: Going to send SIGUSR1 signal to process: %s, campaign: %s", pid, id_campaign)
-        p = psutil.Process(pid)
-        p.send_signal(sig=signal.SIGUSR1)
+        #p = psutil.Process(pid)
+        #p.send_signal(sig=signal.SIGUSR1)
+        os.kill(pid, signal.SIGUSR1)
         self.logger.info("sendL4lSignal: Done sending the signal.")
         return True
 
