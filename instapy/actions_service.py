@@ -89,7 +89,7 @@ class ActionsService:
     def getPosts(self, noPosts):
 
         if self.isLikeEngagementWithPostsEnabled is False:
-            self.logger.info("getPosts: isLikeEngagementWithPostsEnabled: is Fale, going to return [] posts.")
+            self.logger.info("getPosts: isLikeEngagementWithPostsEnabled: is False, going to return [] posts.")
             return []
         increasedNumberOfPosts = noPosts * 10 // 100 + noPosts
 

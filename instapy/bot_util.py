@@ -64,9 +64,16 @@ def getIfUserWantsToUnfollow(id_campaign):
 
 def isLikeEngagementWithPostsEnabled(operations):
     for o in operations:
-        if o['configName'] == 'engagement_by_location' and o['list'] > 0 and o['enabled'] == 1 and o['like_post'] == 1:
+        if o['enabled'] == 1 and o['like_post'] == 1 and 'list' in o and len(o['list']) > 0:
             return True
-        if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0 and o['enabled'] == 1 and o['like_post'] == 1:
+
+def isEngagementWithPostsEnabled(operations):
+    for o in operations:
+        if o['configName'] == 'engagement_by_location' and o['list'] > 0 and o['enabled'] == 1 and (o['like_post'] == 1 or o['follow_user']==1):
+            return True
+        if o['configName'] == 'engagement_by_hashtag' and o['list'] > 0 and o['enabled'] == 1 and (o['like_post'] == 1 or o['follow_user']==1):
+            return True
+        if o['configName'] == 'unfollow' and o['enabled'] == 1:
             return True
     return False
 
