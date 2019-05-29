@@ -32,7 +32,7 @@ class FeedService:
         self.logger.info("engageWithFeed: **************** FEED ENGAGEMENT WITH: %s POSTS ***********************", postsNumber)
 
 
-        posts = get_links_from_feed(self.instapy.browser, 3, postsNumber, self.logger)
+        posts = get_links_from_feed(self.instapy.browser, 3, postsNumber, self.logger, self.campaign)
         self.logger.info("engageWithFeed: Received %s posts from feed / expected %s" % (len(posts), postsNumber))
         it=1
         for post in posts:

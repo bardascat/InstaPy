@@ -24,7 +24,7 @@ from .util import is_page_available
 from string import lower
 
 
-def get_links_from_feed(browser, num_of_search, amount, logger):
+def get_links_from_feed(browser, num_of_search, amount, logger, campaign):
     """Fetches random number of links from feed and returns a list of links"""
 
     feeds_link = 'https://www.instagram.com/'
@@ -51,6 +51,9 @@ def get_links_from_feed(browser, num_of_search, amount, logger):
 
                     if len(text) == 0:
                         logger.error("get_links_from_feed: Error, could not find the USERNAME element for user feed post.")
+                        continue
+
+                    if text == campaign['instagram_username']:
                         continue
 
                     crawledLinks = appendFeedLink(crawledLinks, link, text)
