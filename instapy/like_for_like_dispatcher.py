@@ -1,12 +1,16 @@
-import time
-import psutil
 import logging
 import os
-import api_db
-import subprocess
-from random import randint
 import signal
+import subprocess
+import time
+from random import randint
+
+import psutil
+
+import api_db
 import settings
+from .bot_util import isLikeEnabled, getBotOperations
+
 
 class LikeForLikeDispatcher:
     def __init__(self):
@@ -58,6 +62,10 @@ class LikeForLikeDispatcher:
     def startLikeForLike(self, user):
         self.logger.info("startLikeForLike: Trigering l4l functionality for user: %s", user['email'])
 
+        if self.isUserEligibleForL4L(user) is not True:
+            return False
+
+
         defaultBotProcessName = 'angie_instapy_idc' + str(user['id_campaign'])
         pid = self.findProcessPid(defaultBotProcessName)
 
@@ -94,10 +102,18 @@ class LikeForLikeDispatcher:
 
         subprocess.Popen(
             "bash -c \"exec -a " + processName + " /usr/bin/python /home/projects/InstaPy/like_for_like.py  -angie_campaign=" + str(id_campaign) + " \"", stdin=None, stdout=self.DEVNULL, stderr=self.DEVNULL, close_fds=True, shell=True)
-        
-            
+
+
         self.logger.info("startLikeForLikeProcess: Successfully started process for campaign %s", id_campaign)
 
+
+    def isUserEligibleForL4L(self, user):
+
+        if isLikeEnabled(getBotOperations(user['id_campaign'], self.logger)) is False:
+            self.logger.info("isUserEligibleForL4L: User is not eligible for l4l, like is disabled.")
+            return False
+
+        return True
 
     def findProcessPid(self, processName):
         self.logger.info("findProcessPid:Searching process with name :%s ", processName)
