@@ -56,14 +56,13 @@ class ActionsService:
             engagePostResult = self.engageWithPost(posts, it)
 
             #if all posts are completed set a pause to avoid fast looping
-            #self.pause(posts, it)
+            self.pause(posts, it)
 
             #engage with feed
-            #engageFeedResult = self.feedService.engageWithFeed(postsNumber=10)
+            engageFeedResult = self.feedService.engageWithFeed(postsNumber=10)
 
 
-            #result['like'] += engagePostResult['like'] + engageFeedResult['like']
-            result['like'] += engagePostResult['like']
+            result['like'] += engagePostResult['like'] + engageFeedResult['like']
             result['follow'] += engagePostResult['follow']
             result['unfollow'] += engagePostResult['unfollow']
 
