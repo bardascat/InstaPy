@@ -4006,7 +4006,7 @@ class InstaPy:
                         spamCheck, exc))
             finally:
                 spamCheck = spamCheck + 1
-                time.sleep(2)
+                time.sleep(1)
 
         if hasError == True:
             raise AngieError(
