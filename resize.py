@@ -6,8 +6,8 @@ import os
 import sys
 import time
 
-BASE_DIR = "/Users/cbardas/instapy-log/"
-# BASE_DIR = "/home/instapy-log/"
+#BASE_DIR = "/Users/cbardas/instapy-log/"
+BASE_DIR = "/home/instapy-log/"
 
 stdout = sys.stdout
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
