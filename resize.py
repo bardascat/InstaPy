@@ -25,6 +25,7 @@ import requests
 
 parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument('-id_droplet', type=str, help="id_droplet")
+parser.add_argument('-size', type=str, help="size")
 args = parser.parse_args()
 
 apiUrl = 'https://rest.angie.one/doapi/'
