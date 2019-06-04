@@ -29,20 +29,17 @@ args = parser.parse_args()
 
 apiUrl = 'https://rest.angie.one/doapi/'
 authKey = 'b5a42bd29ebc5697adcec0adf446c26e'
-EIGHT_GB_SIZE = "s-4vcpu-8gb"
-TWO_GB_SIZE = "s-1vcpu-2gb"
+#EIGHT_GB_SIZE = "s-4vcpu-8gb"
+#TWO_GB_SIZE = "s-1vcpu-2gb"
 
-args.id_droplet = "144926024"
-args.size = 'TWO_GB_SIZE'
+#args.id_droplet = "144926024"
+#args.size = EIGHT_GB_SIZE
 
 if args.id_droplet is None:
     exit("dispatcher: Error: id_droplet is not specified !")
 
 if args.size is None:
     exit("dispatcher: Error: id_droplet is not specified !")
-
-
-
 
 
 def getDropletStatus(id_droplet):
@@ -113,56 +110,58 @@ def resize(id_droplet, size):
     result = r.content
     result = json.loads(result)
 
+    logger.info("Resize response: %s", result)
     logger.info("Action Status: %s, id: %s" % (result['action']['status'], result['action']['id']))
 
     return result['action']['id']
 
 
 logger.info("STARTING RESIZE PROCESS FOR DROPLET: %s, SIZE: %s" % (args.id_droplet, args.size))
-
-waitForShutdownMin = 1
-
-# SHUTDOWN THE DROPLET
-shutdownId = shutdownDroplet(args.id_droplet)
-logger.info("Going to wait %s minutes for shutdown", waitForShutdownMin)
-time.sleep(waitForShutdownMin * 60)
-logger.info("Done waiting, going to check the status.")
-status = checkStatus(shutdownId)
-
-if status != "completed":
-    logger.info("Shutdown failed, status: %s. Going to powerOff", status)
-    powerOffId = powerOff(args.id_droplet)
-    logger.info("Going to wait %s minute for powerOff", waitForShutdownMin)
-    time.sleep(waitForShutdownMin * 60)
-    powerOffStatus = checkStatus(powerOffId)
-
-    if powerOffStatus != 'completed':
-        logger.info("PowerOff failed, status: %s", powerOffStatus)
-        raise Exception('Could not powerOff the droplet.')
-
-logger.info("Done shutting down, going to resize the droplet...")
-
-resizeWaitMin = 5
-resizeId = resize(args.id_droplet, args.size)
-logger.info("Going to wait %s minutes for resize", resizeWaitMin)
-time.sleep(resizeWaitMin * 60)
-logger.info("done waiting, going to check the resize status")
-
-resizeStatus = checkStatus(resizeId)
-if resizeStatus != 'completed':
-    logger.info('Resize failed, status: %s', resizeStatus)
-    raise Exception('Resize failed, status: %s', resizeStatus)
-
-logger.info("Done resizing, going to startup the machine")
-
-startupId = powerOn(args.id_droplet)
-startUpWait = 3
-logger.info("Going to wait %s minutes for powerOn" % (startUpWait))
-logger.info("Done waiting... going to check the startup status")
-startupStatus = checkStatus(startupId)
-
-if startupStatus != 'completed':
-    logger.info("Startup failed, status: %s", startupStatus)
-    raise Exception("Startup failed...")
-
-logger.info("Done resizing the machine, going to exit !")
+#
+# waitForShutdownMin = 1
+#
+# # SHUTDOWN THE DROPLET
+# shutdownId = shutdownDroplet(args.id_droplet)
+# logger.info("Going to wait %s minutes for shutdown", waitForShutdownMin)
+# time.sleep(waitForShutdownMin * 60)
+# logger.info("Done waiting, going to check the status.")
+# status = checkStatus(shutdownId)
+#
+# if status != "completed":
+#     logger.info("Shutdown failed, status: %s. Going to powerOff", status)
+#     powerOffId = powerOff(args.id_droplet)
+#     logger.info("Going to wait %s minute for powerOff", waitForShutdownMin)
+#     time.sleep(waitForShutdownMin * 60)
+#     powerOffStatus = checkStatus(powerOffId)
+#
+#     if powerOffStatus != 'completed':
+#         logger.info("PowerOff failed, status: %s", powerOffStatus)
+#         raise Exception('Could not powerOff the droplet.')
+#
+# logger.info("Done shutting down, going to resize the droplet...")
+#
+# resizeWaitMin = 5
+# resizeId = resize(args.id_droplet, args.size)
+# logger.info("Going to wait %s minutes for resize", resizeWaitMin)
+# time.sleep(resizeWaitMin * 60)
+# logger.info("done waiting, going to check the resize status")
+#
+# resizeStatus = checkStatus(resizeId)
+# if resizeStatus != 'completed':
+#     logger.info('Resize failed, status: %s', resizeStatus)
+#     raise Exception('Resize failed, status: %s', resizeStatus)
+#
+# logger.info("Done resizing, going to startup the machine")
+# startupId = powerOn(args.id_droplet)
+# startUpWait = 2
+# logger.info("Going to wait %s minutes for powerOn" % (startUpWait))
+#
+# time.sleep(resizeWaitMin * 60)
+# logger.info("Done waiting... going to check the startup status")
+# startupStatus = checkStatus(startupId)
+#
+# if startupStatus != 'completed':
+#     logger.info("Startup failed, status: %s", startupStatus)
+#     raise Exception("Startup failed...")
+#
+# logger.info("Done resizing the machine, going to exit !")
