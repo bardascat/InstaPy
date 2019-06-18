@@ -40,7 +40,7 @@ if args.id_droplet is None:
     exit("dispatcher: Error: id_droplet is not specified !")
 
 if args.size is None:
-    exit("dispatcher: Error: id_droplet is not specified !")
+    exit("dispatcher: Error: size is not specified !")
 
 
 def getDropletStatus(id_droplet):

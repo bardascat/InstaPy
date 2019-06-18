@@ -76,7 +76,7 @@ def processUserFollowers():
 
 def userActionsQueueStatus(campaigns):
     logger = getLogger()
-    client = MongoClient(host='104.248.128.65', port=27017)
+    client = MongoClient('mongodb://angie_app:angiePasswordDB@104.248.128.65/angie_app')
     db = client.angie_app
 
     logger.info("crawler.userActionsCrawlerStatus: Getting user actions status for %s campaigns", len(campaigns))
@@ -103,7 +103,7 @@ def userFollowersCralwerStatus(body):
 
     logger = getLogger()
 
-    client = MongoClient(host='104.248.128.65', port=27017)
+    client = MongoClient('mongodb://angie_app:angiePasswordDB@104.248.128.65/angie_app')
     db = client.angie_app
     format_str = '%Y-%m-%d'  # The format
     gte = datetime.datetime.strptime(date, format_str)

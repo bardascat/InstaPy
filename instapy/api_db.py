@@ -7,7 +7,7 @@ client = None
 
 
 def getMongoConnection():
-    client = MongoClient('mongodb://104.248.128.65/angie_app')
+    client = MongoClient('mongodb://angie_app:angiePasswordDB@104.248.128.65/angie_app')
     return client
 
 

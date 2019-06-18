@@ -4,7 +4,7 @@ from rest_logger import getLogger
 
 
 def getMongoConnection():
-    client = MongoClient(host='104.248.128.65', port=27017)
+    client = MongoClient('mongodb://angie_app:angiePasswordDB@104.248.128.65/angie_app')
     return client
 
 
@@ -78,7 +78,7 @@ def getUserFollowersBreakdown(instagram_username, since, until):
 
     logger.info("crawler.getUserFollowersBreakdown: start: %s, end: %s" % (gte, lte))
 
-    client = MongoClient(host='104.248.128.65', port=27017)
+    client = MongoClient('mongodb://angie_app:angiePasswordDB@104.248.128.65/angie_app')
     db = client.angie_app
 
     result = db.processed_user_followers.find(
