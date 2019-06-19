@@ -25,6 +25,7 @@ class ActionsService:
         self.logger = instapy.logger
         operations = getBotOperations(campaign['id_campaign'], self.logger)
         self.isFollowEnabled = isFollowEnabled(operations)
+        self.logger.info("isFollowEnabled: %s, ops: %s" %  (self.isFollowEnabled, operations))
         self.isLikeEnabled = isLikeEnabled(operations)
         self.isLikeEngagementWithPostsEnabled = isLikeEngagementWithPostsEnabled(operations)
         self.isUnfollowEnabled = getIfUserWantsToUnfollow(campaign['id_campaign'])
