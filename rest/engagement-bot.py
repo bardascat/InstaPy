@@ -32,7 +32,7 @@ def getBot(id_campaign):
     logger = getLogger()
     logger.info("engagement-bot.getBot: Getting bot for campaign id: %s", id_campaign)
 
-    processname = 'angie_instapy_idc' + str(id_campaign)
+    processname = 'angie_instapy_idc' + str(id_campaign) + str(id_campaign)+' '
     tmp = os.popen("ps -Af").read()
     logger.info("engagement-bot.getBot: processes found: %s", tmp)
     proccount = tmp.count(processname)
