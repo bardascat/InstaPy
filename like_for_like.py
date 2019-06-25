@@ -42,7 +42,7 @@ try:
                       bot_type="like_for_like",
                       multi_logs=True)
 
-    session.logger.info("likeforlike: START PID: %s, account %s, using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
+    session.logger.info("likeforlike: LIKE FOR LIKE START PID: %s, account %s, using proxy: %s" % (os.getpid(), campaign['username'], campaign['ip']))
     canBotStart = session.canBotStart(id_campaign=args.angie_campaign, prefix="angie_instapy_like_for_like_idc")
 
     if canBotStart:
