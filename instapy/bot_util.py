@@ -47,6 +47,9 @@ def randomizeValue(value, randomizePercent, direction="random"):
     return value
 
 def isEngagementWithOwnFeedEnabled(operations, logger):
+    #todo: this is disabled to test if it's causing spam block
+    return False
+
     for o in operations:
         if o['configName']=='engagement_with_own_feed' and o['enabled'] == 1:
             logger.info("isEngagementWithOwnFeedEnabled: True")
