@@ -297,10 +297,10 @@ class ActionsService:
         finally:
             self.logger.info("Done processing link.")
 
-        # pause once at 100 posts
-        if it % 100 == 0 and it > 0:
+        # pause once at 50 posts
+        if it % 50 == 0 and it > 0:
             wait = randint(7, 15)
-            self.logger.info("perform_engagement: DAILY PAUSE every 100 posts. Iteration: %s. Going to wait for %s minutes" % (it, wait))
+            self.logger.info("perform_engagement: DAILY PAUSE every 50 posts. Iteration: %s. Going to wait for %s minutes" % (it, wait))
             time.sleep(wait * 60)
             self.logger.info("perform_engagement: Done waiting...")
 
